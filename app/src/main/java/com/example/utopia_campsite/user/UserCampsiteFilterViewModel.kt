@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.utopia_campsite.owner.CampsiteRepository
 import com.example.utopia_campsite.owner.Campsites
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -18,11 +19,28 @@ import java.util.TimeZone
  */
 class UserCampsiteFilterViewModel : ViewModel() {
     private val availableCampsitesList = ArrayList<Campsites>() // This will be retrieved from firebase
+    private val campsiteRepository = CampsiteRepository()
     var filteredCampsitesList by mutableStateOf<List<Campsites>>(emptyList())
         private set
 
     var filterError by mutableStateOf(false)
         private set
+    var campsiteLoadStatus by mutableStateOf("loading")
+        private set
+
+    init {
+        campsiteRepository.getCampsites(
+            onSuccess = { campsites ->
+                updateAvailableCampsites(campsites)
+                campsiteLoadStatus = "success"
+            },
+            onFailure = {
+                campsiteLoadStatus = "error"
+
+            }
+
+        )
+    }
 
     /**
      * Converts a date string into a Date object using the DD/MM/YYYY format
@@ -57,6 +75,10 @@ class UserCampsiteFilterViewModel : ViewModel() {
      */
     fun filterCampsites(userLocation: String, userGuests: String, userStartDate: String, userEndDate: String): List<Campsites> {
         filterError = false
+        if (campsiteLoadStatus != "success") { //this prevents the program for trying to filter campsites before the list has been loaded
+            return emptyList()
+        }
+
         val guests = userGuests.toIntOrNull()
 
         val startDate = if (userStartDate.isNotBlank()) {
