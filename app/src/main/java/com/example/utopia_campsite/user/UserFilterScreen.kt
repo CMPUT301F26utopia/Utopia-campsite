@@ -32,6 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -95,7 +97,7 @@ fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Un
 
 // The main screen of this page
 @Composable
-fun FilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel) {
+fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel, navController: NavController) {
     var inputLocation by remember { mutableStateOf("") }
     var inputGuests by remember { mutableStateOf("") }
     var inputStartDate by remember { mutableStateOf("") }
@@ -197,7 +199,7 @@ fun FilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewMode
                 } else {
                     filterViewModel.updateFilteredCampsites(results)
                     noMatchesFound = false
-                    // Now use nav controller to navigate to UserFilterResultScreen
+                    navController.navigate("user/filter/result")
                 }
 
             }
@@ -215,5 +217,12 @@ fun FilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewMode
 @Preview(showBackground = true)
 @Composable
 fun FilterScreenPreview() {
-    FilterScreen(modifier = Modifier, filterViewModel = UserCampsiteFilterViewModel())
+    val navController = rememberNavController()
+    val filterViewModel = remember { UserCampsiteFilterViewModel() }
+
+    UserFilterScreen(
+        modifier = Modifier,
+        filterViewModel = filterViewModel,
+        navController = navController
+    )
 }

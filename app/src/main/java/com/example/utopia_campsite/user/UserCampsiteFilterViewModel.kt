@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import kotlin.compareTo
 
 class UserCampsiteFilterViewModel : ViewModel() {
     // Dedicated class to maintain the results of the filtered process for users
