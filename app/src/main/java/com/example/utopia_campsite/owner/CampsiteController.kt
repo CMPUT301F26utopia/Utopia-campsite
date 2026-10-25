@@ -63,4 +63,40 @@ class CampsiteController{
 
     }//end getCampsites
 
+    /**
+     * saves a new campsite to the firebase firestore.
+     * Firestore generates the document ID.
+     *
+     * @param campsite: the campsite being saved.
+     * @param onSuccess: called with the new document ID when the campsite is saved.
+     * @param onFailure: called when saving a new campsite fails.
+     */
+    fun registerCampsite(
+        campsite: Campsites,
+        onSuccess: (String) -> Unit,
+        onFailure: (Exception) -> Unit
+     ){
+        val data = hashMapOf(
+            "name" to campsite.name,
+            "photoURL" to campsite.photoUrl,
+            "address" to campsite.address,
+            "latitude" to campsite.latitude,
+            "longitude" to campsite.longitude,
+            "ratings" to campsite.ratings,
+            "tags" to campsite.tags,
+            "lotteryWinners" to campsite.lotteryWinners,
+            "lotteryWaitlist" to campsite.lotteryWaitlist,
+            "description" to campsite.description,
+            "registrationDate" to campsite.registrationDate,
+            "bookingDate" to campsite.bookingDate,
+            "maxOccupancy" to campsite.maximumOccupants,
+            "availableStartDate" to campsite.availableStartDate,
+            "availableEndDate" to campsite.availableEndDate
+        )
+        db.collection("campsites")
+            .add(data)
+            .addOnSuccessListener { ref -> onSuccess(ref.id) }
+            .addOnFailureListener { exception -> onFailure(exception) }
+    }//end registerCampsite
+
 }//end campsite controller
