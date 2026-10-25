@@ -22,6 +22,16 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.utopia_campsite.owner.Campsites
 
+/**
+ * Displays the list of campsites matching the user's search criteria
+ * Retrieves the filtered campsite list from the shared ViewModel
+ * Displays each campsite's location, maximum occupancy, and available dates
+ * Allows the user to navigate back to the filtering screen
+ *
+ * @param modifier: the Modifier used to configure the screen layout
+ * @param filterViewModel: the ViewModel containing the filtered campsite results
+ * @param navController: the navigation controller used to return to the previous screen
+ */
 @Composable
 fun UserFilterResultScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel, navController: NavController) {
     // Method for showcasing the result of the filtered list
@@ -70,6 +80,10 @@ fun UserFilterResultScreen(modifier: Modifier, filterViewModel: UserCampsiteFilt
     }
 }
 
+/**
+ * Provides a preview of the filtered campsite results screen
+ * Initializes a ViewModel with sample campsite data to display the results layout
+ */
 @Preview(showBackground = true)
 @Composable
 fun FilterResultScreenPreview() {

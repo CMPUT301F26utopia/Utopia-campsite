@@ -11,13 +11,26 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+/**
+ * Manages campsite filtering and stores the filtered results
+ * Validates user inputs and compares them against available campsite data
+ * Maintains the filtered campsite list and validation error state for the UI
+ */
 class UserCampsiteFilterViewModel : ViewModel() {
-    // Dedicated class to maintain the results of the filtered process for users
-
     private val availableCampsitesList = ArrayList<Campsites>() // This will be retrieved from firebase
     var filteredCampsitesList by mutableStateOf<List<Campsites>>(emptyList())
         private set
 
+    var filterError by mutableStateOf(false)
+        private set
+
+    /**
+     * Converts a date string into a Date object using the DD/MM/YYYY format
+     * Returns null if the provided string cannot be converted into a valid date
+     *
+     * @param date the date string to be converted
+     * @return the converted Date object, or null if the date is invalid
+     */
     fun convertStringDate(date: String): Date? {
         val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         formatter.isLenient = false
@@ -30,8 +43,20 @@ class UserCampsiteFilterViewModel : ViewModel() {
         }
     }
 
-    // Method to retrieve the filtered list of campsites, given by the user's inputs
+    /**
+     * Filters the available campsites based on the user's input criteria
+     * Checks location, number of guests, and requested start and end dates
+     * Empty input fields are ignored, allowing all options for those criteria
+     * Sets filterError to true if any provided input is invalid
+     *
+     * @param userLocation: the location entered by the user
+     * @param userGuests: the number of guests entered by the user
+     * @param userStartDate: the requested start date in DD/MM/YYYY format
+     * @param userEndDate: the requested end date in DD/MM/YYYY format
+     * @return a list of campsites matching the provided filters, or an empty list if no matches are found or the input is invalid
+     */
     fun filterCampsites(userLocation: String, userGuests: String, userStartDate: String, userEndDate: String): List<Campsites> {
+        filterError = false
         val guests = userGuests.toIntOrNull()
 
         val startDate = if (userStartDate.isNotBlank()) {
@@ -43,11 +68,15 @@ class UserCampsiteFilterViewModel : ViewModel() {
         } else null
 
         // Reject invalid inputs, but allow empty fields
-        if (userGuests.isNotBlank() && (guests == null || guests <= 0)) return emptyList()
-        if (userStartDate.isNotBlank() && startDate == null) return emptyList()
-        if (userEndDate.isNotBlank() && endDate == null) return emptyList()
-        if (startDate != null && endDate != null && startDate.after(endDate)) return emptyList()
-
+        if (
+            (userGuests.isNotBlank() && (guests == null || guests <= 0)) ||
+            (userStartDate.isNotBlank() && startDate == null) ||
+            (userEndDate.isNotBlank() && endDate == null) ||
+            (startDate != null && endDate != null && startDate.after(endDate))
+        ) {
+            filterError = true
+            return emptyList()
+        }
         return availableCampsitesList.filter { campsite ->
 
             val matchesLocation = userLocation.isBlank() ||
@@ -66,10 +95,22 @@ class UserCampsiteFilterViewModel : ViewModel() {
             matchesLocation && matchesNumGuests && matchesStartDate && matchesEndDate
         }
     }
+    /**
+     * Updates the stored list of filtered campsites
+     * The updated list is observed by the results filter screen to display matching campsites
+     *
+     * @param campsites: the list of filtered campsites to store
+     */
     fun updateFilteredCampsites(campsites: List<Campsites>) {
         filteredCampsitesList = campsites
     }
 
+    /**
+     * Updates the list of available campsites used for filtering
+     * Clears the existing list and replaces it with the provided campsite data
+     *
+     * @param campsites: the list of available campsites to store
+     */
     fun updateAvailableCampsites(campsites: List<Campsites>) {
         availableCampsitesList.clear()
         availableCampsitesList.addAll(campsites)

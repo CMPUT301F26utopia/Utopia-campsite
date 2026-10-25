@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -39,7 +40,15 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-// Method to showcase the calander screen for both start date and end date button
+/**
+ * Displays a UI date input field with an optional calendar date picker
+ * Allows the user to manually enter a date or select one from the calendar icon button
+ * Converts calendar selections into DD/MM/YYYY format and updates the input value
+ *
+ * @param label: the label displayed above the date input field
+ * @param date: the current date string displayed in the input field
+ * @param onDateChange: a callback function that updates the date when the user enters or selects a date
+ */
 @Composable
 fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Unit) {
     var showDatePicker by remember { mutableStateOf(false) }
@@ -95,7 +104,17 @@ fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Un
     }
 }
 
-// The main screen of this page
+/**
+ * Displays the campsite filtering screen and collects the user's search criteria
+ * Allows the user to filter campsites by location, number of guests, and booking dates
+ * Calls the ViewModel to validate inputs and retrieve matching campsites
+ * Displays an error for invalid inputs or when no matching campsites are found
+ * Navigates to the filter results screen when matching campsites are available
+ *
+ * @param modifier: the Modifier used to configure the screen layout
+ * @param filterViewModel: the ViewModel responsible for filtering campsites and managing results
+ * @param navController: the navigation controller used to navigate between screens
+ */
 @Composable
 fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel, navController: NavController) {
     var inputLocation by remember { mutableStateOf("") }
@@ -194,7 +213,10 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
                     userEndDate = inputEndDate
                 )
 
-                if (results.isEmpty()) {
+                if (filterViewModel.filterError) {
+                    noMatchesFound = false
+                }
+                else if (results.isEmpty()) {
                     noMatchesFound = true
                 } else {
                     filterViewModel.updateFilteredCampsites(results)
@@ -207,6 +229,14 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
             Text("Apply Filters")
         }
 
+        // Display message if any one of the filters have been incorrectly inputted
+        if (filterViewModel.filterError) {
+            Text(
+                text = "Invalid input. Please check your filters.",
+                color = Color.Red
+            )
+        }
+
         // Display message if no filtered results found
         if (noMatchesFound) {
             Text("No matching campsites found")
@@ -214,6 +244,10 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
     }
 }
 
+/**
+ * Provides a preview of the campsite filtering screen in Android Studio
+ * Creates a ViewModel and navigation controller for displaying the UI
+ */
 @Preview(showBackground = true)
 @Composable
 fun FilterScreenPreview() {

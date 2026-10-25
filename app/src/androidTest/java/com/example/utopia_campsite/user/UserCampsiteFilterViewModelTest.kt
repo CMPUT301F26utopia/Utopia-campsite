@@ -5,6 +5,11 @@ import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Test
 
+/**
+ * Contains unit tests for the campsite filtering functionality
+ * Verifies that the ViewModel correctly filters campsites based on user inputs
+ * Tests valid filters, invalid inputs, and campsite availability conditions
+ */
 class UserCampsiteFilterViewModelTest {
     private val viewModel = UserCampsiteFilterViewModel()
 

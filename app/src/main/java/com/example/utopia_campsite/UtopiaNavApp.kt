@@ -10,8 +10,11 @@ import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
 import com.example.utopia_campsite.user.UserFilterScreen
 import com.example.utopia_campsite.user.UserFilterResultScreen
 
-// Method designed for the navigations between screens
-
+/**
+ * Defines the navigation routes between the application's screens
+ * Initializes a shared campsite filtering ViewModel for the filter and results screens
+ * Uses NavController to handle navigation between registered destinations
+ */
 @Composable
 fun UtopiaNavApp() {
     val navController = rememberNavController()
