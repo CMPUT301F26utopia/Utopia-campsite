@@ -1,5 +1,9 @@
 package com.example.utopia_campsite.user
 
+// Utopia 01.01.04
+// Shows the summary of one campsite in a list: name, location, maximum occupancy and rating
+// Outstanding issues: not shown on any screen yet, needs the campsite list (01.01.03)、
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
