@@ -73,14 +73,14 @@ class UserCampsiteFilterViewModelTest {
     fun testFilterByLocation() {
         val results = viewModel.filterCampsites("Banff", "", "", "")
         assertEquals(1, results.size)
-        assertEquals("Banff", results[0].address) // Added check to ensure we are talking about the banff campsite object
+        assertEquals("camp_001", results[0].id) // Added check to ensure we are talking about the banff campsite object
     }
 
     @Test
     fun testFiltersByGuests() {
         val results = viewModel.filterCampsites("", "6", "", "")
         assertEquals(1, results.size)
-        assertEquals("Jasper", results[0].address)
+        assertEquals("camp_002", results[0].id)
     }
 
     @Test
