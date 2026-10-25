@@ -32,238 +32,182 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.utopia_campsite.owner.Campsites
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+// Method to showcase the calander screen for both start date and end date button
+@Composable
+fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Unit) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
 
-class UserFilterScreen {
-
-    private val availableCampsites = ArrayList<Campsites>() // This will be retrieved from firebase
-
-    private fun convertStringDate(date: String): Date? {
-        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        formatter.isLenient = false
-        formatter.timeZone = TimeZone.getTimeZone("UTC")
-        return try {
-            formatter.parse(date)
-
-        } catch (e: ParseException) {
-            null
-        }
-    }
-
-    // Method to retrieve the filtered list of campsites, given by the user's inputs
-    private fun filterCampsites(userLocation: String, userGuests: String, userStartDate: String, userEndDate: String): List<Campsites> {
-        val guests = userGuests.toIntOrNull()
-
-        val startDate = if (userStartDate.isNotBlank()) {
-            convertStringDate(userStartDate)
-        } else null
-
-        val endDate = if (userEndDate.isNotBlank()) {
-            convertStringDate(userEndDate)
-        } else null
-
-        // Reject invalid inputs, but allow empty fields
-        if (userGuests.isNotBlank() && (guests == null || guests <= 0)) return emptyList()
-        if (userStartDate.isNotBlank() && startDate == null) return emptyList()
-        if (userEndDate.isNotBlank() && endDate == null) return emptyList()
-        if (startDate != null && endDate != null && startDate.after(endDate)) return emptyList()
-
-        return availableCampsites.filter { campsite ->
-
-            val matchesLocation = userLocation.isBlank() ||
-                    campsite.location.equals(userLocation, ignoreCase = true)
-
-            val matchesNumGuests = guests == null || campsite.maximumOccupants >= guests
-
-            // Guaranteed to be true
-            val availableStart = convertStringDate(campsite.availableStartDate)
-            val availableEnd = convertStringDate(campsite.availableEndDate)
-
-            val matchesStartDate = startDate == null || (availableStart != null && !startDate.before(availableStart))
-
-            val matchesEndDate = endDate == null || (availableEnd != null && !endDate.after(availableEnd))
-
-            matchesLocation && matchesNumGuests && matchesStartDate && matchesEndDate
-        }
-    }
-    // Method to showcase the calender screen for both start date and end date button
-    @Composable
-    fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Unit) {
-        var showDatePicker by remember { mutableStateOf(false) }
-        val datePickerState = rememberDatePickerState()
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Text(label)
-            TextField(
-                value = date,
-                onValueChange = onDateChange,
-                placeholder = { Text("DD/MM/YYYY") },
-                trailingIcon = {
-                    IconButton(
-                        onClick = { showDatePicker = true }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = "Select $label"
-                        )
-                    }
+    Column(
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(label)
+        TextField(
+            value = date,
+            onValueChange = onDateChange,
+            placeholder = { Text("DD/MM/YYYY") },
+            trailingIcon = {
+                IconButton(
+                    onClick = { showDatePicker = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = "Select $label"
+                    )
                 }
+            }
+        )
+    }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                            formatter.timeZone = TimeZone.getTimeZone("UTC")
+                            onDateChange(formatter.format(Date(millis)))
+                        }
+
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+}
+
+// The main screen of this page
+@Composable
+fun FilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel) {
+    var inputLocation by remember { mutableStateOf("") }
+    var inputGuests by remember { mutableStateOf("") }
+    var inputStartDate by remember { mutableStateOf("") }
+    var inputEndDate by remember { mutableStateOf("") }
+
+    var noMatchesFound by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier
+        .fillMaxSize()
+        .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = modifier.padding(16.dp))
+        Row(
+            modifier = modifier.fillMaxWidth()
+        ) {
+            Button(
+                onClick = {} // This will be used to go back to the user HOME page
+            ) {
+                Text("Back")
+            }
+        }
+
+        Spacer(modifier = modifier.padding(16.dp))
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Icon(
+                modifier = modifier.size(32.dp),
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search Icon"
+            )
+
+            Icon(
+                modifier = modifier.size(32.dp),
+                imageVector = Icons.Default.FilterAlt,
+                contentDescription = "Filter Icon"
             )
         }
 
-        if (showDatePicker) {
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            datePickerState.selectedDateMillis?.let { millis ->
-                                val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                                formatter.timeZone = TimeZone.getTimeZone("UTC")
-                                onDateChange(formatter.format(Date(millis)))
-                            }
-
-                            showDatePicker = false
-                        }
-                    ) {
-                        Text("OK")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancel")
-                    }
-                }
-            ) {
-                DatePicker(state = datePickerState)
-            }
-        }
-    }
-
-    // The main screen of this page
-    @Composable
-    fun FilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel) {
-        var inputLocation by remember { mutableStateOf("") }
-        var inputGuests by remember { mutableStateOf("") }
-        var inputStartDate by remember { mutableStateOf("") }
-        var inputEndDate by remember { mutableStateOf("") }
-
-        var noMatchesFound by remember { mutableStateOf(false) }
-
-        Column(modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        // Input Field Section
+        Column(verticalArrangement = Arrangement.spacedBy(32.dp)
         ) {
-            Spacer(modifier = modifier.padding(16.dp))
-            Row(
-                modifier = modifier.fillMaxWidth()
+            // Input address field inner-column
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                Button(
-                    onClick = {} // This will be used to go back to the user HOME page
-                ) {
-                    Text("Back")
-                }
-            }
-
-            Spacer(modifier = modifier.padding(16.dp))
-            Row(
-                modifier = modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Icon(
-                    modifier = modifier.size(32.dp),
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search Icon"
-                )
-
-                Icon(
-                    modifier = modifier.size(32.dp),
-                    imageVector = Icons.Default.FilterAlt,
-                    contentDescription = "Filter Icon"
-                )
-            }
-
-            // Input Field Section
-            Column(verticalArrangement = Arrangement.spacedBy(32.dp)
-            ) {
-                // Input address field inner-column
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Text("Location")
-                    TextField(
-                        value = inputLocation,
-                        onValueChange = {inputLocation = it},
-                        placeholder = { Text("Enter a city of address")},
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.AddLocation,
-                                contentDescription = "Pin Icon"
-                            )
-                        }
-                    )
-                }
-
-                // Input guests field inner-column
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Text("Number of Guests")
-                    TextField(
-                        value = inputGuests,
-                        onValueChange = {inputGuests = it},
-                        placeholder = { Text("Number of Guests")},
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.PersonOutline,
-                                contentDescription = "Pin Icon"
-                            )
-                        }
-                    )
-                }
-
-                // Input start date field inner-column
-                CalendarViewScreen("Start Date", date = inputStartDate, onDateChange = { inputStartDate = it })
-                // Input end date field inner-column
-                CalendarViewScreen("End Date", date = inputEndDate, onDateChange = { inputEndDate = it })
-            }
-
-            Spacer(modifier = modifier.padding(32.dp))
-
-            // On click, it should use navController to go to UserFilterResultScreen
-            Button(
-                onClick = {
-                    val results = filterCampsites(
-                        userLocation = inputLocation,
-                        userGuests = inputGuests,
-                        userStartDate = inputStartDate,
-                        userEndDate = inputEndDate
-                    )
-
-                    if (results.isEmpty()) {
-                        noMatchesFound = true
-                    } else {
-                        filterViewModel.updateFilteredCampsites(results)
-                        noMatchesFound = false
-                        // Now use nav controller to navigate to UserFilterResultScreen
+                Text("Location")
+                TextField(
+                    value = inputLocation,
+                    onValueChange = {inputLocation = it},
+                    placeholder = { Text("Enter a city of address")},
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.AddLocation,
+                            contentDescription = "Pin Icon"
+                        )
                     }
+                )
+            }
 
-                }
+            // Input guests field inner-column
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                Text("Apply Filters")
+                Text("Number of Guests")
+                TextField(
+                    value = inputGuests,
+                    onValueChange = {inputGuests = it},
+                    placeholder = { Text("Number of Guests")},
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.PersonOutline,
+                            contentDescription = "Pin Icon"
+                        )
+                    }
+                )
             }
 
-            // Display message if no filtered results found
-            if (noMatchesFound) {
-                Text("No matching campsites found")
+            // Input start date field inner-column
+            CalendarViewScreen("Start Date", date = inputStartDate, onDateChange = { inputStartDate = it })
+            // Input end date field inner-column
+            CalendarViewScreen("End Date", date = inputEndDate, onDateChange = { inputEndDate = it })
+        }
+
+        Spacer(modifier = modifier.padding(32.dp))
+
+        // On click, it should use navController to go to UserFilterResultScreen
+        Button(
+            onClick = {
+                val results = filterViewModel.filterCampsites(
+                    userLocation = inputLocation,
+                    userGuests = inputGuests,
+                    userStartDate = inputStartDate,
+                    userEndDate = inputEndDate
+                )
+
+                if (results.isEmpty()) {
+                    noMatchesFound = true
+                } else {
+                    filterViewModel.updateFilteredCampsites(results)
+                    noMatchesFound = false
+                    // Now use nav controller to navigate to UserFilterResultScreen
+                }
+
             }
+        ) {
+            Text("Apply Filters")
+        }
+
+        // Display message if no filtered results found
+        if (noMatchesFound) {
+            Text("No matching campsites found")
         }
     }
 }
@@ -271,5 +215,5 @@ class UserFilterScreen {
 @Preview(showBackground = true)
 @Composable
 fun FilterScreenPreview() {
-    UserFilterScreen().FilterScreen(modifier = Modifier, filterViewModel = UserCampsiteFilterViewModel())
+    FilterScreen(modifier = Modifier, filterViewModel = UserCampsiteFilterViewModel())
 }
