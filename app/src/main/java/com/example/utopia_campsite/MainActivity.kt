@@ -12,6 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+
+val db = Firebase.firestore
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

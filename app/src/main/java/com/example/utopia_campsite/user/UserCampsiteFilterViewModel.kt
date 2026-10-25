@@ -80,7 +80,7 @@ class UserCampsiteFilterViewModel : ViewModel() {
         return availableCampsitesList.filter { campsite ->
 
             val matchesLocation = userLocation.isBlank() ||
-                    campsite.location.equals(userLocation, ignoreCase = true)
+                    campsite.address.contains(userLocation, ignoreCase = true)
 
             val matchesNumGuests = guests == null || campsite.maximumOccupants >= guests
 

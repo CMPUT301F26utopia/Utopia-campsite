@@ -70,7 +70,8 @@ fun UserFilterResultScreen(modifier: Modifier, filterViewModel: UserCampsiteFilt
                     Column(
                         modifier = modifier.padding(16.dp)
                     ) {
-                        Text(campsite.location)
+                        Text(campsite.name)
+                        Text("Address: ${campsite.address}")
                         Text("Maximum Guests: ${campsite.maximumOccupants}")
                         Text("Available: ${campsite.availableStartDate} - ${campsite.availableEndDate}")
                     }
@@ -92,7 +93,13 @@ fun FilterResultScreenPreview() {
 
     val campsites = listOf(
         Campsites(
-            location = "Banff",
+            id = "camp_001",
+            name = "Banff Mountain Campground",
+            photoUrl = null,
+            address = "Banff, Alberta, Canada",
+            latitude = 51.1784,
+            longitude = -115.5708,
+            ratings = listOf(5, 4, 5, 4),
             tags = listOf("Hiking"),
             lotteryWinners = 10,
             lotteryWaitlist = 5,
@@ -104,7 +111,13 @@ fun FilterResultScreenPreview() {
             maximumOccupants = 4
         ),
         Campsites(
-            location = "Jasper",
+            id = "camp_002",
+            name = "Jasper Lakeside Campground",
+            photoUrl = null,
+            address = "Jasper, Alberta, Canada",
+            latitude = 52.8737,
+            longitude = -118.0814,
+            ratings = listOf(4, 5, 4, 5),
             tags = listOf("Fishing"),
             lotteryWinners = 15,
             lotteryWaitlist = 3,
@@ -116,7 +129,13 @@ fun FilterResultScreenPreview() {
             maximumOccupants = 6
         ),
         Campsites(
-            location = "Elk Island",
+            id = "camp_003",
+            name = "Elk Island Forest Campground",
+            photoUrl = null,
+            address = "Elk Island National Park, Alberta, Canada",
+            latitude = 53.6067,
+            longitude = -112.8638,
+            ratings = listOf(5, 5, 4, 3),
             tags = listOf("Wildlife"),
             lotteryWinners = 8,
             lotteryWaitlist = 2,

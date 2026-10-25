@@ -18,7 +18,13 @@ class UserCampsiteFilterViewModelTest {
         viewModel.updateAvailableCampsites(
             listOf(
                 Campsites(
-                    location = "Banff",
+                    id = "camp_001",
+                    name = "Banff Mountain Campground",
+                    photoUrl = null,
+                    address = "Banff, Alberta, Canada",
+                    latitude = 51.1784,
+                    longitude = -115.5708,
+                    ratings = listOf(5, 4, 5, 4),
                     tags = listOf("Hiking"),
                     lotteryWinners = 10,
                     lotteryWaitlist = 5,
@@ -30,7 +36,13 @@ class UserCampsiteFilterViewModelTest {
                     maximumOccupants = 4
                 ),
                 Campsites(
-                    location = "Jasper",
+                    id = "camp_002",
+                    name = "Jasper Lakeside Campground",
+                    photoUrl = null,
+                    address = "Jasper, Alberta, Canada",
+                    latitude = 52.8737,
+                    longitude = -118.0814,
+                    ratings = listOf(4, 5, 4, 5),
                     tags = listOf("Fishing"),
                     lotteryWinners = 10,
                     lotteryWaitlist = 5,
@@ -40,8 +52,7 @@ class UserCampsiteFilterViewModelTest {
                     availableStartDate = "15/10/2026",
                     availableEndDate = "20/10/2026",
                     maximumOccupants = 8
-                ),
-
+                )
             )
         )
     }
@@ -62,14 +73,14 @@ class UserCampsiteFilterViewModelTest {
     fun testFilterByLocation() {
         val results = viewModel.filterCampsites("Banff", "", "", "")
         assertEquals(1, results.size)
-        assertEquals("Banff", results[0].location) // Added check to ensure we are talking about the banff campsite object
+        assertEquals("Banff", results[0].address) // Added check to ensure we are talking about the banff campsite object
     }
 
     @Test
     fun testFiltersByGuests() {
         val results = viewModel.filterCampsites("", "6", "", "")
         assertEquals(1, results.size)
-        assertEquals("Jasper", results[0].location)
+        assertEquals("Jasper", results[0].address)
     }
 
     @Test

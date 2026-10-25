@@ -168,7 +168,7 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
                 TextField(
                     value = inputLocation,
                     onValueChange = {inputLocation = it},
-                    placeholder = { Text("Enter a city of address")},
+                    placeholder = { Text("Enter a city or address")},
                     trailingIcon = {
                         Icon(
                             imageVector = Icons.Default.AddLocation,
