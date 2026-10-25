@@ -70,4 +70,9 @@ class UserCampsiteFilterViewModel : ViewModel() {
         filteredCampsitesList = campsites
     }
 
+    fun updateAvailableCampsites(campsites: List<Campsites>) {
+        availableCampsitesList.clear()
+        availableCampsitesList.addAll(campsites)
+    }
+
 }
