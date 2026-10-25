@@ -241,6 +241,15 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
         if (noMatchesFound) {
             Text("No matching campsites found")
         }
+
+        //Display message if fetch from firebase is unsuccessful
+        if(filterViewModel.campsiteLoadStatus == "error"){
+            Text(
+                text = "Error fetching campsites from Firebase",
+                color = Color.Red
+                )
+        }
+
     }
 }
 
