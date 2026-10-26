@@ -1,20 +1,19 @@
-package com.example.utopia_campsite.owner
-
-import androidx.compose.runtime.mutableStateListOf
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlin.collections.emptyList
-
 /**
  * The controller retrieves documents from the firebase firestore
  *
  *Outstanding Issues:
  * None
  */
+package com.example.utopia_campsite.owner
+
+import androidx.compose.runtime.mutableStateListOf
+import com.google.firebase.firestore.FirebaseFirestore
+
 /**
  *
  * Retrieves documents from the firebase firestore
  */
-class CampsiteController{
+class CampsiteRepository{
 
     private val db = FirebaseFirestore.getInstance()
     /**

@@ -117,6 +117,7 @@ fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Un
  */
 @Composable
 fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel, navController: NavController) {
+    var inputName by remember { mutableStateOf("") }
     var inputLocation by remember { mutableStateOf("") }
     var inputGuests by remember { mutableStateOf("") }
     var inputStartDate by remember { mutableStateOf("") }
@@ -241,6 +242,15 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
         if (noMatchesFound) {
             Text("No matching campsites found")
         }
+
+        //Display message if fetch from firebase is unsuccessful
+        if(filterViewModel.campsiteLoadStatus == "error"){
+            Text(
+                text = "Error fetching campsites from Firebase",
+                color = Color.Red
+                )
+        }
+
     }
 }
 
