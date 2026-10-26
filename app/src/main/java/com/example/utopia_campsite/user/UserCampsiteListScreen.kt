@@ -1,5 +1,6 @@
 package com.example.utopia_campsite.user
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -94,7 +95,13 @@ fun UserCampsiteListScreen(
                         key = { campsite -> campsite.id }
                     ){
                         campsite ->
-                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)){
+                        Card(modifier = Modifier.fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                            .clickable{
+                                navController.navigate("user/campsite/${campsite.id}")
+                            }
+
+                        ){
                             CampsiteSummaryRow(campsite = campsite)
                         }
                     }
