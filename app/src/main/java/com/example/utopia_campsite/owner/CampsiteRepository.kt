@@ -13,7 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
  *
  * Retrieves documents from the firebase firestore
  */
-class CampsiteController{
+class CampsiteRepository{
 
     private val db = FirebaseFirestore.getInstance()
     /**
