@@ -1,3 +1,16 @@
+/**
+ * Displays the user's campsite list as well as provides campsite search and filtering
+ *
+ * Users can search campsites by name, or click the filter icon and open the filter screen.
+ *
+ * Users can click on any individual campsite card and it will take them to that campsite's details page
+ *
+ * Outstanding issues:
+ * currently does not automatically sort campsites by distance from the user's location
+ * TBD if this will end up in the final product; it's not part of the spec, but could be added for WOW
+ *
+ */
+
 package com.example.utopia_campsite.user
 
 import androidx.compose.foundation.clickable
@@ -26,6 +39,17 @@ import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.items
 import com.example.utopia_campsite.user.CampsiteSummaryRow
 
+
+/**
+ *
+ * Displays all campsites, or only campsites containing the submitted search query if one is provided
+ * Shows loadinga nd error messages when campsites cannot be displayed
+ * Shows an empty message when no campsites are found
+ *
+ * @param filterViewModel: the ViewModel containing the list of campsites to display
+ * @param onFilterClick: a callback function that is called when the filter button is clicked
+ * @param navController: the navigation controller used to navigate between screens
+ */
 @Composable
 fun UserCampsiteListScreen(
     filterViewModel: UserCampsiteFilterViewModel,
