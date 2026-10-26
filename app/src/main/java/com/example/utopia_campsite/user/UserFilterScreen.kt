@@ -117,6 +117,7 @@ fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Un
  */
 @Composable
 fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel, navController: NavController) {
+    var inputName by remember { mutableStateOf("") }
     var inputLocation by remember { mutableStateOf("") }
     var inputGuests by remember { mutableStateOf("") }
     var inputStartDate by remember { mutableStateOf("") }

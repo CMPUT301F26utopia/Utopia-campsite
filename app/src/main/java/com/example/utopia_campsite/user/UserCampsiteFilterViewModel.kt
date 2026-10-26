@@ -27,6 +27,8 @@ class UserCampsiteFilterViewModel : ViewModel() {
         private set
     var campsiteLoadStatus by mutableStateOf("loading")
         private set
+    var allCampsitesList by mutableStateOf<List<Campsites>>(emptyList())
+        private set
 
     init {
         campsiteRepository.getCampsites(
@@ -136,6 +138,7 @@ class UserCampsiteFilterViewModel : ViewModel() {
     fun updateAvailableCampsites(campsites: List<Campsites>) {
         availableCampsitesList.clear()
         availableCampsitesList.addAll(campsites)
+        allCampsitesList = campsites
     }
 
 }

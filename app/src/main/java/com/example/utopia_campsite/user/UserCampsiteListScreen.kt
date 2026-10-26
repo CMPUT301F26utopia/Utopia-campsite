@@ -1,6 +1,5 @@
 package com.example.utopia_campsite.user
 
-import android.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.compose.foundation.lazy.items
+import com.example.utopia_campsite.user.CampsiteSummaryRow
 
 @Composable
 fun UserCampsiteListScreen(
@@ -32,7 +34,6 @@ fun UserCampsiteListScreen(
     var searchQuery by remember { mutableStateOf("") }
     var submittedQuery by remember{mutableStateOf("")}
 
-    val allCampsites = filterViewModel.allCampsitesList
 
     val campsites = filterViewModel.allCampsitesList.filter { campsite ->
         campsite.name.contains(submittedQuery.trim(), ignoreCase = true)
@@ -59,10 +60,13 @@ fun UserCampsiteListScreen(
                 }//end iconButton
             },//end leading icon
             trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.FilterAlt,
-                    contentDescription = "Filter Icon"
-                )
+                IconButton(onClick = onFilterClick) {
+
+                    Icon(
+                        imageVector = Icons.Default.FilterAlt,
+                        contentDescription = "Filter Icon"
+                    )
+                }//end iconButton
             },//end trailing icon
             singleLine = true
 
@@ -84,10 +88,22 @@ fun UserCampsiteListScreen(
                 Text("No campsites found")
             } else{
 
-                LazyColumn(modifier = Modifier.fillMaxSize()) { }
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(
+                        items = campsites,
+                        key = { campsite -> campsite.id }
+                    ){
+                        campsite ->
+                        Card(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)){
+                            CampsiteSummaryRow(campsite = campsite)
+                        }
+                    }
 
-        }//end else statement
-        }
+
+                }//end lazyColumn
+
+            }//end inner else statement
+        }//end outer else statement
 
     }//end column
 
