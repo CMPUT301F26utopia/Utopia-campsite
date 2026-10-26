@@ -17,7 +17,7 @@ import com.example.utopia_campsite.owner.Campsites
 fun CampsiteDetailsScreen(campsite: Campsites){
     // Show the average of all ratings, or a message if the campsite has none yet
     // (average() of an empty list gives NaN)
-    val rating = if (campsite.ratings.isEmpty()) "No ratings yet" else campsite.ratings.average().toString()
+    val rating = if (campsite.ratings.isEmpty()) "No ratings yet" else "%.2f".format(campsite.ratings.average())
 
     // Stack the campsite's details from top to bottom
     Column {
