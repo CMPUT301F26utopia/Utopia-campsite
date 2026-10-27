@@ -7,8 +7,10 @@ data class User (
     val lastName: String,
     val notificationsEnabled: Boolean,
     val phone: String,
+    val currentReservations: List<Reservation>,
+    val pastReservations : List<Reservation>
 
-){
+    ){
     fun joinLottery(campsite: String) {
         // take campsite object
         // add user details to campsite lottery list
