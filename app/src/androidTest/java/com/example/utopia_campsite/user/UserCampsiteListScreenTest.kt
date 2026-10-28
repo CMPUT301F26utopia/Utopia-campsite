@@ -1,6 +1,7 @@
 package com.example.utopia_campsite.user
 
 import com.example.utopia_campsite.owner.Campsites
+import com.example.utopia_campsite.user.User
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.junit.Before
@@ -22,7 +23,7 @@ class UserCampsiteListScreenTest {
                 ratings = listOf(5, 4, 5, 4),
                 tags = listOf("Hiking"),
                 lotteryWinners = 10,
-                lotteryWaitlist = 5,
+                lotteryWaitlist = mutableListOf("fds", "dsf"),
                 description = "Mountain campsite",
                 registrationDate = "01/10/2026-10/10/2026",
                 bookingDate = "15/10/2026-20/10/2026",
@@ -40,7 +41,7 @@ class UserCampsiteListScreenTest {
                 ratings = listOf(4, 5, 4, 5),
                 tags = listOf("Fishing"),
                 lotteryWinners = 10,
-                lotteryWaitlist = 5,
+                lotteryWaitlist = mutableListOf("abc", "fds"),
                 description = "Lakeside campsite",
                 registrationDate = "01/10/2026-10/10/2026",
                 bookingDate = "15/10/2026-20/10/2026",
@@ -49,6 +50,17 @@ class UserCampsiteListScreenTest {
                 availableEndDate = "20/10/2026"
             )
         )
+
+        var user = User(
+            deviceID = "fds",
+            email = "fds",
+            firstName = "fds",
+            lastName = "fds",
+            notificationsEnabled = true,
+            phone = "fds"
+        )
+
+
     }//end setup
 
     @Test

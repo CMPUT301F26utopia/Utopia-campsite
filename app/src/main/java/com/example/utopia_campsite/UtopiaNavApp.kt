@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.utopia_campsite.user.CampsiteDetailsScreen
+import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
 import com.example.utopia_campsite.user.UserCampsiteListScreen
 import com.example.utopia_campsite.user.UserFilterScreen
@@ -32,6 +33,7 @@ fun UtopiaNavApp() {
 
             if(campsite != null){
                 CampsiteDetailsScreen(campsite = campsite)
+
             } else {
                 Text("Campsite not found")
             }
