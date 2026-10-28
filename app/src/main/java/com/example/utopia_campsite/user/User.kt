@@ -28,12 +28,12 @@ data class User (
         // take campsite object
         // add user details to campsite lottery list
         campsite.lotteryWaitlist.add(deviceID)
-    }
+    } // end joinLottery()
 
     fun leaveLottery(campsite: Campsites) {
         // take campsite object
         // remove user details from campsite lottery list
         campsite.lotteryWaitlist.remove(deviceID)
-    }
+    } // end leaveLottery()
 
 }
