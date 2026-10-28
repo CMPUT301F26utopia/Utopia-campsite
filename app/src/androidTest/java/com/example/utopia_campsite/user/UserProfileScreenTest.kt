@@ -1,7 +1,9 @@
 package com.example.utopia_campsite.user
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -13,18 +15,19 @@ import org.junit.Test
 * Contains ui test for currentReservations
 * Click the CurrentReservations tab and check if reserved campsites are displayed
 * Click the CurrentReservations tab and check if message displays if no campsites are reserved
+ * Click Cancel Reservation and check if the reservations displayed updates
 */
 class UserProfileScreenTest {
     @get:Rule
     val composeTestRule = createComposeRule()
-    private lateinit var reservationsList :List<Reservation>
+    private lateinit var reservationsList :MutableList<Reservation>
     private lateinit var userOne :User
 
     private lateinit var userTwo :User
 
     @Before
     fun setup() {
-        reservationsList = listOf(
+        reservationsList = mutableListOf(
             Reservation(
                 campsiteName = "campA",
                 photoUrl = "https://unsplash.com",
@@ -57,7 +60,7 @@ class UserProfileScreenTest {
             firstName = "qw",
             notificationsEnabled = true,
             phone = "98765433",
-            currentReservations = emptyList(),
+            currentReservations = mutableListOf(),
             pastReservations = emptyList()
         )
 
@@ -65,14 +68,13 @@ class UserProfileScreenTest {
 
     @Test
     fun buttonClickedCurrentReservationsDisplayed() {
-        // 2. Load your Composable screen into the active test view window
+
         composeTestRule.setContent {
             UserProfileScreen(userOne) // Your Composable function
         }
-        // 3. Find the button by its starting text and assert it is visible
+
         composeTestRule.onNodeWithTag("currentReservationsButton").performClick()
 
-        // 4. Perform a user interaction click event
         composeTestRule.onNodeWithText("campA").assertIsDisplayed()
 
         composeTestRule.onNodeWithText("campB").assertIsDisplayed()
@@ -80,18 +82,29 @@ class UserProfileScreenTest {
 
     @Test
     fun buttonClickedNoReservationsDisplayed() {
-        // 2. Load your Composable screen into the active test view window
         composeTestRule.setContent {
             UserProfileScreen(userTwo) // Your Composable function
         }
-        // 3. Find the button by its starting text and assert it is visible
+
         composeTestRule.onNodeWithTag("currentReservationsButton").performClick()
 
-        // 4. Perform a user interaction click event
         composeTestRule.onNodeWithText("No Current Reservations").assertIsDisplayed()
 
+    }
 
+    @Test
+    fun buttonClickedCurrentReservationsCancelReservation() {
 
+        composeTestRule.setContent {
+            UserProfileScreen(userOne)
+        }
 
+        composeTestRule.onNodeWithTag("currentReservationsButton").performClick()
+
+        composeTestRule.onAllNodesWithTag("cancelReservationButton")[0].performClick()
+
+        composeTestRule.onNodeWithText("campA").assertIsNotDisplayed()
+
+        composeTestRule.onNodeWithText("campB").assertIsDisplayed()
     }
 }

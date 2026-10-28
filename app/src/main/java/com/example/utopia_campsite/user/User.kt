@@ -20,10 +20,10 @@ data class User (
     val lastName: String,
     val notificationsEnabled: Boolean,
     val phone: String,
-    val currentReservations: List<Reservation>,
+    val currentReservations: MutableList<Reservation>,
     val pastReservations : List<Reservation>
 
-    ){
+    ) {
     fun joinLottery(campsite: Campsites) {
         // take campsite object
         // add user details to campsite lottery list
@@ -36,4 +36,9 @@ data class User (
         campsite.lotteryWaitlist.remove(deviceID)
     } // end leaveLottery()
 
+    fun cancelReservation(currentReservations: MutableList<Reservation>, reservationToDelete: Reservation) {
+        //take a reservation object to delete and the list of currentReservation
+        //remove the object in currentReservations
+        currentReservations.remove(reservationToDelete)
+    } //end cancelReservation
 }
