@@ -45,7 +45,7 @@ fun CampsiteDetailsScreen(campsite: Campsites, user: User){
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            if (user in campsite.lotteryWaitlist){
+            if (user.deviceID in campsite.lotteryWaitlist){
                 Button(
                     onClick = { /* leave the waitlist */}
                 ) {

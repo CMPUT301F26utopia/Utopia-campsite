@@ -41,10 +41,10 @@ data class Campsites(
     val address: String,
     val latitude: Double,
     val longitude: Double,
-    val ratings: List<Int>,
-    val tags: List<String>,
+    val ratings: MutableList<Int>,
+    val tags: MutableList<String>,
     val lotteryWinners: Int,
-    val lotteryWaitlist: List<User>,
+    val lotteryWaitlist: MutableList<String>,
     val description: String,
     val registrationDate: String,   // (start date-end date) -> eg. 10/10/2026-20/10/2026
     val bookingDate: String,        // (start date-end date) -> eg. 10/10/2026-20/10/2026
