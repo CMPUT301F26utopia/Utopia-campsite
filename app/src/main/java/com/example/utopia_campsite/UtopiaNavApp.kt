@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.utopia_campsite.user.CampsiteDetailsScreen
+import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
 import com.example.utopia_campsite.user.UserCampsiteListScreen
 import com.example.utopia_campsite.user.UserFilterScreen
@@ -31,7 +32,19 @@ fun UtopiaNavApp() {
             val campsite = filterViewModel.allCampsitesList.find { it.id == campsiteId }
 
             if(campsite != null){
-                CampsiteDetailsScreen(campsite = campsite)
+                CampsiteDetailsScreen(
+                    campsite = campsite,
+                    user = User(
+                        deviceID = "device_001",
+                        email = "user@utopia.com",
+                        firstName = "Default",
+                        lastName = "User",
+                        notificationsEnabled = true,
+                        phone = "555-555-5555",
+                        currentReservations = emptyList(),
+                        pastReservations = emptyList()
+                    )
+                )
             } else {
                 Text("Campsite not found")
             }
