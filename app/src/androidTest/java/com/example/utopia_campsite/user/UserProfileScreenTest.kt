@@ -14,7 +14,7 @@ import org.junit.Test
 * Click the CurrentReservations tab and check if reserved campsites are displayed
 * Click the CurrentReservations tab and check if message displays if no campsites are reserved
 */
-class UserGeneralProfileScreenTest {
+class UserProfileScreenTest {
     @get:Rule
     val composeTestRule = createComposeRule()
     private lateinit var reservationsList :List<Reservation>

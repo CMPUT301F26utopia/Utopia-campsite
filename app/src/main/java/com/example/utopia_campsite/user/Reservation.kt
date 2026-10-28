@@ -1,4 +1,9 @@
 package com.example.utopia_campsite.user
 
-class Reservation {
-}
+data class Reservation(
+    val campsiteName : String,
+    val photoUrl : String?,
+    val startReservedDate: String,
+    val endReservedDate: String,
+    val numOfGuests: Int
+)

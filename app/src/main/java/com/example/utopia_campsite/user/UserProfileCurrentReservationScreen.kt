@@ -1,6 +1,13 @@
-package com.example.utopia_campsite.user
+/**
+ * Displays the list of Reservations if there are current reservations
+ *  Displays message if no current reservations
+ *  Utopia 01.06.01
+ *  highlight button when selected not implemented
+ *  user profile not implemented
+ *  Past Reservations not implemented
+ */
 
-import androidx.compose.foundation.clickable
+package com.example.utopia_campsite.user
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,7 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 @Composable
-fun CurrentReservationsList(reservations: List<Reservation>) {
+fun UserProfileCurrentReservationScreen(reservations: List<Reservation>) {
     if (reservations.isEmpty()) {
         Text("No Current Reservations")
     }

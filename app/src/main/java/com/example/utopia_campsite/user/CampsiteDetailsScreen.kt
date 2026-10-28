@@ -17,7 +17,7 @@ import coil3.compose.AsyncImage
 import com.example.utopia_campsite.owner.Campsites
 
 @Composable
-fun CampsiteDetailsScreen(campsite: Campsites, user: User){
+fun CampsiteDetailsScreen(campsite: Campsites){
     // Show the average of all ratings, or a message if the campsite has none yet
     // (average() of an empty list gives NaN)
     val rating = if (campsite.ratings.isEmpty()) "No ratings yet" else "%.2f".format(campsite.ratings.average())
@@ -40,7 +40,7 @@ fun CampsiteDetailsScreen(campsite: Campsites, user: User){
         Text(text = "Max occupancy: ${campsite.maximumOccupants}") // most people the campsite can hold
         Text(text = "Rating: $rating") // average rating, or "No ratings yet"
         Text(text = "Available: ${campsite.availableStartDate} - ${campsite.availableEndDate}") // dates the campsite can be booked
-
+        /*
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -59,6 +59,6 @@ fun CampsiteDetailsScreen(campsite: Campsites, user: User){
                 } // end button
             } // end if-else block
 
-        } // end row
+        } // end row*/
     } //end Column
 } //end CampsiteDetailsScreen
