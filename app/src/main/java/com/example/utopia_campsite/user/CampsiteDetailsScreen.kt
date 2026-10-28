@@ -47,13 +47,13 @@ fun CampsiteDetailsScreen(campsite: Campsites, user: User){
         ) {
             if (user.deviceID in campsite.lotteryWaitlist){
                 Button(
-                    onClick = { /* leave the waitlist */}
+                    onClick = { user.leaveLottery(campsite)}
                 ) {
                     Text("Leave waitlist")
                 } // end button
             } else {
                 Button(
-                    onClick = { /* join the waitlist */}
+                    onClick = { user.joinLottery(campsite)}
                 ) {
                     Text("Join waitlist")
                 } // end button
