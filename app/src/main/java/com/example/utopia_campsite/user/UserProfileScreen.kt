@@ -1,7 +1,7 @@
 /**
  * Displays the User Profile as the starting view and
  *  Can toggle between user profile,current and past reservations
- *  Outstanding issues:
+ *  Outstanding Issues:
  *  highlight button when selected not implemented
  *  user profile not implemented
  *  Past Reservations not implemented
@@ -56,7 +56,6 @@ import com.example.utopia_campsite.user.CampsiteSummaryRow
 
 @Composable
 fun UserProfileScreen(user: User) {
-    val currentReservations = user.currentReservations
     var currentScreen by remember { mutableStateOf("Me") } //display user profile as the starting view
 
     Column(
@@ -135,7 +134,7 @@ fun UserProfileScreen(user: User) {
         } //end lazyColumn
 
         when (currentScreen) { //toggles partial ui composition depending on button selected
-            "Current Reservations" -> UserProfileCurrentReservationScreen(currentReservations)
+            "Current Reservations" -> UserProfileCurrentReservationScreen(user)
         }
     } //end Column
 } //end UserProfileScreen
