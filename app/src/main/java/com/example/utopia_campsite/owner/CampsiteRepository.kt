@@ -62,4 +62,32 @@ class CampsiteRepository{
 
     }//end getCampsites
 
+    /**
+     * Saves a new campsite to the firebase firestore (US 02.01.02)
+     * Firestore makes the document ID, so campsite.id is not saved
+     * The field names match the ones getCampsites reads
+     *
+     * @param campsite: the campsite to save
+     */
+    fun addCampsite(campsite: Campsites){
+        val data = hashMapOf(
+            "name" to campsite.name,
+            "photoUrl" to campsite.photoUrl,
+            "address" to campsite.address,
+            "latitude" to campsite.latitude,
+            "longitude" to campsite.longitude,
+            "ratings" to campsite.ratings,
+            "tags" to campsite.tags,
+            "lotteryWinners" to campsite.lotteryWinners,
+            "lotteryWaitlist" to campsite.lotteryWaitlist,
+            "description" to campsite.description,
+            "registrationDate" to campsite.registrationDate,
+            "bookingDate" to campsite.bookingDate,
+            "maxOccupancy" to campsite.maximumOccupants,
+            "availableStartDate" to campsite.availableStartDate,
+            "availableEndDate" to campsite.availableEndDate
+        )
+        db.collection("campsites").add(data)
+    } //end addCampsite
+
 }//end campsite controller
