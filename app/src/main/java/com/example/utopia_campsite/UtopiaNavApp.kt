@@ -31,7 +31,10 @@ fun UtopiaNavApp() {
             val campsite = filterViewModel.allCampsitesList.find { it.id == campsiteId }
 
             if(campsite != null){
-                CampsiteDetailsScreen(campsite = campsite)
+                CampsiteDetailsScreen(
+                    campsite = campsite,
+                    user = TODO()
+                )
             } else {
                 Text("Campsite not found")
             }
