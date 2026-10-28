@@ -43,7 +43,7 @@ class CampsiteRepository{
                         ratings = (document.get("ratings") as List<*>).map { (it as Number).toInt() }, //this casts firebase's List<Any?> to a List<Int>
                         tags = (document.get("tags") as List<*>).filterIsInstance<String>(), //this casts firebase's List<Any?> to a List<String>
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
-                        lotteryWaitlist =  (document.get("tags") as List<*>).filterIsInstance<String>(),
+                        lotteryWaitlist = ((document.get("lotteryWaitlist") as? List<*>)?.filterIsInstance<String>() ?: emptyList()).toMutableList(),
                         description = document.getString("description") ?: "",
                         registrationDate = document.getString("registrationDate") ?: "",
                         bookingDate = document.getString("bookingDate") ?: "",
