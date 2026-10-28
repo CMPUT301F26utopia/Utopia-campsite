@@ -20,8 +20,8 @@ class UserCampsiteListScreenTest {
                 address = "Banff, Alberta, Canada",
                 latitude = 51.1784,
                 longitude = -115.5708,
-                ratings = listOf(5, 4, 5, 4),
-                tags = listOf("Hiking"),
+                ratings = mutableListOf(5, 4, 5, 4),
+                tags = mutableListOf("Hiking"),
                 lotteryWinners = 10,
                 lotteryWaitlist = mutableListOf("fds", "dsf"),
                 description = "Mountain campsite",
@@ -38,8 +38,8 @@ class UserCampsiteListScreenTest {
                 address = "Jasper, Alberta, Canada",
                 latitude = 52.8737,
                 longitude = -118.0814,
-                ratings = listOf(4, 5, 4, 5),
-                tags = listOf("Fishing"),
+                ratings = mutableListOf(4, 5, 4, 5),
+                tags = mutableListOf("Fishing"),
                 lotteryWinners = 10,
                 lotteryWaitlist = mutableListOf("abc", "fds"),
                 description = "Lakeside campsite",
@@ -57,7 +57,9 @@ class UserCampsiteListScreenTest {
             firstName = "fds",
             lastName = "fds",
             notificationsEnabled = true,
-            phone = "fds"
+            phone = "fds",
+            currentReservations = emptyList(),
+            pastReservations = emptyList()
         )
 
 
