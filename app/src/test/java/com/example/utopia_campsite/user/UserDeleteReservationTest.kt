@@ -4,6 +4,10 @@ import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Test
 
+/**
+ * Contains unit test for userCurrentReservations
+ * Click cancel registration and check if registration is successfully removed from the list
+ */
 class UserDeleteReservationTest {
     private lateinit var reservationsList :MutableList<Reservation>
     private lateinit var userOne :User

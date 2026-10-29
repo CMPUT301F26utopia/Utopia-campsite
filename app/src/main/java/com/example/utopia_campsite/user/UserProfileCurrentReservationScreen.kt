@@ -31,7 +31,7 @@ fun UserProfileCurrentReservationScreen(user: User) {
                     modifier = Modifier.fillMaxWidth()
                         .padding(bottom = 12.dp)
                 ) {
-                    ReservationSummaryRow(reservation,
+                    UserReservationSummaryRow(reservation,
                         onClickCancelReservation = {
                             user.cancelReservation(user.currentReservations, it) //deletes the reservation in the list
                             currentReservations.remove(reservation) //updates the screen by removing the deleted reservation

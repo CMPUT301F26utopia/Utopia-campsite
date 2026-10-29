@@ -13,7 +13,7 @@ class UserWaitlistTest {
 
     @Before
     fun setup() {
-        user = User("user_005","user@website.com", "john","doe", true, "555-555-5555", emptyList(), emptyList())
+        user = User("user_005","user@website.com", "john","doe", true, "555-555-5555", mutableListOf(), emptyList())
 
         csA = Campsites(
             id = "camp_001",
