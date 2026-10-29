@@ -2,6 +2,8 @@ package com.example.utopia_campsite.user
 
 import com.example.utopia_campsite.owner.Campsites
 import junit.framework.TestCase
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -71,8 +73,8 @@ class UserCampsiteListScreenTest {
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
 
-        TestCase.assertEquals(1, results.size)
-        TestCase.assertEquals("Banff Mountain Campground", results[0].name)
+        assertEquals(1, results.size)
+        assertEquals("Banff Mountain Campground", results[0].name)
     }//end searchByNameReturnsMatchingCampsite
 
     @Test
@@ -83,8 +85,8 @@ class UserCampsiteListScreenTest {
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
 
-        TestCase.assertEquals(1, results.size)
-        TestCase.assertEquals("Banff Mountain Campground", results[0].name)
+        assertEquals(1, results.size)
+        assertEquals("Banff Mountain Campground", results[0].name)
     }//end searchByNameIsCaseInsensitive
 
     @Test
@@ -95,8 +97,8 @@ class UserCampsiteListScreenTest {
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
 
-        TestCase.assertEquals(1, results.size)
-        TestCase.assertEquals("Banff Mountain Campground", results[0].name)
+        assertEquals(1, results.size)
+        assertEquals("Banff Mountain Campground", results[0].name)
     }//end searchWithTrailingAndLeadingWhiteSpacesReturnsMatchingCampsite
 
     @Test
@@ -107,7 +109,7 @@ class UserCampsiteListScreenTest {
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
 
-        TestCase.assertTrue(results.isEmpty())
+        assertTrue(results.isEmpty())
     } //end searchWithNoMatchesReturnsEmptyList
 
     @Test
@@ -116,7 +118,7 @@ class UserCampsiteListScreenTest {
         val results = campsites.filter { campsite ->
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
-        TestCase.assertEquals(campsites.size, results.size)
+        assertEquals(campsites.size, results.size)
     }
 
 
