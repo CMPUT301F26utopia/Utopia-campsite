@@ -1,9 +1,7 @@
 package com.example.utopia_campsite.user
 
 import com.example.utopia_campsite.owner.Campsites
-import com.example.utopia_campsite.user.User
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertTrue
+import junit.framework.TestCase
 import org.junit.Before
 import org.junit.Test
 
@@ -58,8 +56,8 @@ class UserCampsiteListScreenTest {
             lastName = "fds",
             notificationsEnabled = true,
             phone = "fds",
-            currentReservations = emptyList(),
-            pastReservations = emptyList()
+            currentReservations = mutableListOf(),
+            pastReservations = mutableListOf()
         )
 
 
@@ -73,8 +71,8 @@ class UserCampsiteListScreenTest {
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
 
-        assertEquals(1, results.size)
-        assertEquals("Banff Mountain Campground", results[0].name)
+        TestCase.assertEquals(1, results.size)
+        TestCase.assertEquals("Banff Mountain Campground", results[0].name)
     }//end searchByNameReturnsMatchingCampsite
 
     @Test
@@ -85,8 +83,8 @@ class UserCampsiteListScreenTest {
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
 
-        assertEquals(1, results.size)
-        assertEquals("Banff Mountain Campground", results[0].name)
+        TestCase.assertEquals(1, results.size)
+        TestCase.assertEquals("Banff Mountain Campground", results[0].name)
     }//end searchByNameIsCaseInsensitive
 
     @Test
@@ -97,8 +95,8 @@ class UserCampsiteListScreenTest {
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
 
-        assertEquals(1, results.size)
-        assertEquals("Banff Mountain Campground", results[0].name)
+        TestCase.assertEquals(1, results.size)
+        TestCase.assertEquals("Banff Mountain Campground", results[0].name)
     }//end searchWithTrailingAndLeadingWhiteSpacesReturnsMatchingCampsite
 
     @Test
@@ -109,7 +107,7 @@ class UserCampsiteListScreenTest {
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
 
-        assertTrue(results.isEmpty())
+        TestCase.assertTrue(results.isEmpty())
     } //end searchWithNoMatchesReturnsEmptyList
 
     @Test
@@ -118,7 +116,7 @@ class UserCampsiteListScreenTest {
         val results = campsites.filter { campsite ->
             campsite.name.contains(query.trim(), ignoreCase = true)
         }
-        assertEquals(campsites.size, results.size)
+        TestCase.assertEquals(campsites.size, results.size)
     }
 
 

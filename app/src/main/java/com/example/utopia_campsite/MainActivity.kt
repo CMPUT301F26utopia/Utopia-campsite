@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             UtopiacampsiteTheme {
                 UserProfileScreen(User("ss", "abc@abs.com", "qw", "er", true, "123456789",
-                        emptyList(), emptyList()))
+                        mutableListOf(), mutableListOf()))
                 }
             }
         }

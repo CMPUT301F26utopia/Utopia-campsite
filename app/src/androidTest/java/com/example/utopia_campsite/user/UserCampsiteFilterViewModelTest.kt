@@ -1,7 +1,7 @@
 package com.example.utopia_campsite.user
 
 import com.example.utopia_campsite.owner.Campsites
-import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase
 import org.junit.Before
 import org.junit.Test
 
@@ -60,39 +60,42 @@ class UserCampsiteFilterViewModelTest {
     @Test
     fun testInvalidFilters() {
         val results = viewModel.filterCampsites("wrong", "wrong", "wrong", "wrong")
-        assertEquals(0, results.size)
+        TestCase.assertEquals(0, results.size)
     }
 
     @Test
     fun testEmptyFilters() {
         val results = viewModel.filterCampsites("", "", "", "")
-        assertEquals(2, results.size)
+        TestCase.assertEquals(2, results.size)
     }
 
     @Test
     fun testFilterByLocation() {
         val results = viewModel.filterCampsites("Banff", "", "", "")
-        assertEquals(1, results.size)
-        assertEquals("camp_001", results[0].id) // Added check to ensure we are talking about the banff campsite object
+        TestCase.assertEquals(1, results.size)
+        TestCase.assertEquals(
+            "camp_001",
+            results[0].id
+        ) // Added check to ensure we are talking about the banff campsite object
     }
 
     @Test
     fun testFiltersByGuests() {
         val results = viewModel.filterCampsites("", "6", "", "")
-        assertEquals(1, results.size)
-        assertEquals("camp_002", results[0].id)
+        TestCase.assertEquals(1, results.size)
+        TestCase.assertEquals("camp_002", results[0].id)
     }
 
     @Test
     fun testFilterByDates() {
         val results = viewModel.filterCampsites("", "", "16/10/2026", "19/10/2026")
-        assertEquals(2, results.size)
+        TestCase.assertEquals(2, results.size)
     }
 
     @Test
     fun testInvalidInputs() {
         val results = viewModel.filterCampsites("", "hello", "", "")
-        assertEquals(0, results.size)
+        TestCase.assertEquals(0, results.size)
     }
 
 }

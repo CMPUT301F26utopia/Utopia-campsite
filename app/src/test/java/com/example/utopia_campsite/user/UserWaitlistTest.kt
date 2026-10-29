@@ -1,7 +1,7 @@
 package com.example.utopia_campsite.user
 
 import com.example.utopia_campsite.owner.Campsites
-import org.junit.Assert.assertEquals
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -13,7 +13,7 @@ class UserWaitlistTest {
 
     @Before
     fun setup() {
-        user = User("user_005","user@website.com", "john","doe", true, "555-555-5555", emptyList(), emptyList())
+        user = User("user_005","user@website.com", "john","doe", true, "555-555-5555", mutableListOf(), mutableListOf())
 
         csA = Campsites(
             id = "camp_001",
@@ -58,14 +58,14 @@ class UserWaitlistTest {
     fun addUsersToWaitlist () {
         val results = listOf("user_001", "user_002", "user_005")
         user.joinLottery(csA)
-        assertEquals(results, csA.lotteryWaitlist)
+        Assert.assertEquals(results, csA.lotteryWaitlist)
     }
 
     @Test
     fun removeUsersFromWaitlist () {
         val results = listOf("user_003")
         user.leaveLottery(csB)
-        assertEquals(results, csB.lotteryWaitlist)
+        Assert.assertEquals(results, csB.lotteryWaitlist)
     }
 
 } // end class UserWaitlistTest
