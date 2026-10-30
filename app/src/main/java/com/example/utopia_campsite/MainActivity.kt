@@ -27,7 +27,20 @@ class MainActivity : ComponentActivity() {
         setContent {
             UtopiacampsiteTheme {
                 UserProfileScreen(User("ss", "abc@abs.com", "qw", "er", true, "123456789",
-                        mutableListOf(), emptyList()))
+                        mutableListOf(Reservation(
+                            campsiteName = "campA",
+                            photoUrl = "https://unsplash.com",
+                            startReservedDate = "1/2/3",
+                            endReservedDate = "1/5/3",
+                            numOfGuests = 20
+                        ),
+                            Reservation(
+                                campsiteName = "campB",
+                                photoUrl = "https://unsplash.com",
+                                startReservedDate = "2/2/3",
+                                endReservedDate = "2/5/3",
+                                numOfGuests = 1
+                            )), emptyList()))
                 }
             }
         }

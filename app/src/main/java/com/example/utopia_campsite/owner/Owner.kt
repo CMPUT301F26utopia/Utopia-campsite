@@ -19,8 +19,6 @@ import com.example.utopia_campsite.user.Reservation
  * @property lastName: last name
  * @property notificationsEnabled: whether notifications are enabled on the user's device
  * @property phone: phone number
- * @property currentReservations: stores a list of current reservations
- * @property pastReservations: stores a list of past reservations
  */
 data class Owner (
      val postedCampsites: MutableList<Campsites>,
@@ -30,12 +28,5 @@ data class Owner (
      val lastName: String,
      val notificationsEnabled: Boolean,
      val phone: String,
-     val currentReservations: MutableList<Reservation>,
-     val pastReservations : List<Reservation>
 ) {
-    fun cancelReservation(currentReservations: MutableList<Reservation>, reservationToDelete: Reservation) {
-        //take a reservation object to delete and the list of currentReservation
-        //remove the object in currentReservations
-        currentReservations.remove(reservationToDelete)
-    } //end cancelReservation
 }

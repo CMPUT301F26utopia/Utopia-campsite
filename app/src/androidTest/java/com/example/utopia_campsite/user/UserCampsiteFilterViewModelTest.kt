@@ -33,7 +33,8 @@ class UserCampsiteFilterViewModelTest {
                     bookingDate = "15/10/2026-20/10/2026",
                     availableStartDate = "15/10/2026",
                     availableEndDate = "20/10/2026",
-                    maximumOccupants = 4
+                    maximumOccupants = 4,
+                    usersBooked = mutableListOf()
                 ),
                 Campsites(
                     id = "camp_002",
@@ -51,7 +52,8 @@ class UserCampsiteFilterViewModelTest {
                     bookingDate = "15/10/2026-20/10/2026",
                     availableStartDate = "15/10/2026",
                     availableEndDate = "20/10/2026",
-                    maximumOccupants = 8
+                    maximumOccupants = 8,
+                    usersBooked = mutableListOf()
                 )
             )
         )

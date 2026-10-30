@@ -44,6 +44,7 @@ class UserProfileScreenTest {
         )
         userOne = User(
             deviceID = "ss",
+            photoUrl = null,
             email = "abc@abs.com",
             lastName = "qw",
             firstName = "er",
@@ -54,6 +55,7 @@ class UserProfileScreenTest {
         )
         userTwo = User(
             deviceID = "ee",
+            photoUrl = null,
             email = "ad@abs.com",
             lastName = "we",
             firstName = "qw",

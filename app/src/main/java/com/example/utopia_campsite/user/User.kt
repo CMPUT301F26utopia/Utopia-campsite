@@ -25,6 +25,7 @@ import com.example.utopia_campsite.owner.Campsites
  */
 data class User (
     val deviceID: String,
+    val photoUrl: String?,
     val email: String,
     val firstName: String,
     val lastName: String,
@@ -34,6 +35,7 @@ data class User (
     val pastReservations : List<Reservation>
 
     ) {
+
     fun joinLottery(campsite: Campsites) {
         // take campsite object
         // add user details to campsite lottery list

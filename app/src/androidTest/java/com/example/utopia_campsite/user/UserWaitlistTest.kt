@@ -13,7 +13,7 @@ class UserWaitlistTest {
 
     @Before
     fun setup() {
-        user = User("user_005","user@website.com", "john","doe", true, "555-555-5555", mutableListOf(), emptyList())
+        user = User("user_005", null, "user@website.com", "john","doe", true, "555-555-5555", mutableListOf(), emptyList())
 
         csA = Campsites(
             id = "camp_001",
@@ -31,7 +31,8 @@ class UserWaitlistTest {
             bookingDate = "15/10/2026-20/10/2026",
             availableStartDate = "15/10/2026",
             availableEndDate = "20/10/2026",
-            maximumOccupants = 4
+            maximumOccupants = 4,
+            usersBooked = mutableListOf()
         )
 
         csB = Campsites(
@@ -50,7 +51,8 @@ class UserWaitlistTest {
             bookingDate = "15/10/2026-20/10/2026",
             availableStartDate = "15/10/2026",
             availableEndDate = "20/10/2026",
-            maximumOccupants = 8
+            maximumOccupants = 8,
+            usersBooked = mutableListOf()
         )
     } // end setup()
 
