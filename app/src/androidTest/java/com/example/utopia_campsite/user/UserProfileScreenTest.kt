@@ -12,7 +12,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
-* Contains ui test for currentReservations
+* Contains ui test for userCurrentReservations
 * Click the CurrentReservations tab and check if reserved campsites are displayed
 * Click the CurrentReservations tab and check if message displays if no campsites are reserved
  * Click Cancel Reservation and check if the reservations displayed updates
@@ -22,7 +22,6 @@ class UserProfileScreenTest {
     val composeTestRule = createComposeRule()
     private lateinit var reservationsList :MutableList<Reservation>
     private lateinit var userOne :User
-
     private lateinit var userTwo :User
 
     @Before
@@ -45,6 +44,7 @@ class UserProfileScreenTest {
         )
         userOne = User(
             deviceID = "ss",
+            photoUrl = null,
             email = "abc@abs.com",
             lastName = "qw",
             firstName = "er",
@@ -55,6 +55,7 @@ class UserProfileScreenTest {
         )
         userTwo = User(
             deviceID = "ee",
+            photoUrl = null,
             email = "ad@abs.com",
             lastName = "we",
             firstName = "qw",

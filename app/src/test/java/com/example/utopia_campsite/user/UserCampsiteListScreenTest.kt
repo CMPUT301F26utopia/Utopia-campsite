@@ -1,7 +1,7 @@
 package com.example.utopia_campsite.user
 
 import com.example.utopia_campsite.owner.Campsites
-import junit.framework.TestCase
+import com.example.utopia_campsite.user.User
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import org.junit.Before
@@ -29,7 +29,8 @@ class UserCampsiteListScreenTest {
                 bookingDate = "15/10/2026-20/10/2026",
                 maximumOccupants = 4,
                 availableStartDate = "15/10/2026",
-                availableEndDate = "20/10/2026"
+                availableEndDate = "20/10/2026",
+                usersBooked = mutableListOf()
             ),
             Campsites(
                 id = "camp_002",
@@ -47,19 +48,21 @@ class UserCampsiteListScreenTest {
                 bookingDate = "15/10/2026-20/10/2026",
                 maximumOccupants = 8,
                 availableStartDate = "15/10/2026",
-                availableEndDate = "20/10/2026"
+                availableEndDate = "20/10/2026",
+                usersBooked = mutableListOf()
             )
         )
 
         var user = User(
             deviceID = "fds",
+            photoUrl = null,
             email = "fds",
             firstName = "fds",
             lastName = "fds",
             notificationsEnabled = true,
             phone = "fds",
             currentReservations = mutableListOf(),
-            pastReservations = mutableListOf()
+            pastReservations = emptyList()
         )
 
 
