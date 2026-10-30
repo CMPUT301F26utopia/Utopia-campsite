@@ -139,6 +139,7 @@ class UserCampsiteFilterViewModel : ViewModel() {
         availableCampsitesList.clear()
         availableCampsitesList.addAll(campsites)
         allCampsitesList = campsites
+        campsiteLoadStatus = "success"
     }
 
 }
