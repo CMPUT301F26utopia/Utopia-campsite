@@ -4,8 +4,11 @@ package com.example.utopia_campsite.user
 // Shows the details of one campsite
 // Outstanding issues: not reachable from the list yet (needs navigation)
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,7 +20,7 @@ import com.example.utopia_campsite.owner.Campsites
 fun CampsiteDetailsScreen(campsite: Campsites){
     // Show the average of all ratings, or a message if the campsite has none yet
     // (average() of an empty list gives NaN)
-    val rating = if (campsite.ratings.isEmpty()) "No ratings yet" else campsite.ratings.average().toString()
+    val rating = if (campsite.ratings.isEmpty()) "No ratings yet" else "%.2f".format(campsite.ratings.average())
 
     // Stack the campsite's details from top to bottom
     Column {
@@ -37,5 +40,25 @@ fun CampsiteDetailsScreen(campsite: Campsites){
         Text(text = "Max occupancy: ${campsite.maximumOccupants}") // most people the campsite can hold
         Text(text = "Rating: $rating") // average rating, or "No ratings yet"
         Text(text = "Available: ${campsite.availableStartDate} - ${campsite.availableEndDate}") // dates the campsite can be booked
+        /*
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            if (user.deviceID in campsite.lotteryWaitlist){
+                Button(
+                    onClick = { user.leaveLottery(campsite)}
+                ) {
+                    Text("Leave waitlist")
+                } // end button
+            } else {
+                Button(
+                    onClick = { user.joinLottery(campsite)}
+                ) {
+                    Text("Join waitlist")
+                } // end button
+            } // end if-else block
+
+        } // end row*/
     } //end Column
 } //end CampsiteDetailsScreen

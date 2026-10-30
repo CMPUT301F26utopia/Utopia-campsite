@@ -1,16 +1,16 @@
+/**
+ * The controller retrieves documents from the firebase firestore
+ *
+ *Outstanding Issues:
+ * None
+ */
 package com.example.utopia_campsite.owner
 
 import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.firestore.FirebaseFirestore
 
 /**
- * The controller handles receiving documents from and adding documents to the firestore campsites database.
  *
- *Outstanding Issues:
- * None
- */
-/**
- * Adds documents to the firebase firestore
  * Retrieves documents from the firebase firestore
  */
 class CampsiteRepository{
@@ -43,7 +43,7 @@ class CampsiteRepository{
                         ratings = (document.get("ratings") as List<*>).map { (it as Number).toInt() }, //this casts firebase's List<Any?> to a List<Int>
                         tags = (document.get("tags") as List<*>).filterIsInstance<String>(), //this casts firebase's List<Any?> to a List<String>
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
-                        lotteryWaitlist = document.getLong("lotteryWaitlist")?.toInt(),
+                        lotteryWaitlist = ((document.get("lotteryWaitlist") as? List<*>)?.filterIsInstance<String>() ?: emptyList()).toMutableList(),
                         description = document.getString("description") ?: "",
                         registrationDate = document.getString("registrationDate") ?: "",
                         bookingDate = document.getString("bookingDate") ?: "",
@@ -63,21 +63,16 @@ class CampsiteRepository{
     }//end getCampsites
 
     /**
-     * saves a new campsite to the firebase firestore.
-     * Firestore generates the document ID.
+     * Saves a new campsite to the firebase firestore (US 02.01.02)
+     * Firestore makes the document ID, so campsite.id is not saved
+     * The field names match the ones getCampsites reads
      *
-     * @param campsite: the campsite being saved.
-     * @param onSuccess: called with the new document ID when the campsite is saved.
-     * @param onFailure: called when saving a new campsite fails.
+     * @param campsite: the campsite to save
      */
-    fun registerCampsite(
-        campsite: Campsites,
-        onSuccess: (String) -> Unit,
-        onFailure: (Exception) -> Unit
-     ){
+    fun addCampsite(campsite: Campsites){
         val data = hashMapOf(
             "name" to campsite.name,
-            "photoURL" to campsite.photoUrl,
+            "photoUrl" to campsite.photoUrl,
             "address" to campsite.address,
             "latitude" to campsite.latitude,
             "longitude" to campsite.longitude,
@@ -92,10 +87,7 @@ class CampsiteRepository{
             "availableStartDate" to campsite.availableStartDate,
             "availableEndDate" to campsite.availableEndDate
         )
-        db.collection("campsites")
-            .add(data)
-            .addOnSuccessListener { ref -> onSuccess(ref.id) }
-            .addOnFailureListener { exception -> onFailure(exception) }
-    }//end registerCampsite
+        db.collection("campsites").add(data)
+    } //end addCampsite
 
 }//end campsite controller
