@@ -1,5 +1,5 @@
 /**
- * Shows the summary of one reservation in a list
+ * Shows the summary of one user reservation in a list
  * campsite name, campsite photo, Date Reserved and number of guests
  * shows a button below each reservation to cancel reservation
  * Utopia 01.07.01
@@ -22,10 +22,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.example.utopia_campsite.owner.Campsites
 
 @Composable
-fun ReservationSummaryRow(reservation: Reservation, onClickCancelReservation : (Reservation)-> Unit) {
+fun UserReservationSummaryRow(reservation: Reservation, onClickCancelReservation : (Reservation)-> Unit) {
     // Stack the four pieces of summary information from top to bottom
     Column {
         if(!reservation.photoUrl.isNullOrBlank()){
@@ -51,4 +50,4 @@ fun ReservationSummaryRow(reservation: Reservation, onClickCancelReservation : (
             Text(text = "Cancel Reservation")
         } //end button
     } //end column
-} //end ReservationSummaryRow
+} //end UserReservationSummaryRow

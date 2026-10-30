@@ -49,7 +49,8 @@ class CampsiteRepository{
                         bookingDate = document.getString("bookingDate") ?: "",
                         maximumOccupants = document.getLong("maxOccupancy")?.toInt() ?: 0,
                         availableStartDate = document.getString("availableStartDate") ?: "",
-                        availableEndDate = document.getString("availableEndDate") ?: ""
+                        availableEndDate = document.getString("availableEndDate") ?: "",
+                        usersBooked = mutableListOf()
                     )
                     campsites.add(campsite)
                 }//end for

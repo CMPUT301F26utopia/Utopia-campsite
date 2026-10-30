@@ -168,6 +168,7 @@ fun buildCampsite(
         bookingDate = "", // set by US 02.04.04
         maximumOccupants = occupancyNumber,
         availableStartDate = "", // not part of this story
-        availableEndDate = "" // not part of this story
+        availableEndDate = "", // not part of this story
+        usersBooked = mutableListOf() //// not part of this story
     )
 } //end buildCampsite

@@ -108,7 +108,8 @@ fun FilterResultScreenPreview() {
             bookingDate = "15/10/2026-20/10/2026",
             availableStartDate = "15/10/2026",
             availableEndDate = "20/10/2026",
-            maximumOccupants = 4
+            maximumOccupants = 4,
+            usersBooked = mutableListOf()
         ),
         Campsites(
             id = "camp_002",
@@ -126,7 +127,8 @@ fun FilterResultScreenPreview() {
             bookingDate = "15/11/2026-20/11/2026",
             availableStartDate = "15/11/2026",
             availableEndDate = "20/11/2026",
-            maximumOccupants = 6
+            maximumOccupants = 6,
+            usersBooked = mutableListOf()
         ),
         Campsites(
             id = "camp_003",
@@ -144,7 +146,8 @@ fun FilterResultScreenPreview() {
             bookingDate = "15/12/2026-20/12/2026",
             availableStartDate = "15/12/2026",
             availableEndDate = "20/12/2026",
-            maximumOccupants = 8
+            maximumOccupants = 8,
+            usersBooked = mutableListOf()
         )
     )
 
