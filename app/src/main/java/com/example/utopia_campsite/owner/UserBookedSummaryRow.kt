@@ -37,7 +37,7 @@ import coil3.compose.AsyncImage
 import com.example.utopia_campsite.user.User
 
 @Composable
-fun UserBookedSummaryRow(user: User) {
+fun UserBookedSummaryRow(userId: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

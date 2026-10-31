@@ -6,12 +6,10 @@
  */
 package com.example.utopia_campsite.owner
 
-import android.content.BroadcastReceiver.PendingResult
 import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import com.example.utopia_campsite.user.User
 import kotlin.collections.toMutableList
 
 /**
@@ -65,8 +63,8 @@ class CampsiteRepository{
                         address = document.getString("address") ?: "", //the ? sets a default value if the value is null
                         latitude = document.getDouble("latitude") ?: 0.0,
                         longitude = document.getDouble("longitude") ?: 0.0,
-                        ratings = (document.get("ratings") as List<*>).map { (it as Number).toInt() }, //this casts firebase's List<Any?> to a List<Int>
-                        tags = (document.get("tags") as List<*>).filterIsInstance<String>(), //this casts firebase's List<Any?> to a List<String>
+                        ratings = (document.get("ratings") as? List<*>)?.map { (it as Number).toInt() }?: mutableListOf(), //this casts firebase's List<Any?> to a List<Int>
+                        tags = (document.get("tags") as? List<*>)?.filterIsInstance<String>()?: mutableListOf(), //this casts firebase's List<Any?> to a List<String>
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
                         lotteryWaitlist = getUserIdsFromDocument(document, "lotteryWaitlist"),
                         description = document.getString("description") ?: "",
@@ -105,13 +103,14 @@ class CampsiteRepository{
             "ratings" to campsite.ratings,
             "tags" to campsite.tags,
             "lotteryWinners" to campsite.lotteryWinners,
-            "lotteryWaitlist" to campsite.lotteryWaitlist,
+            "lotteryWaitlist" to campsite.lotteryWaitlist.map { db.collection("users").document(it) },
             "description" to campsite.description,
             "registrationDate" to campsite.registrationDate,
             "bookingDate" to campsite.bookingDate,
             "maxOccupancy" to campsite.maximumOccupants,
             "availableStartDate" to campsite.availableStartDate,
-            "availableEndDate" to campsite.availableEndDate
+            "availableEndDate" to campsite.availableEndDate,
+            "usersBooked" to campsite.usersBooked.map{db.collection("users").document(it)}
         )
         db.collection("campsites").add(data)
     } //end addCampsite
