@@ -1,6 +1,7 @@
 package com.example.utopia_campsite.user
 
 import com.example.utopia_campsite.owner.Campsites
+import junit.framework.TestCase
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -33,7 +34,8 @@ class UserCampsiteFilterViewModelTest {
                     bookingDate = "15/10/2026-20/10/2026",
                     availableStartDate = "15/10/2026",
                     availableEndDate = "20/10/2026",
-                    maximumOccupants = 4
+                    maximumOccupants = 4,
+                    usersBooked = mutableListOf()
                 ),
                 Campsites(
                     id = "camp_002",
@@ -51,7 +53,8 @@ class UserCampsiteFilterViewModelTest {
                     bookingDate = "15/10/2026-20/10/2026",
                     availableStartDate = "15/10/2026",
                     availableEndDate = "20/10/2026",
-                    maximumOccupants = 8
+                    maximumOccupants = 8,
+                    usersBooked = mutableListOf()
                 )
             )
         )
@@ -73,7 +76,10 @@ class UserCampsiteFilterViewModelTest {
     fun testFilterByLocation() {
         val results = viewModel.filterCampsites("Banff", "", "", "")
         assertEquals(1, results.size)
-        assertEquals("camp_001", results[0].id) // Added check to ensure we are talking about the banff campsite object
+        assertEquals(
+            "camp_001",
+            results[0].id
+        ) // Added check to ensure we are talking about the banff campsite object
     }
 
     @Test

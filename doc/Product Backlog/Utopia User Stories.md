@@ -4,10 +4,10 @@
 | :---- | :---- | :---- | :---- | :---- |
 | US CODE | Description | Estimated Size (Story Points) 1 \- 10 (Range) | Risk | Complete |
 | 01.01.01  | As an entrant, I want to search for campsites.  | 2 | High |  |
-| 01.01.02  | As an entrant, I want to filter campsites by location, date, and number of guests.  | 3 | Medium |  |
-| 01.01.03  | As an entrant, I want to see a list of campsites based on my filters.  | 2 | Low |  |
-| 01.01.04  | As an entrant, I want to see campsite summary information including name, location, maximum occupancy, and rating.  | 1 | Low |  |
-| 01.01.05 | As an entrant, I want to see details of a campsite. | 1 | Low |  |
+| 01.01.02  | As an entrant, I want to filter campsites by location, date, and number of guests.  | 3 | Medium | x |
+| 01.01.03  | As an entrant, I want to see a list of campsites based on my filters.  | 2 | Low | x |
+| 01.01.04  | As an entrant, I want to see campsite summary information including name, location, maximum occupancy, and rating.  | 1 | Low | x |
+| 01.01.05 | As an entrant, I want to see details of a campsite. | 1 | Low | x |
 | 01.01.06 | As an entrant, I want to join an active lottery from the campsite details screen. | 5 | Medium |  |
 | 01.02.01 | As an entrant, I want to join the waiting list for a campsite lottery. | 3 | Low |  |
 | 01.02.02 | As an entrant, I want to leave the waiting list for a campsite lottery. | 3 | Low |  |
@@ -34,7 +34,7 @@
 | :---- | :---- | :---- | :---- | :---- |
 | US CODE | Description | Estimated Size(Story Points) | Risk | Complete |
 | 02.01.01 | As a campsite owner, I want to register my campsite with the app.  | 7 | High |  |
-| 02.01.02  | As a campsite owner, I want to provide campsite details including name, location, description (amenities), maximum occupancy, map location, optional image, and tags.  | 3 | Medium |  |
+| 02.01.02  | As a campsite owner, I want to provide campsite details including name, location, description (amenities), maximum occupancy, map location, optional image, and tags.  | 3 | Medium | x |
 | 02.01.03  | As a campsite owner, I want to update details about my campsite  | 3 | Low |  |
 | 02.01.04  | As a campsite owner, I want to view details of my campsite.  | 1 | Low |  |
 | 02.02.01  | As a campsite owner, I want the system to generate a unique QR code that links to the campsite details.  | 4 | Low |  |
@@ -43,7 +43,7 @@
 | 02.04.02  | As a campsite owner, I want to be able to list multiple campsites in a lottery for a certain period.  | 6 | Medium |  |
 | 02.04.03  | As a campsite owner, I want to set a registration period.  | 4 | Medium |  |
 | 02.04.04  | As a campsite owner, I want to set a booking period.  | 4 | Medium |  |
-| 02.04.05  | As a campsite owner, I want to set the number of lottery winners.  | 1 | Low |  |
+| 02.04.05  | As a campsite owner, I want to set the number of lottery winners.  | 1 | Low | x |
 | 02.04.06  | As a campsite owner, I want to update my campsite lottery listing.  | 3 | Low |  |
 | 02.04.07  | As a campsite owner, I want to optionally set a capacity for my lottery waitlist  | 5 | Medium |  |
 | 02.05.01  | As a campsite owner, I want the system to automatically draw winners after the registration period ends.  | 2 | Low |  |

@@ -31,10 +31,31 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             UtopiacampsiteTheme {
-                UserProfileScreen(User("ss", "abc@abs.com", "qw", "er", true, "123456789",
-                        emptyList(), emptyList()))
+                UserProfileScreen(
+                    User(deviceID ="ss",
+                        photoUrl = "abc@abs.com",
+                        email = "qw",
+                        firstName = "er",
+                        lastName = "true",
+                        notificationsEnabled = true,
+                        phone ="123456789",
+                        currentReservations = mutableListOf(
+                            Reservation(
+                            campsiteName = "campA",
+                            photoUrl = "https://unsplash.com",
+                            startReservedDate = "1/2/3",
+                            endReservedDate = "1/5/3",
+                            numOfGuests = 20
+                        ), Reservation(
+                                campsiteName = "campB",
+                                photoUrl = "https://unsplash.com",
+                                startReservedDate = "2/2/3",
+                                endReservedDate = "2/5/3",
+                                numOfGuests = 1
+                            )),
+                        emptyList()))
+                }
             }
         }
     }
-}
 

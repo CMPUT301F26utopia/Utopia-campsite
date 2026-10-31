@@ -33,6 +33,7 @@ import com.example.utopia_campsite.user.User
  * @property maximumOccupants: the maximum number of occupants for the campsite
  * @property availableStartDate: the starting date of which the campsite is available to be booked
  * @property availableEndDate: the ending date of which the campsite is available to be booked
+ * @property usersBooked: contains a list of users who are currently booked in the campsite
  */
 data class Campsites(
     val id: String,
@@ -50,5 +51,6 @@ data class Campsites(
     val bookingDate: String,        // (start date-end date) -> eg. 10/10/2026-20/10/2026
     val maximumOccupants: Int,
     val availableStartDate: String, // Added on, this is the starting date of which the campsite is available
-    val availableEndDate: String    // Added on, this is the ending date of which the campsite is available
+    val availableEndDate: String,   // Added on, this is the ending date of which the campsite is available
+    val usersBooked : MutableList<User>
 )

@@ -1,9 +1,8 @@
 /**
- * Shows the summary of one reservation in a list
+ * Shows the summary of one user reservation in a list
  * campsite name, campsite photo, Date Reserved and number of guests
- * Outstanding Issues:
- * button to cancel reservation
- * no reservation list yet
+ * shows a button below each reservation to cancel reservation
+ * Utopia 01.07.01
  */
 
 package com.example.utopia_campsite.user
@@ -12,17 +11,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.example.utopia_campsite.owner.Campsites
 
 @Composable
-fun ReservationSummaryRow(reservation: Reservation){
-
+fun UserReservationSummaryRow(reservation: Reservation, onClickCancelReservation : (Reservation)-> Unit) {
     // Stack the four pieces of summary information from top to bottom
     Column {
         if(!reservation.photoUrl.isNullOrBlank()){
@@ -37,5 +39,15 @@ fun ReservationSummaryRow(reservation: Reservation){
         Text(text = "Dates: ${reservation.startReservedDate} to ${reservation.endReservedDate}", modifier=Modifier.padding(start = 12.dp))
         Text(text = "Number of Guests: ${reservation.numOfGuests}", modifier=Modifier.padding(start = 12.dp))
 
-    }
-} //end ReservationSummaryRow
+        Button(
+            onClick = { onClickCancelReservation(reservation) }, //callback to be implemented
+            modifier = Modifier.fillMaxWidth().testTag("cancelReservationButton"),
+            shape = RectangleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Red,
+                contentColor = Color.White)
+        ) {
+            Text(text = "Cancel Reservation")
+        } //end button
+    } //end column
+} //end UserReservationSummaryRow
