@@ -7,6 +7,8 @@
 package com.example.utopia_campsite.owner
 
 import androidx.compose.runtime.mutableStateListOf
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 
 /**
@@ -16,6 +18,16 @@ import com.google.firebase.firestore.FirebaseFirestore
 class CampsiteRepository{
 
     private val db = FirebaseFirestore.getInstance()
+
+    /**
+     * Pulls the document reference from an array field
+     * @param campsiteDocument: the document containing a specific campsite
+     * @param fieldName: the name of the array field (eg LotteryWaitlist)
+     */
+    private fun getReferencesFromDocument(campsiteDocument: DocumentSnapshot, fieldName: String): List<DocumentReference>{
+        return (campsiteDocument.get(fieldName) as? List<*>)?.filterIsInstance<DocumentReference>() ?: emptyList()
+
+    }//end getReferencesFromDocument
     /**
      * Retrieves all campsites from the firebase firestore
      * Each document is converted into a Campsite object and added to a list
