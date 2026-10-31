@@ -1,8 +1,12 @@
-package com.example.utopia_campsite.user
+/**
+ * Utopia 01.01.04
+ * Shows the summary of one campsite in the campsite list: name, location, maximum occupancy and rating
+ *
+ * Outstanding Issues:
+ * None
+ */
 
-// Utopia 01.01.04
-// Shows the summary of one campsite in a list: name, location, maximum occupancy and rating
-// Outstanding issues: not shown on any screen yet, needs the campsite list (01.01.03)、
+package com.example.utopia_campsite.user
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +20,11 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.utopia_campsite.owner.Campsites
 
-// Utopia 01.01.04
+/**
+ * Shows one campsite's photo (if it has one), name, address, maximum occupancy and average rating
+ *
+ * @param campsite: the campsite to summarize
+ */
 
 @Composable
 fun CampsiteSummaryRow(campsite: Campsites){
