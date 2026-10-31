@@ -36,7 +36,7 @@ class CampsiteRepository{
                     val campsite = Campsites(
                         id = document.id,
                         name = document.getString("name") ?: "",
-                        photoUrl = document.getString("photoURL"),
+                        photoUrl = document.getString("photoUrl"),
                         address = document.getString("address") ?: "", //the ? sets a default value if the value is null
                         latitude = document.getDouble("latitude") ?: 0.0,
                         longitude = document.getDouble("longitude") ?: 0.0,
@@ -50,7 +50,7 @@ class CampsiteRepository{
                         maximumOccupants = document.getLong("maxOccupancy")?.toInt() ?: 0,
                         availableStartDate = document.getString("availableStartDate") ?: "",
                         availableEndDate = document.getString("availableEndDate") ?: "",
-                        usersBooked = mutableListOf()
+                        usersBooked = document.get()
                     )
                     campsites.add(campsite)
                 }//end for
