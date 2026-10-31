@@ -15,10 +15,15 @@ import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
 import com.example.utopia_campsite.user.Reservation
 import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserProfileScreen
+/*
+import com.firebase.ui.auth.FirebaseAuthUI
+import com.firebase.ui.auth.configuration.authUIConfiguration
+import com.firebase.ui.auth.configuration.auth_provider.AuthProvider
+import com.firebase.ui.auth.configuration.theme.AuthUITheme
+import com.firebase.ui.auth.ui.screens.FirebaseAuthScreen
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-
-val db = Firebase.firestore
+*/
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,8 +33,8 @@ class MainActivity : ComponentActivity() {
             UtopiacampsiteTheme {
                 UserProfileScreen(User("ss", "abc@abs.com", "qw", "er", true, "123456789",
                         emptyList(), emptyList()))
-                }
             }
         }
     }
+}
 
