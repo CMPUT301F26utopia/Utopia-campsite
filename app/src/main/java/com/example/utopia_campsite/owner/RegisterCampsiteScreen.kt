@@ -37,9 +37,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 
+//top level macro for checking if date formats are correct.
+private val DATE_FORMAT = Regex("""\d{2}/\d{2}/\d{4}""")
+private fun isValidDate(text: String): Boolean = DATE_FORMAT.matches(text)
 @Preview
 @Composable
-fun RegisterCampsiteScreen(){
+fun RegisterCampsiteScreen(
+    //repo: CampsiteRepository = remember { CampsiteRepository() },
+    //onRegistered: () -> Unit = {}
+){
     var name by remember { mutableStateOf("") }
     var photoUrl by remember {mutableStateOf("")}
     var address by remember { mutableStateOf("") }
@@ -49,7 +55,10 @@ fun RegisterCampsiteScreen(){
     var lotteryWaitlist by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var maxOccupants by remember { mutableStateOf("") }
-
+    var regStart by remember { mutableStateOf("") }
+    var regEnd by remember { mutableStateOf("") }
+    var bookStart by remember { mutableStateOf("") }
+    var bookEnd by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -106,7 +115,7 @@ fun RegisterCampsiteScreen(){
                 )
                 //Tags button.
                 BlackButton(
-                    text = if (tags.isEmpty()) "Tag(s)" else tags.joinToString { ", " },
+                    text =  "Tag(s)",
                     onClick = {showTags=true}
                 )
             }
@@ -127,7 +136,7 @@ fun RegisterCampsiteScreen(){
                     Surface(
                         shape = RoundedCornerShape(16.dp),
                         tonalElevation = 6.dp
-                    ){
+                    ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -137,16 +146,16 @@ fun RegisterCampsiteScreen(){
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ){
+                            ) {
                                 InputField(
                                     value = newTag,
-                                    onChange = {newTag = it},
+                                    onChange = { newTag = it },
                                     placeholder = "e.g lakeside",
                                     modifier = Modifier.weight(1f)
                                 )
-                                TextButton(onClick = {addTag()}) {Text("Add") }
+                                TextButton(onClick = { addTag() }) { Text("Add") }
                             }
-                        }
+
                         //flowrow and input chip create that "pill box" list of tags. flowrow ensures that all tags are displayed.
                         FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -154,23 +163,24 @@ fun RegisterCampsiteScreen(){
                             draftTags.forEach { tag ->
                                 InputChip(
                                     selected = false,
-                                    onClick = {draftTags.remove(tag)},
-                                    label = {Text(tag)},
-                                    trailingIcon = {Text("✕")}
+                                    onClick = { draftTags.remove(tag) },
+                                    label = { Text(tag) },
+                                    trailingIcon = { Text("✕") }
                                 )
                             }
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
-                        ){
-                            TextButton(onClick = {showTags=false}) { Text("Done") }
+                        ) {
                             TextButton(onClick = {
                                 tags.clear()
                                 tags.addAll(draftTags)
-                                showTags=false}
-                            ) {Text("Done") }
+                                showTags = false
+                            }
+                            ) { Text("Done") }
                         }
+                    }
                     }
                 }
             }
@@ -202,6 +212,18 @@ fun RegisterCampsiteScreen(){
             modifier = Modifier.heightIn(min = 80.dp)
         )
 
+        Label("Registration Period")
+        DateRow(
+            start = regStart, end = regEnd,
+            onStart = { regStart = it }, onEnd = { regEnd = it }
+        )
+
+        Label("Booking Period")
+        DateRow(
+            start = bookStart, end = bookEnd,
+            onStart = { bookStart = it }, onEnd = { bookEnd = it }
+        )
+
         Label("Maximum Occupants")
         InputField(
             value = maxOccupants,
@@ -215,4 +237,32 @@ fun RegisterCampsiteScreen(){
 @Composable
 private fun Label(text:String){
     Text(text, fontSize = 14.sp)
+}
+@Composable
+private fun DateRow(
+    start: String,
+    end: String,
+    onStart: (String) -> Unit,
+    onEnd: (String) -> Unit
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Label("Start Date")
+            InputField(
+                value = start,
+                onChange = onStart,
+                placeholder = "DD/MM/YYYY",
+                isError = start.isNotEmpty() && !isValidDate(start)
+            )
+        }
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Label("End Date")
+            InputField(
+                value = end,
+                onChange = onEnd,
+                placeholder = "DD/MM/YYYY",
+                isError = end.isNotEmpty() && !isValidDate(end)
+            )
+        }
+    }
 }
