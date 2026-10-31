@@ -26,14 +26,14 @@ import com.example.utopia_campsite.user.User
  * @property ratings: a list of ratings for the campsite
  * @property tags: a list of tags for the campsite
  * @property lotteryWinners: the number of lottery winners for the campsite
- * @property lotteryWaitlist: number of people in a waitlist for the campsite lottery
+ * @property lotteryWaitlist: a list of user ids of users in a waitlist for the campsite lottery
  * @property description: a description of the campsite
  * @property registrationDate: the days where a user can sign up for the lottery
  * @property bookingDate: the days where a lottery winner can accept book their reservation
  * @property maximumOccupants: the maximum number of occupants for the campsite
  * @property availableStartDate: the starting date of which the campsite is available to be booked
  * @property availableEndDate: the ending date of which the campsite is available to be booked
- * @property usersBooked: contains a list of users who are currently booked in the campsite
+ * @property usersBooked: contains a list of user IDs of the users who are currently booked in the campsite
  */
 data class Campsites(
     val id: String,
@@ -52,5 +52,5 @@ data class Campsites(
     val maximumOccupants: Int,
     val availableStartDate: String, // Added on, this is the starting date of which the campsite is available
     val availableEndDate: String,   // Added on, this is the ending date of which the campsite is available
-    val usersBooked : MutableList<User>
+    val usersBooked : MutableList<String>
 )

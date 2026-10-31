@@ -6,10 +6,13 @@
  */
 package com.example.utopia_campsite.owner
 
+import android.content.BroadcastReceiver.PendingResult
 import androidx.compose.runtime.mutableStateListOf
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.example.utopia_campsite.user.User
+import kotlin.collections.toMutableList
 
 /**
  *
@@ -28,6 +31,16 @@ class CampsiteRepository{
         return (campsiteDocument.get(fieldName) as? List<*>)?.filterIsInstance<DocumentReference>() ?: emptyList()
 
     }//end getReferencesFromDocument
+
+    /**
+     * Pulls the user IDs from an array field of user references
+     * @param campsiteDocument: the document containing a specific campsite
+     * @param fieldName: the name of the array field (eg lotteryWaitlist)
+     */
+    private fun getUserIdsFromDocument(campsiteDocument: DocumentSnapshot, fieldName: String): MutableList<String> {
+        return getReferencesFromDocument(campsiteDocument, fieldName).map { it.id }.toMutableList<String>()
+    }//end getUserIdsFromDocument
+
     /**
      * Retrieves all campsites from the firebase firestore
      * Each document is converted into a Campsite object and added to a list
@@ -55,14 +68,14 @@ class CampsiteRepository{
                         ratings = (document.get("ratings") as List<*>).map { (it as Number).toInt() }, //this casts firebase's List<Any?> to a List<Int>
                         tags = (document.get("tags") as List<*>).filterIsInstance<String>(), //this casts firebase's List<Any?> to a List<String>
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
-                        lotteryWaitlist = ((document.get("lotteryWaitlist") as? List<*>)?.filterIsInstance<String>() ?: emptyList()).toMutableList(),
+                        lotteryWaitlist = getUserIdsFromDocument(document, "lotteryWaitlist"),
                         description = document.getString("description") ?: "",
                         registrationDate = document.getString("registrationDate") ?: "",
                         bookingDate = document.getString("bookingDate") ?: "",
                         maximumOccupants = document.getLong("maxOccupancy")?.toInt() ?: 0,
                         availableStartDate = document.getString("availableStartDate") ?: "",
                         availableEndDate = document.getString("availableEndDate") ?: "",
-                        usersBooked = document.get()
+                        usersBooked = getUserIdsFromDocument(document, "usersBooked")
                     )
                     campsites.add(campsite)
                 }//end for
