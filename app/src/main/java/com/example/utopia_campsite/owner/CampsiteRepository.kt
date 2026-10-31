@@ -91,4 +91,15 @@ class CampsiteRepository{
         db.collection("campsites").add(data)
     } //end addCampsite
 
+    /**
+     * Saves a campsite's lottery registration period to the firebase firestore (US 02.04.01, 02.04.03)
+     * Only the registrationDate field changes; the rest of the campsite stays the same
+     *
+     * @param campsiteId: the Firestore document ID of the campsite
+     * @param registrationDate: the registration period, e.g. "10/10/2026-20/10/2026"
+     */
+    fun updateRegistrationPeriod(campsiteId: String, registrationDate: String){
+        db.collection("campsites").document(campsiteId).update("registrationDate", registrationDate)
+    } //end updateRegistrationPeriod
+
 }//end campsite controller
