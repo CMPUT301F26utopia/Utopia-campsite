@@ -40,8 +40,26 @@ import androidx.compose.ui.window.Dialog
 //top level macro for checking if date formats are correct.
 private val DATE_FORMAT = Regex("""\d{2}/\d{2}/\d{4}""")
 private fun isValidDate(text: String): Boolean = DATE_FORMAT.matches(text)
+
+/**
+*Utopia 2.01.02, 2.01.01
+*Lets a campsite owner fill out a form with details so that they can register a campsite and start creating lotteries for it.
+*information that can be added: Name, photoUrl, address, a list of tags, # of lottery winners, lottery waitlist, description, max occupants, start and end registration dates, and start and end booking dates.
+*
+*Outstanding issues: Not reachable from NapApp, doesn't compile it's information to submit to CampsiteRepository. waiting for a decision to be made on whether we will use Aidan's screen or my screen.
+*No owner ID.
+*
+ */
 @Preview
 @Composable
+
+
+/**
+*displays the form that a campsite owner uses to submit their campsite.
+*
+* @param repo: the campsite repository that the screen will use to submit its data. currently commented out because I haven't implemented submitting yet.
+ * @param onRegistered: called with the new campsite after submitting.
+ */
 fun RegisterCampsiteScreen(
     //repo: CampsiteRepository = remember { CampsiteRepository() },
     //onRegistered: () -> Unit = {}
@@ -238,6 +256,15 @@ fun RegisterCampsiteScreen(
 private fun Label(text:String){
     Text(text, fontSize = 14.sp)
 }
+
+/**
+ * composable reusable function that creates 2 input fields for start and end dates.
+ * uses the regex declared at the top of this function to ensure that dates are submitted in the correct format.
+ *
+ * @param start: first date.
+ * @param end: second date.
+ *
+ */
 @Composable
 private fun DateRow(
     start: String,
