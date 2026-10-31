@@ -4,8 +4,8 @@
 | :---- | :---- | :---- | :---- | :---- |
 | US CODE | Description | Estimated Size (Story Points) 1 \- 10 (Range) | Risk | Complete |
 | 01.01.01  | As an entrant, I want to search for campsites.  | 2 | High |  |
-| 01.01.02  | As an entrant, I want to filter campsites by location, date, and number of guests.  | 3 | Medium |  |
-| 01.01.03  | As an entrant, I want to see a list of campsites based on my filters.  | 2 | Low |  |
+| 01.01.02  | As an entrant, I want to filter campsites by location, date, and number of guests.  | 3 | Medium | x |
+| 01.01.03  | As an entrant, I want to see a list of campsites based on my filters.  | 2 | Low | x |
 | 01.01.04  | As an entrant, I want to see campsite summary information including name, location, maximum occupancy, and rating.  | 1 | Low |  |
 | 01.01.05 | As an entrant, I want to see details of a campsite. | 1 | Low |  |
 | 01.01.06 | As an entrant, I want to join an active lottery from the campsite details screen. | 5 | Medium |  |
