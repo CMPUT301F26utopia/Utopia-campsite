@@ -208,8 +208,8 @@ fun CampsiteReservedUsersScreen(campsite: Campsites) {
                 } //end outer row
             } //end item
 
-            items(campsite.usersBooked) { user ->
-                UserBookedSummaryRow(user = user)
+            items(campsite.usersBooked) { userId ->
+                UserBookedSummaryRow(userId = userId)
             }
         } //end LazyColumn
     } //end Scaffold
