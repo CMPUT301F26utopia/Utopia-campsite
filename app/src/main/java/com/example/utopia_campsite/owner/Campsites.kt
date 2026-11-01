@@ -4,7 +4,7 @@
  * name, description, photoURL, etc
  *
  * This model does not deal with interacting with the Firebase database,
- * that is the responsibility of CampsiteController.kt
+ * that is the responsibility of CampsiteRepository.kt
  *
  *Outstanding Issues:
  * More fields may be required as more user stories are implemented
