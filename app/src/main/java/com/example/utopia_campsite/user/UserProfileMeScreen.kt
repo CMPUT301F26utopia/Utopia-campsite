@@ -19,7 +19,7 @@ fun UserProfileMeScreen(user: User){
 
     ){
         Text(
-            text = user.firstName + " " + user.lastName,
+            text = "Name: " + user.firstName + " " + user.lastName,
             fontSize = 30.sp
 //            modifier = Modifier.alignment.AlignHorizontally
 
