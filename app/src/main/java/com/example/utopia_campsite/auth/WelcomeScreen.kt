@@ -17,10 +17,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-/*
-*
-* */
-
+/**
+ * Displays the welcome screen when users first open the Utopia Campsite application
+ * Provides an introduction to the application with a welcome message
+ * Allows new users to navigate to the Sign Up Screen to create an account
+ *
+ * @param modifier: the Modifier used to configure the screen layout
+ * @param onSignUp: a callback function that navigates the user to the Sign Up Screen
+ * when the Create Account button is pressed
+ */
 @Composable
 fun WelcomeScreen(
     modifier: Modifier,
@@ -55,6 +60,10 @@ fun WelcomeScreen(
     }
 }
 
+/**
+ * Provides a preview of the welcome screen in Android Studio
+ * Passes an empty onSignUp callback to display the UI without performing navigation
+ */
 @Preview(showBackground = true)
 @Composable
 fun WelcomeScreenPreview() {

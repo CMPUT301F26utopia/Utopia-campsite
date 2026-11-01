@@ -26,13 +26,19 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 
-/*
-* Sign-up screen
-*
-* Remaining things that need to be implemented:
-* - When a user creates an account, the firebase authentication will create that document for the user and have the device ID linked.
-* */
-
+/**
+ * Displays the sign-up screen for users creating a new Utopia Campsite account
+ * Allows users to enter their first name, last name, email address, and phone number
+ * Validates that all required fields have been completed before attempting account creation
+ * Displays an error message when one or more required fields are empty
+ * Calls the onCreateAccount callback to pass the user's information for account registration
+ * Provides a back button to return to the Welcome Screen
+ *
+ * @param modifier: the Modifier used to configure the screen layout
+ * @param navController: the navigation controller used to return to the Welcome Screen
+ * @param onCreateAccount: a callback function that receives the user's first name, last name,
+ * email address, and phone number when the Create Account button is pressed with valid inputs
+ */
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
@@ -152,7 +158,9 @@ fun SignUpScreen(
     }
 }
 
-
+/**
+ * Provides a preview of the sign-up screen
+ */
 @Preview(showBackground = true)
 @Composable
 fun SignUpScreenPreview() {
