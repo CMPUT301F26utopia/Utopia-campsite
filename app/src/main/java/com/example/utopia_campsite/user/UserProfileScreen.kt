@@ -85,8 +85,8 @@ fun UserProfileScreen(user: User) {
         ) {
             item {
                 Button(
-                    modifier = Modifier.weight(.1f),
-                    onClick = {},
+                    modifier = Modifier.weight(.1f).testTag("meButton"),
+                    onClick = {currentScreen = "Me"},
                     colors = ButtonDefaults.buttonColors(
                         containerColor = White,
                         contentColor = Black,
@@ -135,6 +135,7 @@ fun UserProfileScreen(user: User) {
 
         when (currentScreen) { //toggles partial ui composition depending on button selected
             "Current Reservations" -> UserProfileCurrentReservationScreen(user)
+            "Me" -> UserProfileMeScreen(user)
         }
     } //end Column
 } //end UserProfileScreen

@@ -24,6 +24,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,9 +40,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 import com.example.utopia_campsite.user.User
+import com.example.utopia_campsite.user.UserRepository
 
 @Composable
-fun UserBookedSummaryRow(user: User) {
+fun UserBookedSummaryRow(userId: String) {
+    var loadedUser by remember(userId) { mutableStateOf<User?>(null)}
+    LaunchedEffect(userId) {
+        UserRepository().getUser(
+            userId = userId,
+            onSuccess = { loadedUser = it},
+            onFailure = { loadedUser = null }
+        )
+    }
+
+    val user = loadedUser ?: return
     Row(
         modifier = Modifier
             .fillMaxWidth()

@@ -1,7 +1,6 @@
 package com.example.utopia_campsite.user
 
 import com.example.utopia_campsite.owner.Campsites
-import junit.framework.TestCase
 import junit.framework.TestCase.assertEquals
 import org.junit.Before
 import org.junit.Test
