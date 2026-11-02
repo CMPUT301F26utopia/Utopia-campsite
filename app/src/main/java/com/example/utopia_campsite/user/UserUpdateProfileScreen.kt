@@ -36,6 +36,7 @@ fun UserUpdateProfileScreen(
     var email by remember(user) { mutableStateOf("") }
     var phone by remember(user) { mutableStateOf("") }
     var notificationsEnabled by remember(user) { mutableStateOf(user.notificationsEnabled) }
+    var photoUrl by remember(user) { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -63,6 +64,14 @@ fun UserUpdateProfileScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("lastNameTextField")
+        )
+        OutlinedTextField(
+            value = photoUrl,
+            onValueChange = { photoUrl = it },
+            label = { Text("Photo URL") },
+            placeholder = { Text(user.photoUrl ?: "") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth().testTag("photoUrlTextField")
         )
         OutlinedTextField(
             value = email,
@@ -105,6 +114,7 @@ fun UserUpdateProfileScreen(
                             // blank field = keep the existing value
                             firstName = firstName.ifBlank { user.firstName },
                             lastName = lastName.ifBlank { user.lastName },
+                            photoUrl = photoUrl.ifBlank { user.photoUrl },
                             email = email.ifBlank { user.email },
                             phone = phone.ifBlank { user.phone },
                             notificationsEnabled = notificationsEnabled
