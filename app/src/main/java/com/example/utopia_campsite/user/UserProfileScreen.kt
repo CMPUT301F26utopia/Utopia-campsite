@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,9 +37,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun UserProfileScreen(user: User) {
+fun UserProfileScreen(
+    user: User,
+    saveUser: (User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit =
+        { _, onSuccess, _ -> onSuccess() }
+) {
     var currentScreen by remember { mutableStateOf("Me") } //display user profile as the starting view
-    var currentUser by remember { mutableStateOf(user) }
+    var currentUser by remember(user) { mutableStateOf(user) }
+    var saveError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -118,10 +124,21 @@ fun UserProfileScreen(user: User) {
         when (currentScreen) { //toggles partial ui composition depending on button selected
             "Current Reservations" -> UserProfileCurrentReservationScreen(currentUser)
             "Me" -> UserProfileMeScreen(user = currentUser, onEditProfileClick = {currentScreen = "Update Profile"})
-            "Update Profile" -> UserUpdateProfileScreen(user = currentUser, onSave = { updated ->
-                    currentUser = updated
-                    currentScreen = "Me"
-            }, onCancel = { currentScreen = "Me" })
-        }
+            "Update Profile" -> {
+                UserUpdateProfileScreen(
+                    user = currentUser,
+                    onSave = { updated ->
+                        saveError = null
+                        saveUser(
+                            updated,
+                            { currentUser = updated; currentScreen = "Me" },
+                            { e -> saveError = "Couldn't save: ${e.message}" }
+                        )
+                    },
+                    onCancel = { saveError = null; currentScreen = "Me" }
+                )
+                saveError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            }
+        } //end when
     } //end Column
 } //end UserProfileScreen
