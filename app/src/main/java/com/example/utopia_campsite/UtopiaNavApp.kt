@@ -12,8 +12,9 @@ import com.example.utopia_campsite.auth.WelcomeScreen
 import com.example.utopia_campsite.user.CampsiteDetailsScreen
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
 import com.example.utopia_campsite.user.UserCampsiteListScreen
-import com.example.utopia_campsite.user.UserFilterResultScreen
 import com.example.utopia_campsite.user.UserFilterScreen
+import com.example.utopia_campsite.user.UserFilterResultScreen
+import com.google.firebase.auth.FirebaseAuth
 
 /**
  * Defines the navigation routes between the application's screens
@@ -25,7 +26,10 @@ fun UtopiaNavApp() {
     val navController = rememberNavController()
     val filterViewModel: UserCampsiteFilterViewModel = viewModel() // Shared instance of filter-view-model for filter screens
 
-    NavHost(navController = navController, startDestination = "welcome") { // TODO: when firebase authentication is working, logic needs to be placed here depending on new user or not. if new user -> welcome, otherwise -> home-screen
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val startPage = if (currentUser != null) "user/campsites" else "welcome"
+
+    NavHost(navController = navController, startDestination = startPage) { // TODO: when firebase authentication is working, logic needs to be placed here depending on new user or not. if new user -> welcome, otherwise -> home-screen
         // Composable routers for authentication
 
         composable("welcome") {

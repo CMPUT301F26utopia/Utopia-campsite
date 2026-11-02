@@ -25,6 +25,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 /**
  * Displays the sign-up screen for users creating a new Utopia Campsite account
@@ -39,6 +42,63 @@ import androidx.navigation.compose.rememberNavController
  * @param onCreateAccount: a callback function that receives the user's first name, last name,
  * email address, and phone number when the Create Account button is pressed with valid inputs
  */
+
+fun createUser(
+    db: FirebaseFirestore,
+    uid: String,
+    firstName: String,
+    lastName: String,
+    email: String,
+    phone: String,
+    onSuccess: () -> Unit = {},
+    onError: (String) -> Unit = {}
+) {
+    val user = hashMapOf("firstName" to firstName, "lastName" to lastName, "email" to email, "phone" to phone)
+    db.collection("users").document(uid).set(user, SetOptions.merge())
+        .addOnSuccessListener { onSuccess() }
+        .addOnFailureListener { exception -> onError(exception.message ?: "Could not create user") }
+}
+
+fun onCreateAccount(
+    firstName: String,
+    lastName: String,
+    email: String,
+    phone: String,
+    onSuccess: () -> Unit = {},
+    onError: (String) -> Unit = {}
+) {
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+
+    val currentUser = auth.currentUser
+
+    if (currentUser != null) {
+        if (currentUser.isAnonymous) {
+            createUser(db, currentUser.uid, firstName, lastName, email, phone, onSuccess, onError)
+        } else {
+            onError("Already signed in")
+        }
+    } else {
+        auth.signInAnonymously()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val uid = auth.currentUser?.uid
+
+                    if (uid != null) {
+                        createUser(db, uid, firstName, lastName, email, phone, onSuccess, onError)
+                    } else {
+                        onError("Could not retrieve user ID.")
+                    }
+                } else {
+                    onError(
+                        task.exception?.message
+                            ?: "Authentication failed."
+                    )
+                }
+            }
+    }
+}
+
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
@@ -55,6 +115,9 @@ fun SignUpScreen(
     var userEmail by remember { mutableStateOf("") }
     var userPhoneNumber by remember { mutableStateOf("") }
     var showError by remember { mutableStateOf(false) }
+    var loadingState by remember { mutableStateOf(false) }
+    var firebaseError by remember { mutableStateOf("") }
+
 
     Column(modifier = modifier
         .fillMaxSize()
@@ -133,6 +196,14 @@ fun SignUpScreen(
             )
         }
 
+        if (firebaseError.isNotEmpty()) {
+            Text(
+                text = firebaseError,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
         Button(
             modifier = modifier.fillMaxWidth(),
             onClick = {
@@ -140,11 +211,28 @@ fun SignUpScreen(
                     showError = true
                 } else {
                     showError = false
+                    firebaseError = ""
+                    loadingState = true
                     onCreateAccount(
                         userFirstName,
                         userLastName,
                         userEmail,
                         userPhoneNumber
+                    )
+
+                    onCreateAccount(
+                        userFirstName,
+                        userLastName,
+                        userEmail,
+                        userPhoneNumber,
+                        onSuccess = {
+                            loadingState = false
+                            navController.navigate("user/campsites")
+                        },
+                        onError = { errorMsg ->
+                            loadingState = false
+                            firebaseError = errorMsg
+                        }
                     )
                 }
             },
