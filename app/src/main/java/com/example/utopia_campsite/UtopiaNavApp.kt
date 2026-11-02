@@ -12,8 +12,8 @@ import com.example.utopia_campsite.auth.WelcomeScreen
 import com.example.utopia_campsite.user.CampsiteDetailsScreen
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
 import com.example.utopia_campsite.user.UserCampsiteListScreen
-import com.example.utopia_campsite.user.UserFilterScreen
 import com.example.utopia_campsite.user.UserFilterResultScreen
+import com.example.utopia_campsite.user.UserFilterScreen
 
 /**
  * Defines the navigation routes between the application's screens

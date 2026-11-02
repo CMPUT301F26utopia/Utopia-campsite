@@ -50,12 +50,13 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import com.example.utopia_campsite.owner.Campsites
 import com.example.utopia_campsite.user.CampsiteSummaryRow
 
 @Composable
-fun UserProfileScreen(user: User) {
+fun UserProfileScreen(user: User, onSaveProfile: (User) -> Unit) {
     var currentScreen by remember { mutableStateOf("Me") } //display user profile as the starting view
 
     Column(
@@ -135,7 +136,11 @@ fun UserProfileScreen(user: User) {
 
         when (currentScreen) { //toggles partial ui composition depending on button selected
             "Current Reservations" -> UserProfileCurrentReservationScreen(user)
-            "Me" -> UserProfileMeScreen(user)
+            "Me" -> UserProfileMeScreen(user = user, onEditProfileClick = {currentScreen = "Update Profile"})
+            "Update Profile" -> UserUpdateProfileScreen(user = user, onSave = { updated ->
+                onSaveProfile(updated)
+                currentScreen = "Me"
+            }, onCancel = { currentScreen = "Me" })
         }
     } //end Column
 } //end UserProfileScreen
