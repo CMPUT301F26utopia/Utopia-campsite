@@ -69,4 +69,24 @@ class UserRepository {
 
     }//end add current reservation
 
+    fun deleteCurrentReservation(userID: String, reservation: Reservation) {
+        //to be implemented
+    }
+
+
+    /**
+     * find the start and end date of the reservation the user booked and return it
+     * as a string
+     * @param user: the user object
+     * @param campsiteName: the name of the campsite that the user reserved
+     */
+    fun getReservationDate(user: User, campsiteName: String) : String {
+        for (reservation in user.currentReservations ) {
+            if (reservation.campsiteName == campsiteName) {
+                return "Reserved Date: ${reservation.startReservedDate} to ${reservation.endReservedDate}"
+            }
+        }
+        return "gay"
+    }
+
 }//end user repository
