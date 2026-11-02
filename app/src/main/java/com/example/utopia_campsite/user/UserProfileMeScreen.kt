@@ -1,3 +1,9 @@
+/**
+ *
+ * This screen will show the user's current details.
+ * Outstanding Issues: Currently no way to navigate to this screen
+ */
+
 package com.example.utopia_campsite.user
 
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +30,12 @@ import coil3.compose.AsyncImage
 import com.example.utopia_campsite.R
 import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
 
+
+/**
+ * This screen will show the user's current details.
+ * @param user: the user to display
+ * @param onEditProfileClick: a callback function to navigate to the edit profile screen
+ */
 @Composable
 fun UserProfileMeScreen(
     user: User,

@@ -1,3 +1,8 @@
+/**
+ * This is where the user will enter details to update
+
+ */
+
 package com.example.utopia_campsite.user
 
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +27,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
 
+/**
+ * This screen will allow the user to update their profile details.
+ * @param user: the user to update
+ * @param onSave: a callback function to save the updated user
+ * @param onCancel: a callback function to cancel the update
+ */
 @Composable
 fun UserUpdateProfileScreen(
     user: User,
