@@ -65,7 +65,7 @@ fun UserProfileMeScreen(
 
         )
         Text(
-            text = "Phone: " + user.phone,
+            text = "Phone number: " + user.phone,
             Modifier.padding(start = 16.dp, bottom = 5.dp)
         )
         if(user.notificationsEnabled){

@@ -36,7 +36,7 @@ class UserProfileMeScreenTest {
         )
 
         composeTestRule.setContent {
-            UserProfileMeScreen(user = userA)
+            UserProfileScreen(user = userA)
         }
     }//end setup
 
