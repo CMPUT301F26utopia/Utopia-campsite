@@ -1,8 +1,12 @@
 package com.example.utopia_campsite.owner
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+
 import com.example.utopia_campsite.ui.components.BlackButton
 import com.example.utopia_campsite.ui.components.InputField
+
+import com.example.utopia_campsite.owner.buildCampsite
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
@@ -36,6 +40,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import android.location.Geocoder
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Locale
 
 //top level macro for checking if date formats are correct.
 private val DATE_FORMAT = Regex("""\d{2}/\d{2}/\d{4}""")
@@ -50,6 +61,7 @@ private fun isValidDate(text: String): Boolean = DATE_FORMAT.matches(text)
 *No owner ID.
 *
  */
+
 @Preview
 @Composable
 
@@ -57,26 +69,88 @@ private fun isValidDate(text: String): Boolean = DATE_FORMAT.matches(text)
 /**
 *displays the form that a campsite owner uses to submit their campsite.
 *
-* @param repo: the campsite repository that the screen will use to submit its data. currently commented out because I haven't implemented submitting yet.
+* @param repo: the campsite repository that the screen will use to submit its data.
  * @param onRegistered: called with the new campsite after submitting.
  */
 fun RegisterCampsiteScreen(
-    //repo: CampsiteRepository = remember { CampsiteRepository() },
-    //onRegistered: () -> Unit = {}
+    repo: CampsiteRepository = remember { CampsiteRepository() },
+    onRegistered: () -> Unit = {}
 ){
     var name by remember { mutableStateOf("") }
     var photoUrl by remember {mutableStateOf("")}
     var address by remember { mutableStateOf("") }
-    var tags = remember {mutableStateListOf<String>()}
+    val tags = remember {mutableStateListOf<String>()}
     var showTags by remember {mutableStateOf(false)}
     var lotteryWinners by remember { mutableStateOf("") }
-    var lotteryWaitlist by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var maxOccupants by remember { mutableStateOf("") }
     var regStart by remember { mutableStateOf("") }
     var regEnd by remember { mutableStateOf("") }
     var bookStart by remember { mutableStateOf("") }
     var bookEnd by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var submitting by remember { mutableStateOf(false) }
+    var statusMessage by remember { mutableStateOf<String?>(null) }
+
+    /**
+     *starts a coroutine that checks if the address can be converted into a valid pair of long and lat coords using the android geocoder
+     *
+     * @param submitting: boolean. disables the submit button while true to prevent multiple submissions.
+     * @param statusMessage: string. contains error message if there is one, else null.
+     */
+
+    fun submit() {
+        submitting = true
+        statusMessage = null
+        scope.launch {
+            // buildCampsite needs latitude/longitude,
+            val coords = if (address.isBlank()) null else withContext(Dispatchers.IO) {
+                try {
+                    @Suppress("DEPRECATION")
+                    Geocoder(context, Locale.getDefault())
+                        .getFromLocationName(address.trim(), 1)
+                        ?.firstOrNull()
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            if (address.isNotBlank() && coords == null) {
+                submitting = false
+                statusMessage = "Couldn't find that address. Check it and try again."
+                return@launch
+            }
+            val campsite = buildCampsite(
+                name = name,
+                address = address,
+                description = description,
+                maxOccupancy = maxOccupants,
+                latitude = coords?.latitude?.toString() ?: "",
+                longitude = coords?.longitude?.toString() ?: "",
+                photoUrl = photoUrl,
+                tags = tags.joinToString(","),   // the screen keeps a list, buildCampsite wants a comma string
+                lotteryWinners = lotteryWinners,
+                registrationStart = regStart,
+                registrationEnd = regEnd,
+                bookingStart = bookStart,
+                bookingEnd = bookEnd
+            )
+            if (campsite == null) {
+                submitting = false
+                statusMessage = "Please fill in every required field and check your dates."
+                return@launch
+            }
+            repo.addCampsite(
+                campsite,
+                onSuccess = { submitting = false; onRegistered() },
+                onFailure = { submitting = false; statusMessage = "Registration failed: ${it.message}" }
+
+            )
+
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -159,7 +233,7 @@ fun RegisterCampsiteScreen(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Text("Tags", style = MaterialTheme.typography.titleLarge)
+                            Text("Tags (One required)", style = MaterialTheme.typography.titleLarge)
 
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -213,13 +287,7 @@ fun RegisterCampsiteScreen(
             placeholder="e.g 10",
             keyboard = KeyboardType.Number
             )
-        Label("Lottery Waitlist")
-        InputField(
-            value = lotteryWaitlist,
-            onChange = { lotteryWaitlist = it },
-            placeholder = "Optional: eg. 5...",
-            keyboard = KeyboardType.Number
-        )
+
 
         Label("Description")
         InputField(
@@ -250,8 +318,25 @@ fun RegisterCampsiteScreen(
             keyboard = KeyboardType.Number
         )
 
+        statusMessage?.let {
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
+        Button(
+                onClick = { submit() },
+        enabled = !submitting,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF1FC8B4),
+            contentColor = Color.Black
+        ),
+        shape = RoundedCornerShape(50),
+        modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+        Text(if (submitting) "Saving..." else "Create Campsite Listing")
+    }
+
     }
 }
+
 @Composable
 private fun Label(text:String){
     Text(text, fontSize = 14.sp)
