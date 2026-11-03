@@ -109,4 +109,48 @@ class UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     } //end deleteCurrentReservation
+ 
+
+
+    /**
+     * find the start and end date of the reservation the user booked and return it
+     * as a string
+     * @param user: the user object
+     * @param campsiteName: the name of the campsite that the user reserved
+     */
+    fun getReservationDate(user: User, campsiteName: String) : String {
+        for (reservation in user.currentReservations ) {
+            if (reservation.campsiteName == campsiteName) {
+                return "Reserved Date: ${reservation.startReservedDate} to ${reservation.endReservedDate}"
+            }
+        }
+        return "gay"
+    }
+
+    /**
+     * Updates a user's editable profile fields in firebase
+     * @param user: the updated user (user.deviceID is the firebase document ID)
+     * @param onSuccess: called when the update has been saved
+     * @param onFailure: called when there is an error saving the update
+     */
+    fun updateUser(
+        user: User,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val updates = mapOf(
+            "firstName" to user.firstName,
+            "lastName" to user.lastName,
+            "email" to user.email,
+            "phone" to user.phone,
+            "photoUrl" to user.photoUrl,
+            "notificationsEnabled" to user.notificationsEnabled
+        )
+
+        db.collection("users")
+            .document(user.deviceID)
+            .update(updates)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { exception -> onFailure(exception) }
+    } //end updateUser
 }//end user repository

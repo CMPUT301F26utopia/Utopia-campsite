@@ -43,7 +43,7 @@ import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserRepository
 
 @Composable
-fun UserBookedSummaryRow(userId: String) {
+fun UserBookedSummaryRow(userId: String, campsite: Campsites) {
     var loadedUser by remember(userId) { mutableStateOf<User?>(null)}
     LaunchedEffect(userId) {
         UserRepository().getUser(
@@ -103,7 +103,7 @@ fun UserBookedSummaryRow(userId: String) {
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Reserved Date: 20/11/2026 to 29/11/2026",
+                text = UserRepository().getReservationDate(user = user, campsiteName = campsite.name), //function displays the reserved date
                 fontSize = 12.sp,
                 color = Color.Gray,
                 maxLines = 1,

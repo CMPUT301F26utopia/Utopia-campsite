@@ -24,15 +24,15 @@ import com.example.utopia_campsite.owner.Campsites
  * @property pastReservations: stores a list of past reservations
  */
 data class User (
-    val deviceID: String,
-    val photoUrl: String?,
-    val email: String,
-    val firstName: String,
-    val lastName: String,
-    val notificationsEnabled: Boolean,
-    val phone: String,
-    val currentReservations: MutableList<Reservation>,
-    val pastReservations : List<Reservation>
+    val deviceID: String = "",
+    val photoUrl: String? = "",
+    val email: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
+    val notificationsEnabled: Boolean = false,
+    val phone: String = "",
+    val currentReservations: MutableList<Reservation> = mutableListOf(),
+    val pastReservations : List<Reservation> = mutableListOf()
 
     ) {
 
