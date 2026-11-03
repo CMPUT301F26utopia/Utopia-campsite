@@ -69,4 +69,44 @@ class UserRepository {
 
     }//end add current reservation
 
+
+    /**
+     * Deletes a user's reservation in the firebase
+     * @param userId: the firebase document ID of the user (their deviceID)
+     * @param reservationId: the reservation id of the reservation
+     * @param onSuccess: callback function that is called if the reservation is successfully deleted
+     * @param onFailure:  callback function that is called if the reservation is not deleted successfully
+     */
+
+    fun deleteCurrentReservation(
+        userId: String,
+        reservationId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val userDoc = db.collection("users").document(userId)
+
+        userDoc.get()
+            .addOnSuccessListener { snapshot ->
+
+                val array = snapshot.get("currentReservations") as?  List<Map<String, Any?>>  //get the array field
+
+                if (array == null) {
+                    onFailure(IllegalStateException("reservations field missing or wrong type"))
+                    return@addOnSuccessListener
+                }
+
+                val target = array.firstOrNull { it["reservationId"] == reservationId } //Find the map whose "reservationId" matches
+
+                if (target == null) {
+                    onFailure(NoSuchElementException("Reservation $reservationId not found"))
+                    return@addOnSuccessListener
+                }
+                //remove the map which is the reservation in firebase
+                userDoc.update("currentReservations", FieldValue.arrayRemove(target))
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    } //end deleteCurrentReservation
 }//end user repository

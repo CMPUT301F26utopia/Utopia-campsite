@@ -2,8 +2,6 @@
  * Displays the User Profile as the starting view and
  *  Can toggle between user profile,current and past reservations
  *  Outstanding Issues:
- *  highlight button when selected not implemented
- *  user profile not implemented
  *  Past Reservations not implemented
  */
 
@@ -42,6 +40,7 @@ import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -57,6 +56,12 @@ import com.example.utopia_campsite.user.CampsiteSummaryRow
 @Composable
 fun UserProfileScreen(user: User) {
     var currentScreen by remember { mutableStateOf("Me") } //display user profile as the starting view
+
+    // Define your highlight colors once for buttons
+    val selectedContainer = Black
+    val selectedContent   = White
+    val unselectedContainer = White
+    val unselectedContent   = Black
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -88,8 +93,8 @@ fun UserProfileScreen(user: User) {
                     modifier = Modifier.weight(.1f).testTag("meButton"),
                     onClick = {currentScreen = "Me"},
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = White,
-                        contentColor = Black,
+                        containerColor = if (currentScreen == "Me") selectedContainer else unselectedContainer,
+                        contentColor = if (currentScreen == "Me") selectedContent   else unselectedContent,
                     )
                 ) {
                     Text(
@@ -104,8 +109,8 @@ fun UserProfileScreen(user: User) {
                     modifier = Modifier.weight(.1f).testTag("currentReservationsButton"),
                     onClick = { currentScreen = "Current Reservations" },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = White, // Background color
-                        contentColor = Black,  // Text/icon color
+                        containerColor = if (currentScreen == "Current Reservations") selectedContainer else unselectedContainer,
+                        contentColor = if (currentScreen == "Current Reservations") selectedContent else unselectedContent
                     )
                 ) {
                     Text(
@@ -118,10 +123,10 @@ fun UserProfileScreen(user: User) {
             item {
                 Button(
                     modifier = Modifier.weight(.1f),
-                    onClick = {},
+                    onClick = {currentScreen = "Past Reservations"},
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = White, // Background color
-                        contentColor = Black,  // Text/icon color
+                        containerColor = if (currentScreen == "Past Reservations") selectedContainer else unselectedContainer,
+                        contentColor = if (currentScreen == "Past Reservations") selectedContent else unselectedContent
                     )
                 ) {
                     Text(
