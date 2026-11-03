@@ -28,6 +28,8 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import android.provider.Settings
+import android.provider.Settings.Secure.getString
 
 /**
  * Displays the sign-up screen for users creating a new Utopia Campsite account
@@ -41,6 +43,8 @@ import com.google.firebase.firestore.SetOptions
  * @param navController: the navigation controller used to return to the Welcome Screen
  * @param onCreateAccount: a callback function that receives the user's first name, last name,
  * email address, and phone number when the Create Account button is pressed with valid inputs
+ * @param onSuccess: a function to be called when the account creation is successful
+ * @param onError: a function to be called when there is an error during account creation
  */
 
 fun createUser(
@@ -53,6 +57,9 @@ fun createUser(
     onSuccess: () -> Unit = {},
     onError: (String) -> Unit = {}
 ) {
+    // val deviceID: String = getString(
+    //    context.contentResolver,
+    //    Settings.Secure.ANDROID_ID)
     val user = hashMapOf("firstName" to firstName, "lastName" to lastName, "email" to email, "phone" to phone)
     db.collection("users").document(uid).set(user, SetOptions.merge())
         .addOnSuccessListener { onSuccess() }
