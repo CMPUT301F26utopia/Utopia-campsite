@@ -209,7 +209,7 @@ fun CampsiteReservedUsersScreen(campsite: Campsites) {
             } //end item
 
             items(campsite.usersBooked) { userId ->
-                UserBookedSummaryRow(userId = userId)
+                UserBookedSummaryRow(userId = userId, campsite = campsite)
             }
         } //end LazyColumn
     } //end Scaffold
