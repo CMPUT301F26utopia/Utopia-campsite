@@ -36,7 +36,7 @@ class UserProfileMeScreenTest {
         )
 
         composeTestRule.setContent {
-            UserProfileMeScreen(user = userA)
+            UserProfileScreen(user = userA)
         }
     }//end setup
 
@@ -44,7 +44,7 @@ class UserProfileMeScreenTest {
 
     @Test
     fun testProfilePicDisplaysProperly(){
-        //im making this a separate test because displaying an image is different than displaying text
+        //im making this a separate test because displaying an image is different from displaying text
         composeTestRule.onNodeWithContentDescription("Profile Picture").assertIsDisplayed()
     }//end testProfilePicDisplaysProperly
 
