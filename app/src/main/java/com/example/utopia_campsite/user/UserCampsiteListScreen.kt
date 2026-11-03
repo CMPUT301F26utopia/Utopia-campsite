@@ -68,7 +68,7 @@ fun UserCampsiteListScreen(
 
         //search bar and filter button
         TextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(top = 50.dp),
             value = searchQuery,
             onValueChange = { searchQuery = it },
             placeholder = { Text("Search campsites by name") },
