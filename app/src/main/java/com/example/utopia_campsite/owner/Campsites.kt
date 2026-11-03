@@ -36,21 +36,21 @@ import com.example.utopia_campsite.user.User
  * @property usersBooked: contains a list of user IDs of the users who are currently booked in the campsite
  */
 data class Campsites(
-    val id: String,
-    val name: String,
-    val photoUrl: String?,
-    val address: String,
-    val latitude: Double,
-    val longitude: Double,
-    val ratings: List<Int>,
-    val tags: List<String>,
-    val lotteryWinners: Int,
-    val lotteryWaitlist: MutableList<String>,
-    val description: String,
-    val registrationDate: String,   // (start date-end date) -> eg. 10/10/2026-20/10/2026
-    val bookingDate: String,        // (start date-end date) -> eg. 10/10/2026-20/10/2026
-    val maximumOccupants: Int,
-    val availableStartDate: String, // Added on, this is the starting date of which the campsite is available
-    val availableEndDate: String,   // Added on, this is the ending date of which the campsite is available
-    val usersBooked : MutableList<String>
+    val id: String = "",
+    val name: String = "",
+    val photoUrl: String? = "",
+    val address: String = "",
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0,
+    val ratings: List<Int> = emptyList(),
+    val tags: List<String> = emptyList(),
+    val lotteryWinners: Int = 0,
+    val lotteryWaitlist: MutableList<String> = mutableListOf(),
+    val description: String = "",
+    val registrationDate: String = "",   // (start date-end date) -> eg. 10/10/2026-20/10/2026
+    val bookingDate: String = "",        // (start date-end date) -> eg. 10/10/2026-20/10/2026
+    val maximumOccupants: Int = 0,
+    val availableStartDate: String = "", // Added on, this is the starting date of which the campsite is available
+    val availableEndDate: String = "",   // Added on, this is the ending date of which the campsite is available
+    val usersBooked : MutableList<String> = mutableListOf()
 )
