@@ -93,7 +93,11 @@ class CampsiteRepository{
      *
      * @param campsite: the campsite to save
      */
-    fun addCampsite(campsite: Campsites){
+    fun addCampsite(
+        campsite: Campsites,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ){
         val data = hashMapOf(
             "name" to campsite.name,
             "photoUrl" to campsite.photoUrl,
@@ -113,6 +117,8 @@ class CampsiteRepository{
             "usersBooked" to campsite.usersBooked.map{db.collection("users").document(it)}
         )
         db.collection("campsites").add(data)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
     } //end addCampsite
 
     /**
