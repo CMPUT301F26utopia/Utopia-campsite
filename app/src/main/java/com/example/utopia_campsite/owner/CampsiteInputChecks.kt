@@ -68,8 +68,8 @@ fun buildCampsite(
 
     // true if any required text field is empty (tags made of only commas count as empty)
     val textMissing = name.isBlank() || address.isBlank() || description.isBlank() || tagList.isEmpty()
-    // true if any number field could not be read as a number
-    val numberInvalid = occupancyNumber == null || latitudeNumber == null || longitudeNumber == null || winnersNumber == null
+    // true if any number field could not be read as a number or occupancy/winners is 0 or neg
+    val numberInvalid = (occupancyNumber == null || occupancyNumber <=0) || latitudeNumber == null || longitudeNumber == null ||  (winnersNumber == null || winnersNumber <=0)
     // true if either period is missing a date, has a date that does not exist, or starts after it ends
     val periodInvalid = registrationPeriod == null || bookingPeriod == null
     if (textMissing || numberInvalid || periodInvalid) {
