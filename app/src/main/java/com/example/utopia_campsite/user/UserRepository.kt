@@ -118,17 +118,17 @@ class UserRepository {
      * find the start and end date of the reservation the user booked and return it
      * as a string
      * @param user: the user object
-     * @param campsiteName: the name of the campsite that the user reserved
+     * @param campsiteId: the unique identifier of the campsite the user reserved
      */
-    /*
-    fun getReservationDate(user: User, campsiteName: String) : String {
+
+    fun getReservationDate(user: User, campsiteId: String) : String {
         for (reservation in user.currentReservations ) {
-            if (reservation.reservationId == campsiteName) {
+            if (reservation.campsiteId == campsiteId) {
                 return "Reserved Date: ${reservation.startReservedDate} to ${reservation.endReservedDate}"
             }
         }
-        return "gay"
-    }*/
+        return ""
+    }
 
     /**
      * Updates a user's editable profile fields in firebase
