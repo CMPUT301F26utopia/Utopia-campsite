@@ -3,6 +3,8 @@ package com.example.utopia_campsite.user
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.runtime.toMutableStateList
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.firestore.QuerySnapshot
 
 class UserRepository {
     private val db = FirebaseFirestore.getInstance()
@@ -153,4 +155,42 @@ class UserRepository {
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { exception -> onFailure(exception) }
     } //end updateUser
+
+    /**
+     * Deletes a user's profile and everything tied to it in the firebase
+     * Removes the user from every campsite's lottery waitlist and booked users,
+     * then deletes the user document (which also deletes their current and past reservations)
+     * Everything happens in one batch, so either all of it is deleted or none of it is
+     *
+     * @param userId: the firebase document ID of the user (their deviceID)
+     * @param onSuccess: called once the user and everything tied to them is deleted
+     * @param onFailure: called if anything fails, nothing is deleted in that case
+     */
+    fun deleteUser(
+        userId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val userRef = db.collection("users").document(userId)
+
+        // campsites store users as document references, so search for the reference
+        val waitlisted = db.collection("campsites").whereArrayContains("lotteryWaitlist", userRef).get()
+        val booked = db.collection("campsites").whereArrayContains("usersBooked", userRef).get()
+
+        Tasks.whenAllSuccess<QuerySnapshot>(waitlisted, booked)
+            .addOnSuccessListener { results ->
+                val batch = db.batch()
+                for (campsite in results[0].documents) {
+                    batch.update(campsite.reference, "lotteryWaitlist", FieldValue.arrayRemove(userRef))
+                } //end for
+                for (campsite in results[1].documents) {
+                    batch.update(campsite.reference, "usersBooked", FieldValue.arrayRemove(userRef))
+                } //end for
+                batch.delete(userRef) // then the user itself
+                batch.commit()
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    } //end deleteUser
 }//end user repository
