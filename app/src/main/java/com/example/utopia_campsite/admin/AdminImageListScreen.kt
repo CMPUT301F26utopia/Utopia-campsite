@@ -104,7 +104,7 @@ fun AdminImageScreen(
         if (deletingId!=null) return
         deletingId = image.campsiteId
         deleteError = null
-        repo.deleteCampsiteImage(
+        repo.removeCampsitePhoto(
             campsiteId = image.campsiteId,
             onSuccess = {
                 images = images.filter {it.campsiteId != image.campsiteId}
