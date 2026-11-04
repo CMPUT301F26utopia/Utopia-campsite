@@ -13,8 +13,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.utopia_campsite.admin.AdminCampsiteDetailScreen
+import com.example.utopia_campsite.admin.AdminCampsiteListScreen
 import com.example.utopia_campsite.auth.SignUpScreen
 import com.example.utopia_campsite.auth.WelcomeScreen
+import com.example.utopia_campsite.owner.CampsiteRepository
+import com.example.utopia_campsite.owner.Campsites
 import com.example.utopia_campsite.user.CampsiteDetailsScreen
 import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
@@ -37,7 +41,6 @@ fun UtopiaNavApp() {
     val userRepository = remember{ UserRepository() }
     val currentUser = FirebaseAuth.getInstance().currentUser
     val startPage = if (currentUser != null) "user/campsites" else "welcome"
-
     NavHost(navController = navController, startDestination = startPage) { // TODO: when firebase authentication is working, logic needs to be placed here depending on new user or not. if new user -> welcome, otherwise -> home-screen
         // Composable routers for authentication
 
@@ -65,14 +68,24 @@ fun UtopiaNavApp() {
         composable("user/campsites"){ UserCampsiteListScreen(filterViewModel = filterViewModel, onFilterClick = { navController.navigate("user/filter") }, navController = navController) }
         composable("user/campsite/{campsiteId}") { backStackEntry ->
             val campsiteId = backStackEntry.arguments?.getString("campsiteId")
-            val campsite = filterViewModel.allCampsitesList.find { it.id == campsiteId }
-
-            if(campsite != null){
-                CampsiteDetailsScreen(campsite = campsite)
-            } else {
-                Text("Campsite not found")
+            var campsite by remember { mutableStateOf<Campsites?>(null) }
+            var loadFailed by remember { mutableStateOf(false) }
+            // loads fresh from the database each time this screen opens
+            LaunchedEffect(campsiteId) {
+                CampsiteRepository().getCampsites(
+                    onSuccess = { campsites ->
+                        val found = campsites.find { it.id == campsiteId }
+                        if (found != null) campsite = found else loadFailed = true
+                    },
+                    onFailure = { loadFailed = true }
+                )
+            }//end launchedeffect
+            when {
+                campsite != null -> CampsiteDetailsScreen(campsite = campsite!!)
+                loadFailed -> Text("Campsite not found")
+                else -> CircularProgressIndicator()
             }
-            }//end composable
+        }
 
         // Composable route for the user profile
         composable("user/profile") {
@@ -96,7 +109,17 @@ fun UtopiaNavApp() {
             when {
                 loaded != null -> UserProfileScreen(
                     user = loaded,
-                    saveUser = { updatedUser, onSuccess, onFailure -> userRepository.updateUser(updatedUser, onSuccess, onFailure) }
+                    saveUser = { updatedUser, onSuccess, onFailure -> userRepository.updateUser(updatedUser, onSuccess, onFailure) },
+                    deleteUser = { _, onFailure ->
+                        userRepository.deleteUser(
+                            userId = loaded.deviceID,
+                            onSuccess = {
+                                FirebaseAuth.getInstance().currentUser?.delete()
+                                navController.navigate("welcome")
+                            },
+                            onFailure =  onFailure
+                        )
+                    }
                 )
                 loadFailed -> Text("Couldn't load your profile")
                 else -> CircularProgressIndicator()
@@ -105,6 +128,51 @@ fun UtopiaNavApp() {
 
         // Composable routes for user filter
         composable("user/filter") { UserFilterScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController) }
-        composable("user/filter/result") { UserFilterResultScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController) }
+        composable("user/filter/result") { UserFilterResultScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController, onCampsiteClick = { navController.navigate("user/campsite/${it.id}") }) }
+
+        composable("admin/campsites") {
+            AdminCampsiteListScreen(
+                onFilterClick = { navController.navigate("admin/filter") },
+                navController = navController
+            )
+        }
+        composable("admin/filter") {
+            UserFilterScreen(
+                modifier = Modifier,
+                filterViewModel = filterViewModel,
+                navController = navController,
+                resultRoute = "admin/filter/result"
+            )
+        }
+
+        composable("admin/filter/result") {
+            UserFilterResultScreen(
+                modifier = Modifier,
+                filterViewModel = filterViewModel,
+                navController = navController,
+                onCampsiteClick = { navController.navigate("admin/campsite/${it.id}") }
+            )
+        }
+
+        composable("admin/campsite/{campsiteId}") { backStackEntry ->
+            val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+            var campsite by remember { mutableStateOf<Campsites?>(null) }
+            var loadFailed by remember {mutableStateOf(false)}
+            // loads fresh from the database each time this screen opens
+            LaunchedEffect(campsiteId) {
+                CampsiteRepository().getCampsites(
+                    onSuccess = { campsites ->
+                        val found = campsites.find { it.id == campsiteId }
+                        if (found != null) campsite = found else loadFailed = true
+                    },
+                    onFailure = { loadFailed = true }
+                )
+            }//end launchedeffect
+            when {
+                campsite != null -> AdminCampsiteDetailScreen(campsite = campsite!!, navController = navController)
+                loadFailed -> Text("Couldn't load campsite")
+                else -> CircularProgressIndicator()
+            }
+        }
     }
 }

@@ -10,11 +10,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,12 +36,14 @@ import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
  * @param user: the user to update
  * @param onSave: a callback function to save the updated user
  * @param onCancel: a callback function to cancel the update
+ * @param onDeleteProfile: a callback function to delete the user's profile
  */
 @Composable
 fun UserUpdateProfileScreen(
     user: User,
     onSave: (User) -> Unit = {},
-    onCancel: () -> Unit = {}
+    onCancel: () -> Unit = {},
+    onDeleteProfile: () -> Unit = {}
 ) {
     // Text fields start empty; the user's current values show as placeholders
     var firstName by remember(user) { mutableStateOf("") }
@@ -46,6 +52,9 @@ fun UserUpdateProfileScreen(
     var phone by remember(user) { mutableStateOf("") }
     var notificationsEnabled by remember(user) { mutableStateOf(user.notificationsEnabled) }
     var photoUrl by remember(user) { mutableStateOf("") }
+
+    // Whether the "are you sure?" popup for deleting the profile is showing
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -136,8 +145,37 @@ fun UserUpdateProfileScreen(
                 onClick = onCancel,
                 modifier = Modifier.testTag("cancelButton")
             ) { Text("Cancel") }
-        }
-    }
+        }//end row
+        Button(
+            onClick = { showDeleteDialog = true },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+            modifier = Modifier.testTag("deleteProfileButton")
+        ) { Text("Delete Profile") } //end button
+    }//end column
+
+    // Ask for confirmation first, since deleting a profile can't be undone
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false }, // tapping outside cancels
+            title = { Text("Delete profile?") },
+            text = { Text("This will permanently delete your profile, your reservations and remove you from every lottery waitlist.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteProfile()
+                    },
+                    modifier = Modifier.testTag("confirmDeleteButton")
+                ) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false },
+                    modifier = Modifier.testTag("cancelDeleteButton")
+                ) { Text("Cancel") }
+            }
+        )
+    } //end if showDeleteDialog
 }
 
 @Preview(showBackground = true)

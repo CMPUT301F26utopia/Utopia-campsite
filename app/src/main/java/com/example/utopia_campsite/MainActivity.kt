@@ -15,8 +15,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             UtopiacampsiteTheme {
                 UtopiaNavApp() // Jumps to navApp
-                }
             }
         }
     }
+}
 
