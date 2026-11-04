@@ -38,11 +38,13 @@ import androidx.compose.ui.unit.sp
 fun UserProfileScreen(
     user: User,
     saveUser: (User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit =
-        { _, onSuccess, _ -> onSuccess() }
+        { _, onSuccess, _ -> onSuccess() },
+    deleteUser: (onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit = { onSuccess, _ -> onSuccess() }
 ) {
     var currentScreen by remember { mutableStateOf("Me") } //display user profile as the starting view
     var currentUser by remember(user) { mutableStateOf(user) }
     var saveError by remember { mutableStateOf<String?>(null) }
+    var deleteError by remember { mutableStateOf<String?>(null) }
 
     // Define your highlight colors once for buttons
     val selectedContainer = Black
@@ -139,9 +141,18 @@ fun UserProfileScreen(
                             { e -> saveError = "Couldn't save: ${e.message}" }
                         )
                     },
-                    onCancel = { saveError = null; currentScreen = "Me" }
+                    onCancel = { saveError = null;deleteError = null; currentScreen = "Me" },
+                    onDeleteProfile = {
+                        deleteError = null
+                        deleteUser(
+                            {}, //on success the navhost leaves this screen, so nothing to do here
+                            { e -> deleteError = "Couldn't delete: ${e.message}" }
+                        )
+
+                    }//end onDeleteProfile
                 )
                 saveError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                deleteError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         } //end when
     } //end Column
