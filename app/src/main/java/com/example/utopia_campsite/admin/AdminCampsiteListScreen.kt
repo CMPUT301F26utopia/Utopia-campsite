@@ -14,7 +14,6 @@
  * Outstanding issues:
  * Similar to UserCampsiteListScreen, currently the campsites are not sorted
  * Add button does not currently do anything
- * admin/campsite currently does not exist
  *
  */
 
@@ -44,20 +43,17 @@ import com.example.utopia_campsite.user.util.CampsiteListContent
  * Clicking a campsite navigates to that campsite's admin details page
  * Clicking the add button navigates to the add campsite screen
  *
- * @param filterViewModel: the ViewModel containing the list of campsites to display
  * @param onFilterClick: a callback function that is called when the filter button is clicked
  * @param navController: the navigation controller used to navigate between screens
  */
 @Composable
 fun AdminCampsiteListScreen(
-    filterViewModel: UserCampsiteFilterViewModel,
     onFilterClick: () -> Unit,
     navController: NavController
 ){
     Box(modifier = Modifier.fillMaxSize()){
 
         CampsiteListContent(
-            filterViewModel = filterViewModel,
             onFilterClick = onFilterClick,
             onCampsiteClick = { campsite ->
                 navController.navigate("admin/campsite/${campsite.id}")
