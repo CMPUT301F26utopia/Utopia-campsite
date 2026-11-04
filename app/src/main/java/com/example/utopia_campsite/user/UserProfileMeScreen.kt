@@ -8,27 +8,44 @@ package com.example.utopia_campsite.user
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.utopia_campsite.R
 import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
+import java.io.File
 
 
 /**
@@ -41,6 +58,26 @@ fun UserProfileMeScreen(
     user: User,
     onEditProfileClick: () -> Unit = {}
 ){
+    val context = LocalContext.current
+    val appPolText = remember(context) {
+        try {
+            context.assets.open("appPolicy.txt").bufferedReader().use { it.readText() }
+        } catch (_: Exception) {
+            try {
+                val file = File("app/src/main/assets/appPolicy.txt")
+                if (file.exists()) {
+                    file.readText()
+                } else {
+                    val devFile = File("app/src/main/java/com/example/utopia_campsite/user/appPolicy.txt")
+                    if (devFile.exists()) devFile.readText() else "failed to load app policy."
+                }
+            } catch (_: Exception) {
+                "failed to load app policy."
+            }
+        }
+    }
+
+    var showAppPolicy by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -101,6 +138,48 @@ fun UserProfileMeScreen(
         )
         {
             Text(text = "Edit Profile")
+        }
+
+        Button(
+            onClick = { showAppPolicy = true },
+            modifier = Modifier
+                .padding(10.dp)
+                .align(Alignment.CenterHorizontally)
+                .testTag("appPolicyButton")
+        )
+        {
+            Text(text = "App Policy")
+        }
+
+        if (showAppPolicy) {
+
+            Dialog(onDismissRequest = {showAppPolicy = false}){
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    tonalElevation = 6.dp,
+                    modifier = Modifier.height(600.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(end=8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Text(appPolText)
+                    }
+                    Spacer(modifier = Modifier.heightIn(30.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = {
+                            showAppPolicy = false
+                        }
+                        ) { Text("close") }
+                    }
+                }
+            }
         }
 
     }//end column

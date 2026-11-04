@@ -5,6 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
+import com.example.utopia_campsite.user.User
+import com.example.utopia_campsite.user.UserProfileMeScreen
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
