@@ -13,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.utopia_campsite.admin.AdminCampsiteDetailScreen
 import com.example.utopia_campsite.auth.SignUpScreen
 import com.example.utopia_campsite.auth.WelcomeScreen
 import com.example.utopia_campsite.user.CampsiteDetailsScreen
@@ -106,5 +107,14 @@ fun UtopiaNavApp() {
         // Composable routes for user filter
         composable("user/filter") { UserFilterScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController) }
         composable("user/filter/result") { UserFilterResultScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController) }
+
+        composable("admin/campsite/{campsiteId}") { backStackEntry ->
+            val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+            // only reads the ViewModel's list to find the campsite, nothing is changed in it
+            val campsite = filterViewModel.allCampsitesList.find { it.id == campsiteId }
+            if (campsite != null) {
+                AdminCampsiteDetailScreen(campsite, navController)
+            }
+        }
     }
 }
