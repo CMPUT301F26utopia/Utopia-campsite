@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import com.example.utopia_campsite.owner.CampsiteRepository
 import com.example.utopia_campsite.owner.Campsites
@@ -37,13 +38,11 @@ import com.example.utopia_campsite.user.util.CampsiteDetailsContent
  * Admins can remove the campsite's image or delete the whole campsite
  *
  * @param campsite: the campsite to show
- * @param filterViewModel: the ViewModel holding the campsite lists, used to delete the campsite
  * @param navController: the navigation controller, used to go back to the list after a delete
  */
 @Composable
 fun AdminCampsiteDetailScreen(
     campsite: Campsites,
-    filterViewModel: UserCampsiteFilterViewModel,
     navController: NavController
 ) {
     val campsiteRepository = remember { CampsiteRepository() }
@@ -55,8 +54,15 @@ fun AdminCampsiteDetailScreen(
     var photoRemoved by remember(campsite.id) { mutableStateOf(false) }
     val shownCampsite = if (photoRemoved) campsite.copy(photoUrl = null) else campsite
 
+    // Message shown if removing the image or deleting fails
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
     Column {
         CampsiteDetailsContent(campsite = shownCampsite)
+
+        if (errorMessage != null) {
+            Text(text = errorMessage!!, color = Color.Red)
+        } //end if
 
         // Admin-only actions
         Row(
@@ -68,7 +74,8 @@ fun AdminCampsiteDetailScreen(
                 Button(onClick = {
                     campsiteRepository.removeCampsitePhoto(
                         campsiteId = campsite.id,
-                        onSuccess = { photoRemoved = true }
+                        onSuccess = { photoRemoved = true },
+                        onFailure = { errorMessage = "Could not remove image" }
                     )
                 }) {
                     Text("Remove image")
@@ -89,9 +96,13 @@ fun AdminCampsiteDetailScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteDialog = false
-                    filterViewModel.deleteCampsite(campsite) {
-                        navController.popBackStack() // back to the admin list once the delete succeeds
-                    }
+                    errorMessage = null
+                    campsiteRepository.deleteCampsite(
+                        campsite = campsite,
+                        onSuccess = { navController.popBackStack() },
+                        onFailure = { errorMessage = "Could not delete campsite" }
+
+                    )
                 }) {
                     Text("Delete")
                 } // end button

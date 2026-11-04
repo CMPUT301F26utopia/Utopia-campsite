@@ -161,4 +161,23 @@ class CampsiteRepository{
         db.collection("campsites").document(campsiteId).update("registrationDate", registrationDate)
     } //end updateRegistrationPeriod
 
+    /**
+     * Removes campsite's photo in the firebase
+     * Sets photoUrl to null
+     *
+     * @param campsiteId: the Firestore document ID of the campsite
+     * @param onSuccess: a callback function that is called when the photo is removed
+     * @param onFailure: a callback function that is called when there is an error removing the photo
+     */
+    fun removeCampsitePhoto(
+        campsiteId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ){
+        db.collection("campsites").document(campsiteId).update("photoUrl", null)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    } //end removeCampsitePhoto
+
+
 }//end campsite controller

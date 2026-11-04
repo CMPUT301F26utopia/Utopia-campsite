@@ -49,7 +49,6 @@ import com.example.utopia_campsite.owner.Campsites
  * Shows loading and error messages when campsites cannot be displayed
  * Shows an empty message when no campsites are found
  *
- * @param filterViewModel: the ViewModel containing the list of campsites to display
  * @param onFilterClick: a callback function that is called when the filter button is clicked
  * @param onCampsiteClick: a callback function that is called with the campsite that was clicked
  */
