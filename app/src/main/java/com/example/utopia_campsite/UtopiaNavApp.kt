@@ -109,7 +109,17 @@ fun UtopiaNavApp() {
             when {
                 loaded != null -> UserProfileScreen(
                     user = loaded,
-                    saveUser = { updatedUser, onSuccess, onFailure -> userRepository.updateUser(updatedUser, onSuccess, onFailure) }
+                    saveUser = { updatedUser, onSuccess, onFailure -> userRepository.updateUser(updatedUser, onSuccess, onFailure) },
+                    deleteUser = { _, onFailure ->
+                        userRepository.deleteUser(
+                            userId = loaded.deviceID,
+                            onSuccess = {
+                                FirebaseAuth.getInstance().currentUser?.delete()
+                                navController.navigate("welcome")
+                            },
+                            onFailure =  onFailure
+                        )
+                    }
                 )
                 loadFailed -> Text("Couldn't load your profile")
                 else -> CircularProgressIndicator()
