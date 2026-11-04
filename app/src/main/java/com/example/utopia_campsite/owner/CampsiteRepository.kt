@@ -7,11 +7,9 @@
 package com.example.utopia_campsite.owner
 
 import androidx.compose.runtime.mutableStateListOf
-import com.example.utopia_campsite.user.User
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlin.collections.toMutableList
 
 /**
  *
@@ -160,5 +158,46 @@ class CampsiteRepository{
     fun updateRegistrationPeriod(campsiteId: String, registrationDate: String){
         db.collection("campsites").document(campsiteId).update("registrationDate", registrationDate)
     } //end updateRegistrationPeriod
+
+    data class CampsiteImage(
+        val campsiteId: String,
+        val campsiteName: String,
+        val photoUrl: String
+    )
+
+    /**
+     * Retrieves every campsite that has a photo.
+     *
+     * @param onSuccess: called with one CampsiteImage per campsite that has a photoUrl
+     * @param onFailure: called when the query fails
+     */
+    fun getCampsiteImages(
+        onSuccess: (List<CampsiteImage>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ){
+        db.collection("campsites").get().addOnSuccessListener {
+            result ->
+                    val image = result.documents.mapNotNull {
+                        doc ->
+                        val url = doc.getString("photoUrl")
+                        if (url.isNullOrBlank()) null
+                        else CampsiteImage(doc.id, doc.getString("name")?: "",url)
+                    }
+            onSuccess(image)
+        }
+            .addOnFailureListener { onFailure(it) }
+    }
+    //End getCampsiteImages
+
+    fun deleteCampsiteImage(
+        campsiteId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ){
+        db.collection("campsites").document(campsiteId)
+            .update("photoUrl",null)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 
 }//end campsite controller
