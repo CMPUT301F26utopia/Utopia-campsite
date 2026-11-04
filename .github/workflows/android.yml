@@ -37,7 +37,6 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
 
-    
     - name: Run Android UI tests
       uses: reactivecircus/android-emulator-runner@v2
       with:
@@ -46,4 +45,14 @@ jobs:
         arch: x86_64
         profile: pixel_2
         script: ./gradlew connectedDebugAndroidTest --stacktrace
+
+    
+    - name: Upload test reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: android-test-reports
+        path: |
+          app/build/reports/androidTests/
+          app/build/outputs/androidTest-results/
     
