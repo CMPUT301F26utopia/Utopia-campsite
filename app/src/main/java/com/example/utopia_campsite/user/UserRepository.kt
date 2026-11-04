@@ -179,11 +179,13 @@ class UserRepository {
 
         Tasks.whenAllSuccess<QuerySnapshot>(waitlisted, booked)
             .addOnSuccessListener { results ->
+                val waitlistedCampsites = results[0].documents
+                val bookedCampsites = results[1].documents
                 val batch = db.batch()
-                for (campsite in results[0].documents) {
+                for (campsite in waitlistedCampsites) {
                     batch.update(campsite.reference, "lotteryWaitlist", FieldValue.arrayRemove(userRef))
                 } //end for
-                for (campsite in results[1].documents) {
+                for (campsite in bookedCampsites) {
                     batch.update(campsite.reference, "usersBooked", FieldValue.arrayRemove(userRef))
                 } //end for
                 batch.delete(userRef) // then the user itself
