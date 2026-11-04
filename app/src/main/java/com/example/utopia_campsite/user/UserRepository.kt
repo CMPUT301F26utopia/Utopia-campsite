@@ -118,6 +118,7 @@ class UserRepository {
      * @param user: the user object
      * @param campsiteName: the name of the campsite that the user reserved
      */
+    /*
     fun getReservationDate(user: User, campsiteName: String) : String {
         for (reservation in user.currentReservations ) {
             if (reservation.campsiteName == campsiteName) {
@@ -125,7 +126,7 @@ class UserRepository {
             }
         }
         return "gay"
-    }
+    }*/
 
     /**
      * Updates a user's editable profile fields in firebase

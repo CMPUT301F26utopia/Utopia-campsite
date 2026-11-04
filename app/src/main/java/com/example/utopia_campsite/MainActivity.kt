@@ -31,14 +31,58 @@ class MainActivity : ComponentActivity() {
                         notificationsEnabled = true,
                         phone = "09876343",
                         policyViolated = false
-                    )
+                    ),
+                        Owner(
+                            postedCampsitesId = mutableListOf(),
+                            deviceID = "wsdfcvbsString",
+                            photoUrl = null,
+                            email = "wdwdww@wdwd",
+                            firstName = "gang",
+                            lastName = "geng",
+                            notificationsEnabled = true,
+                            phone = "09876343",
+                            policyViolated = true
+                        ),
+                        Owner(
+                            postedCampsitesId = mutableListOf(),
+                            deviceID = "wsdfcvbsString",
+                            photoUrl = null,
+                            email = "wdwdww@wdwd",
+                            firstName = "gung",
+                            lastName = "geng",
+                            notificationsEnabled = true,
+                            phone = "09876343",
+                            policyViolated = true
+                        )
                 ), usersList = mutableListOf(
                         User(
                             deviceID = "ss",
                             photoUrl = null,
                             email = "abc@abs.com",
-                            lastName = "qw",
-                            firstName = "er",
+                            lastName = "tangina",
+                            firstName = "mo",
+                            notificationsEnabled = true,
+                            phone = "123456789",
+                            currentReservations = mutableListOf(),
+                            pastReservations = emptyList()
+                        ),
+                        User(
+                            deviceID = "ss",
+                            photoUrl = null,
+                            email = "abc@abs.com",
+                            lastName = "iyutin",
+                            firstName = "kita",
+                            notificationsEnabled = true,
+                            phone = "123456789",
+                            currentReservations = mutableListOf(),
+                            pastReservations = emptyList()
+                        ),
+                        User(
+                            deviceID = "ss",
+                            photoUrl = null,
+                            email = "abc@abs.com",
+                            lastName = "bobo",
+                            firstName = "ka",
                             notificationsEnabled = true,
                             phone = "123456789",
                             currentReservations = mutableListOf(),

@@ -1,10 +1,12 @@
 /**
- * Displays the User Profile as the starting view and
- *  Can toggle between user profile,current and past reservations
+ * Displays All Profiles as the starting view and
+ *  Can toggle between all profiles, owner profiles, user profiles and admin profiles
+ *  Can delete profiles by clicking delete profile button
+ *  Utopia 03.02.01
+ *  Utopia 03.05.01
+ *  Utopia 03.07.01
  *  Outstanding Issues:
- *  highlight button when selected not implemented
- *  user profile not implemented
- *  Past Reservations not implemented
+ *  admin profiles not implemented
  */
 package com.example.utopia_campsite.admin
 
@@ -142,10 +144,12 @@ fun BrowseProfileScreen(
                     )
                 }
             }
-        } //end lazyColumn
+        } //end LazyRow
 
         when (currentScreen) { //toggles partial ui composition depending on button selected
-            "All" -> AllProfilesScreen(ownersList = ownersList, usersList = usersList)
+            "All" -> AllProfilesScreen(ownersList, usersList)
+            "Owners" -> OwnerProfilesScreen(ownersList)
+            "Users" -> UserProfilesScreen(usersList)
         }
-    }
+    } //end column
 } //end BrowseProfileScreen

@@ -103,7 +103,7 @@ fun UserBookedSummaryRow(userId: String, campsite: Campsites) {
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = UserRepository().getReservationDate(user = user, campsiteName = campsite.name), //function displays the reserved date
+                text = "fix before pushing",//UserRepository().getReservationDate(user = user, campsiteName = campsite.name), //function displays the reserved date
                 fontSize = 12.sp,
                 color = Color.Gray,
                 maxLines = 1,

@@ -1,3 +1,9 @@
+/**
+ displays all profiles in a list
+
+ Outstanding issues:
+ firebase delete not implemented
+ */
 package com.example.utopia_campsite.admin
 
 import androidx.compose.foundation.background
@@ -47,8 +53,14 @@ import com.example.utopia_campsite.user.UserReservationSummaryRow
 @Composable
 fun AllProfilesScreen(ownersList: MutableList<Owner>, usersList: MutableList<User>) {
 
-    val ownersListDisplayed = remember { ownersList }
-    val usersListDisplayed = remember { usersList }
+    val ownersListDisplayed = remember { mutableStateListOf<Owner>() }
+    val usersListDisplayed = remember { mutableStateListOf<User>() }
+
+    //next 4 lines is copying both lists for ui display
+    ownersListDisplayed.clear()
+    ownersListDisplayed.addAll(ownersList)
+    usersListDisplayed.clear()
+    usersListDisplayed.addAll(usersList)
 
     LazyColumn(
         modifier = Modifier
@@ -57,7 +69,23 @@ fun AllProfilesScreen(ownersList: MutableList<Owner>, usersList: MutableList<Use
         verticalArrangement = Arrangement.spacedBy(8.dp) // Slightly tighter spacing for lists
     ) {
         items(ownersListDisplayed) { owner ->
-           OwnerProfileRow(owner)
+           OwnerProfileSummaryRow(
+               owner,
+               onRemoveClick = {
+                   ownersListDisplayed.remove(it) //updates ui
+                   ownersList.remove(it) //remove owner locally
+               }
+           )
         }
-    }
-    } //end else statement
+
+        items(usersListDisplayed) { user ->
+            UserProfileSummaryRow(
+                user,
+                onRemoveClick = {
+                    usersListDisplayed.remove(it) //updates ui
+                    usersListDisplayed.remove(it) //remove user locally
+                }
+            )
+        }
+    } //end LazyColumn
+} //end AllProfilesScreen
