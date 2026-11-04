@@ -7,6 +7,7 @@
 package com.example.utopia_campsite.owner
 
 import androidx.compose.runtime.mutableStateListOf
+import com.example.utopia_campsite.user.User
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -85,6 +86,34 @@ class CampsiteRepository{
             }//end addOnFailureListener
 
     }//end getCampsites
+
+
+    /**
+     * fetches one campsite from firebase
+     * @param campsiteId: the firebase document ID of the campsite (campsite id)
+     * @param onSuccess: a callback function that is called when the user is retrieved
+     * @param onFailure: a callback function that is called when there is an error retrieving the user
+     */
+    fun getCampsite(
+        campsiteId: String,
+        onSuccess: (Campsites) -> Unit,
+        onFailure: (Exception) -> Unit
+    ){
+
+        db.collection("campsites")
+            .document(campsiteId)
+            .get()
+            .addOnSuccessListener { document ->
+                val campsite = document.toObject(Campsites::class.java)?.copy(id = document.id)
+                if (campsite != null) {
+                    onSuccess(campsite)
+                } else {
+                    onFailure(Exception("Campsite identifier $campsiteId does not exist"))
+                }
+            }.addOnFailureListener { exception ->
+                onFailure(exception)
+            }//end onFailureListener
+    }//end getCampsite
 
     /**
      * Saves a new campsite to the firebase firestore (US 02.01.02)
