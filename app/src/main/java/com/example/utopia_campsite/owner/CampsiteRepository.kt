@@ -10,6 +10,7 @@ import androidx.compose.runtime.mutableStateListOf
 import com.example.utopia_campsite.user.User
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.collections.toMutableList
 
@@ -178,6 +179,45 @@ class CampsiteRepository{
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     } //end removeCampsitePhoto
+
+    /**
+     * Deletes a campsite and removes its current and past reservations from every user (admin)
+     * Everything happens in one batch, so either all of it is deleted or none of it is
+     *
+     * @param campsite: the campsite to delete
+     * @param onSuccess: called once the campsite and its reservations are deleted
+     * @param onFailure: called if anything fails, nothing is deleted in that case
+     */
+    fun deleteCampsite(
+        campsite: Campsites,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ){
+        // past reservations belong to users who are no longer in usersBooked, so check every user
+        db.collection("users").get()
+            .addOnSuccessListener { users ->
+                val batch = db.batch()
+                for (user in users.documents) {
+                    val updates = mutableMapOf<String, Any>()
+                    for (field in listOf("currentReservations", "pastReservations")) {
+                        val reservations = user.get(field) as? List<Map<String, Any?>> ?: emptyList()
+                        // matching by campsiteName for now, change to an id match if Reservation has a campsiteId
+                        val toRemove = reservations.filter { it["campsiteName"] == campsite.name }
+                        if (toRemove.isNotEmpty()) {
+                            updates[field] = FieldValue.arrayRemove(*toRemove.toTypedArray())
+                        } //end if
+                    } //end for
+                    if (updates.isNotEmpty()) {
+                        batch.update(user.reference, updates)
+                    } //end if
+                } //end for
+                batch.delete(db.collection("campsites").document(campsite.id)) // then the campsite itself
+                batch.commit()
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    } //end deleteCampsite
 
 
 }//end campsite controller
