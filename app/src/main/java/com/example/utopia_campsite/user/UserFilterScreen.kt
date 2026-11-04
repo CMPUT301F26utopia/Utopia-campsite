@@ -116,7 +116,7 @@ fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Un
  * @param navController: the navigation controller used to navigate between screens
  */
 @Composable
-fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel, navController: NavController) {
+fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel, navController: NavController, resultRoute: String = "user/filter/result") {
     var inputLocation by remember { mutableStateOf("") }
     var inputGuests by remember { mutableStateOf("") }
     var inputStartDate by remember { mutableStateOf("") }
@@ -134,7 +134,7 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
             modifier = modifier.fillMaxWidth()
         ) {
             Button(
-                onClick = {} // This will be used to go back to the user HOME page
+                onClick = {navController.popBackStack()} // This will be used to go back to the user HOME page
             ) {
                 Text("Back")
             }
@@ -221,7 +221,7 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
                 } else {
                     filterViewModel.updateFilteredCampsites(results)
                     noMatchesFound = false
-                    navController.navigate("user/filter/result")
+                    navController.navigate(resultRoute)
                 }
 
             }

@@ -36,6 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.LaunchedEffect
+import com.example.utopia_campsite.owner.CampsiteRepository
 import com.example.utopia_campsite.user.CampsiteSummaryRow
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
 import com.example.utopia_campsite.owner.Campsites
@@ -47,23 +49,39 @@ import com.example.utopia_campsite.owner.Campsites
  * Shows loading and error messages when campsites cannot be displayed
  * Shows an empty message when no campsites are found
  *
- * @param filterViewModel: the ViewModel containing the list of campsites to display
  * @param onFilterClick: a callback function that is called when the filter button is clicked
  * @param onCampsiteClick: a callback function that is called with the campsite that was clicked
  */
 @Composable
 fun CampsiteListContent(
-    filterViewModel: UserCampsiteFilterViewModel,
     onFilterClick: () -> Unit,
     onCampsiteClick: (Campsites) -> Unit
 ){
     var searchQuery by remember { mutableStateOf("") }
     var submittedQuery by remember{mutableStateOf("")}
+    var allCampsites by remember { mutableStateOf<List<Campsites>>(emptyList()) }
+    val campsiteRepository = remember { CampsiteRepository() }
+    var loadStatus by remember { mutableStateOf("loading") }
 
+    // runs each time this screen appears, including when coming back from a detail screen
+    LaunchedEffect(Unit) {
+        campsiteRepository.getCampsites(
+            onSuccess = { campsites ->
+                allCampsites = campsites
+                loadStatus = "success"
+            },
+            onFailure = {
+                loadStatus = "error"
+            }
+        )
+    }//end LaunchedEffect
 
-    val campsites = filterViewModel.allCampsitesList.filter { campsite ->
+    val campsites = allCampsites.filter { campsite ->
         campsite.name.contains(submittedQuery.trim(), ignoreCase = true)
     }
+
+
+
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)){
 
@@ -102,9 +120,9 @@ fun CampsiteListContent(
             modifier = Modifier.padding(vertical = 12.dp)
         )
 
-        if(filterViewModel.campsiteLoadStatus == "loading"){
+        if(loadStatus== "loading"){
             Text("Loading campsites...")
-        } else if(filterViewModel.campsiteLoadStatus == "error"){
+        } else if(loadStatus == "error"){
             Text(
                 text = "Error loading campsites",
                 color = Color.Red

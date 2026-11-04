@@ -38,7 +38,7 @@ import com.example.utopia_campsite.user.User
 data class Campsites(
     val id: String = "",
     val name: String = "",
-    val photoUrl: String? = "",
+    var photoUrl: String? = "",
     val address: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,

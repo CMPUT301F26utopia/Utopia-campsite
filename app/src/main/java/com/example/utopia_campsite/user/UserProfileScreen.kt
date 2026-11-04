@@ -17,19 +17,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Black
@@ -43,11 +38,13 @@ import androidx.compose.ui.unit.sp
 fun UserProfileScreen(
     user: User,
     saveUser: (User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit =
-        { _, onSuccess, _ -> onSuccess() }
+        { _, onSuccess, _ -> onSuccess() },
+    deleteUser: (onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit = { onSuccess, _ -> onSuccess() }
 ) {
     var currentScreen by remember { mutableStateOf("Me") } //display user profile as the starting view
     var currentUser by remember(user) { mutableStateOf(user) }
     var saveError by remember { mutableStateOf<String?>(null) }
+    var deleteError by remember { mutableStateOf<String?>(null) }
 
     // Define your highlight colors once for buttons
     val selectedContainer = Black
@@ -144,9 +141,18 @@ fun UserProfileScreen(
                             { e -> saveError = "Couldn't save: ${e.message}" }
                         )
                     },
-                    onCancel = { saveError = null; currentScreen = "Me" }
+                    onCancel = { saveError = null;deleteError = null; currentScreen = "Me" },
+                    onDeleteProfile = {
+                        deleteError = null
+                        deleteUser(
+                            {}, //on success the navhost leaves this screen, so nothing to do here
+                            { e -> deleteError = "Couldn't delete: ${e.message}" }
+                        )
+
+                    }//end onDeleteProfile
                 )
                 saveError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                deleteError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         } //end when
     } //end Column
