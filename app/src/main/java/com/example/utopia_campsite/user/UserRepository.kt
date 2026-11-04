@@ -120,7 +120,7 @@ class UserRepository {
      */
     fun getReservationDate(user: User, campsiteName: String) : String {
         for (reservation in user.currentReservations ) {
-            if (reservation.campsiteName == campsiteName) {
+            if (reservation.reservationId == campsiteName) {
                 return "Reserved Date: ${reservation.startReservedDate} to ${reservation.endReservedDate}"
             }
         }
