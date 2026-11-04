@@ -14,7 +14,6 @@
  * Outstanding issues:
  * Similar to UserCampsiteListScreen, currently the campsites are not sorted
  * Add button does not currently do anything
- * admin/campsite currently does not exist
  *
  */
 

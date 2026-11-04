@@ -1,12 +1,8 @@
 /**
- * Utopia 0X.XX.XX
  * Shows the details of one campsite to an admin, using the shared CampsiteDetailsContent,
  * plus buttons to remove the campsite's image and to delete the whole campsite
  *
  * Outstanding Issues:
- * Removing the image does not update the ViewModel's campsite lists, so the list and
- * a re-opened detail screen show the old image until the campsites are reloaded
- * Deleting only removes current reservations, past reservations are left alone
  * Reservations are matched to the campsite by name, which breaks if two campsites share a name
  */
 
@@ -72,6 +68,7 @@ fun AdminCampsiteDetailScreen(
             // Nothing to remove if the campsite has no image
             if (!shownCampsite.photoUrl.isNullOrBlank()) {
                 Button(onClick = {
+                    errorMessage = null
                     campsiteRepository.removeCampsitePhoto(
                         campsiteId = campsite.id,
                         onSuccess = { photoRemoved = true },

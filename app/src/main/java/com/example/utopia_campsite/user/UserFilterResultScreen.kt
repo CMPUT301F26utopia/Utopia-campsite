@@ -1,5 +1,6 @@
 package com.example.utopia_campsite.user
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,9 +32,10 @@ import com.example.utopia_campsite.owner.Campsites
  * @param modifier: the Modifier used to configure the screen layout
  * @param filterViewModel: the ViewModel containing the filtered campsite results
  * @param navController: the navigation controller used to return to the previous screen
+ * @param onCampsiteClick: a callback function that is called with the campsite that was clicked
  */
 @Composable
-fun UserFilterResultScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel, navController: NavController) {
+fun UserFilterResultScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterViewModel, navController: NavController, onCampsiteClick: (Campsites) -> Unit = {})  {
     // Method for showcasing the result of the filtered list
     val filteredCampsites = filterViewModel.filteredCampsitesList
 
@@ -66,6 +68,7 @@ fun UserFilterResultScreen(modifier: Modifier, filterViewModel: UserCampsiteFilt
                     modifier = modifier
                         .fillMaxWidth()
                         .padding(8.dp)
+                        .clickable{onCampsiteClick(campsite)}
                 ) {
                     Column(
                         modifier = modifier.padding(16.dp)
