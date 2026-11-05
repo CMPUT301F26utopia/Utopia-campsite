@@ -36,14 +36,18 @@ import com.google.firebase.auth.FirebaseAuth
  */
 @Composable
 fun UtopiaNavApp() {
+    var showUserNavigation by remember { mutableStateOf(true) }
+    var showOwnerNavigation by remember { mutableStateOf(false) }
+    var showAdminNavigation by remember { mutableStateOf(false) }
+
     val navController = rememberNavController()
     val filterViewModel: UserCampsiteFilterViewModel = viewModel() // Shared instance of filter-view-model for filter screens
     val userRepository = remember{ UserRepository() }
     val currentUser = FirebaseAuth.getInstance().currentUser
     val startPage = if (currentUser != null) "user/campsites" else "welcome"
-    NavHost(navController = navController, startDestination = startPage) { // TODO: when firebase authentication is working, logic needs to be placed here depending on new user or not. if new user -> welcome, otherwise -> home-screen
-        // Composable routers for authentication
 
+    NavHost(navController = navController, startDestination = startPage) {
+        // Composable routers for authentication
         composable("welcome") {
             WelcomeScreen(
                 modifier = Modifier,
@@ -58,9 +62,14 @@ fun UtopiaNavApp() {
                 modifier = Modifier,
                 navController = navController,
                 onCreateAccount = { firstName, lastName, email, phone ->
-                    // Firebase account creation will go here
+                    // TODO: Firebase account creation will go here
                 }
             )
+        }
+
+        // Showing the user Navigation only
+        if (showUserNavigation) {
+
         }
 
 
