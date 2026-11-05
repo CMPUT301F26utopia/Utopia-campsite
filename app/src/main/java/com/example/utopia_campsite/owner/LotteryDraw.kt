@@ -4,7 +4,6 @@
  * and saves them to the firebase firestore
  *
  * Outstanding Issues:
- * Nothing calls drawEndedLotteries yet, it needs to run when the app starts (e.g. in MainActivity)
  * There is no server, so the draw happens the first time the app runs after the registration period ends
  * Winners are not notified yet (US 01.03.01, 01.03.02)
  */
