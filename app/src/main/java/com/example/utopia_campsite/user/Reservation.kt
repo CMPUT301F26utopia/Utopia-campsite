@@ -15,5 +15,6 @@ data class Reservation(
     val campsiteId : String,
     val startReservedDate: String,
     val endReservedDate: String,
-    val numOfGuests: Int
+    val numOfGuests: Int,
+    val appPolicyRead: Boolean
 )
