@@ -1,5 +1,6 @@
 package com.example.utopia_campsite.owner
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,11 +40,42 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.style.TextOverflow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ *
+ * Determines whether a campsite is past its availability period
+ * Compares the campsite's available end date against the current date
+ *
+ * @param campsite: the campsite whose availability date is being checked
+ * @return true if the campsite's availability has ended, false otherwise
+ */
+fun isPastCampsite(campsite: Campsites): Boolean {
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    dateFormat.isLenient = false
+
+    return try {
+        val today = dateFormat.parse(dateFormat.format(Date()))!!
+        val endDate = dateFormat.parse(campsite.availableEndDate)!!
+
+        today.after(endDate)
+    } catch (e: Exception) {
+        false
+    }
+}
+
+/**
+ *
+ * Determines the current registration or booking status of a campsite
+ * Compares the current date against the campsite's registration and booking date ranges
+ *
+ * @param campsite: the campsite whose status is being determined
+ * @return the campsite's current status, an invalid date or an empty string if neither period is active
+ */
 fun determineCampsiteStatus(campsite: Campsites): String {
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     dateFormat.isLenient = false
@@ -79,30 +111,52 @@ fun determineCampsiteStatus(campsite: Campsites): String {
         return "" // Returning nothing as this campsite is not applicable to have a status string
     }
 }
+/**
+ * TODO: Cancelled Reservations need to be collectively decided on how it will be
+ * Displays the owner's campsite listings with search and filtering functionality
+ * Retrieves campsites belonging to the owner from the repository
+ * Separates campsites into active, past, and cancelled reservation tabs
+ * Allows the owner to view campsite details, waitlists, and booked spots
+ * @param modifier: modifier used to customize the screen's layout
+ * @param owner: the owner whose campsite listings are displayed
+ * @param onCampsiteClick: callback function called when a campsite is selected
+ * @param onFilterClick: callback function called when the filter button is clicked
+ * @param onWaitListClick: callback function called when the view waitlist button is clicked
+ * @param onBookedSpotsClick: callback function called when the view booked spots button is clicked
+ */
 @Composable
 fun OwnerCampsiteListScreen(
     modifier: Modifier,
+    owner: Owner,
     onCampsiteClick: (Campsites) -> Unit,
     onFilterClick: () -> Unit,
-    activeCampsites: List<Campsites> = emptyList(), // Retrieve from repository
-    pastCampsites: List<Campsites> = emptyList(),
-    cancelledCampsites: List<Campsites> = emptyList(),
-    statusForCampsite: (Campsites) -> String,
     onWaitListClick: (Campsites) -> Unit, // TODO: Implement when section is ready
     onBookedSpotsClick: (Campsites) -> Unit, // TODO: Implement when section is ready
 ) {
+    var campsites by remember { mutableStateOf<List<Campsites>>(emptyList()) }
+    val repository = remember { CampsiteRepository() }
     var searchQuery by remember { mutableStateOf("") }
     var submittedQuery by remember{ mutableStateOf("") }
     var selectedTab by remember { mutableIntStateOf(0) }
-    var tabs = listOf("Active Reservations", "Past Reservations", "Cancelled Reservations")
+    val tabs = listOf("Active Reservations", "Past Reservations", "Cancelled Reservations")
 
-    var selectedCampsites = when (selectedTab) {
-        0 -> activeCampsites
-        1 -> pastCampsites
-        else -> cancelledCampsites
+    LaunchedEffect(owner.deviceID, owner.postedCampsitesId.toList()) {
+        repository.getOwnerCampsites(
+            owner = owner,
+            onSuccess = { campsites = it },
+            onFailure = { exception ->
+                Log.e("OwnerCampsiteListScreen", "Error Loading Campsites", exception)
+            }
+        )
     }
 
-    var searchedCampsites = selectedCampsites.filter {
+    val selectedCampsites = when (selectedTab) {
+        0 -> campsites.filter { !isPastCampsite(it) }
+        1 -> campsites.filter { isPastCampsite(it) }
+        else -> emptyList()
+    }
+
+    val searchedCampsites = selectedCampsites.filter {
         it.name.contains(submittedQuery, ignoreCase = true)
     }
 
@@ -193,12 +247,14 @@ fun OwnerCampsiteListScreen(
                         status = status,
                         buttonText = when (status) {
                             "Registration Period" -> "View Waitlist"
-                            else -> "View Booked Slots"
+                            "Booking Period" -> "View Booked Slots"
+                            else -> "View Details"
                         },
                         onActionClick = {
                             when (status) {
                                 "Registration Period" -> onWaitListClick(campsite)
-                                else -> onBookedSpotsClick(campsite)
+                                "Booking Period" -> onBookedSpotsClick(campsite)
+                                else -> onCampsiteClick(campsite)
                             }
                         },
                         onCampsiteClick = {
@@ -213,6 +269,19 @@ fun OwnerCampsiteListScreen(
     }
 }
 
+/**
+ *
+ * Displays an individual campsite's information within the owner's listing screen
+ * Shows the campsite name, status, image placeholder, and description
+ * Provides buttons to view campsite details and perform status-specific actions
+ *
+ * @param modifier: modifier used to customize the campsite card's layout
+ * @param campsite: the campsite whose information is displayed
+ * @param status: the current registration or booking status of the campsite
+ * @param buttonText: the text displayed on the campsite's action button
+ * @param onActionClick: callback function called when the action button is clicked
+ * @param onCampsiteClick: callback function called when the campsite name is selected
+ */
 @Composable
 fun OwnerCampsiteCard(
     modifier: Modifier,
@@ -291,19 +360,30 @@ fun OwnerCampsiteCard(
     }
 }
 
-
+/**
+ *
+ * Provides an Android Studio preview of the owner's campsite listing screen
+ * Uses a sample owner and empty callback functions for preview purposes
+ */
 @Preview(showBackground = true)
 @Composable
 fun OwnerCampsiteListScreenPreview() {
     OwnerCampsiteListScreen(
         modifier = Modifier,
+        owner = Owner(
+            postedCampsitesId = mutableListOf(),
+            deviceID = "",
+            photoUrl = null,
+            email = "",
+            firstName = "",
+            lastName = "",
+            notificationsEnabled = false,
+            phone = "",
+            policyViolated = false
+        ),
         onCampsiteClick = {},
         onFilterClick = {},
-        activeCampsites = emptyList(),
-        pastCampsites = emptyList(),
-        cancelledCampsites = emptyList(),
-        statusForCampsite = { "" },
         onWaitListClick = {},
-        onBookedSpotsClick = {},
+        onBookedSpotsClick = {}
     )
 }
