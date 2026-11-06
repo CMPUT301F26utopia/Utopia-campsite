@@ -47,10 +47,4 @@ data class User (
         // remove user details from campsite lottery list
         campsite.lotteryWaitlist.remove(deviceID)
     } // end leaveLottery()
-
-    fun cancelReservation(currentReservations: MutableList<Reservation>, reservationToDelete: Reservation) {
-        //take a reservation object to delete and the list of currentReservation
-        //remove the object in currentReservations
-        currentReservations.remove(reservationToDelete)
-    } //end cancelReservation
 }
