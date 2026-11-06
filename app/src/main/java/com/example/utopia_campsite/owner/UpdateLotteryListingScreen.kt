@@ -181,7 +181,8 @@ fun UpdateLotteryListingScreen(
                 CalendarViewScreen(
                     label = "Start Date",
                     date = regStart,
-                    onDateChange = { regStart = it }
+                    onDateChange = { regStart = it },
+                    testTag = ""
                 )
             }
 
@@ -189,7 +190,8 @@ fun UpdateLotteryListingScreen(
                 CalendarViewScreen(
                     label = "End Date",
                     date = regEnd,
-                    onDateChange = { regEnd = it }
+                    onDateChange = { regEnd = it },
+                    testTag = ""
                 )
             }
         }
@@ -218,7 +220,8 @@ fun UpdateLotteryListingScreen(
                 CalendarViewScreen(
                     label = "Start Date",
                     date = bookStart,
-                    onDateChange = { bookStart = it }
+                    onDateChange = { bookStart = it },
+                    testTag = ""
                 )
             }
 
@@ -226,7 +229,8 @@ fun UpdateLotteryListingScreen(
                 CalendarViewScreen(
                     label = "End Date",
                     date = bookEnd,
-                    onDateChange = { bookEnd = it }
+                    onDateChange = { bookEnd = it },
+                    testTag = ""
                 )
             }
         }

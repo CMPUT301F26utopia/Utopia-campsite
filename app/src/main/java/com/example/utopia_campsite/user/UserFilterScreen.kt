@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -50,7 +51,7 @@ import java.util.TimeZone
  * @param onDateChange: a callback function that updates the date when the user enters or selects a date
  */
 @Composable
-fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Unit) {
+fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Unit, testTag: String) {
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
 
@@ -59,6 +60,7 @@ fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Un
     ) {
         Text(label)
         TextField(
+            modifier = Modifier.testTag(testTag),
             value = date,
             onValueChange = onDateChange,
             placeholder = { Text("DD/MM/YYYY") },
@@ -80,6 +82,7 @@ fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Un
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(
+                    modifier = Modifier.testTag("calendarConfirm"),
                     onClick = {
                         datePickerState.selectedDateMillis?.let { millis ->
                             val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -94,7 +97,9 @@ fun CalendarViewScreen(label: String, date: String, onDateChange: (String) -> Un
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
+                TextButton(
+                    modifier = Modifier.testTag("calendarCancel"),
+                    onClick = { showDatePicker = false }) {
                     Text("Cancel")
                 }
             }
@@ -134,6 +139,7 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
             modifier = modifier.fillMaxWidth()
         ) {
             Button(
+                modifier = Modifier.testTag("backButton"),
                 onClick = {navController.popBackStack()} // This will be used to go back to the user HOME page
             ) {
                 Text("Back")
@@ -166,6 +172,7 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
             ) {
                 Text("Location")
                 TextField(
+                    modifier = Modifier.testTag("locationInput"),
                     value = inputLocation,
                     onValueChange = {inputLocation = it},
                     placeholder = { Text("Enter a city or address")},
@@ -183,6 +190,7 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
             ) {
                 Text("Number of Guests")
                 TextField(
+                    modifier = Modifier.testTag("guestsInput"),
                     value = inputGuests,
                     onValueChange = {inputGuests = it},
                     placeholder = { Text("Number of Guests")},
@@ -196,15 +204,16 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
             }
 
             // Input start date field inner-column
-            CalendarViewScreen("Start Date", date = inputStartDate, onDateChange = { inputStartDate = it })
+            CalendarViewScreen("Start Date", date = inputStartDate, onDateChange = { inputStartDate = it }, testTag = "startDateInput")
             // Input end date field inner-column
-            CalendarViewScreen("End Date", date = inputEndDate, onDateChange = { inputEndDate = it })
+            CalendarViewScreen("End Date", date = inputEndDate, onDateChange = { inputEndDate = it }, testTag = "endDateInput")
         }
 
         Spacer(modifier = modifier.padding(32.dp))
 
         // On click, it should use navController to go to UserFilterResultScreen
         Button(
+            modifier = Modifier.testTag("applyFiltersButton"),
             onClick = {
                 val results = filterViewModel.filterCampsites(
                     userLocation = inputLocation,
@@ -232,6 +241,7 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
         // Display message if any one of the filters have been incorrectly inputted
         if (filterViewModel.filterError) {
             Text(
+                modifier = Modifier.testTag("invalidInputError"),
                 text = "Invalid input. Please check your filters.",
                 color = Color.Red
             )
@@ -239,12 +249,16 @@ fun UserFilterScreen(modifier: Modifier, filterViewModel: UserCampsiteFilterView
 
         // Display message if no filtered results found
         if (noMatchesFound) {
-            Text("No matching campsites found")
+            Text(
+                modifier = Modifier.testTag("noMatchesError"),
+                text = "No matching campsites found"
+            )
         }
 
         //Display message if fetch from firebase is unsuccessful
         if(filterViewModel.campsiteLoadStatus == "error"){
             Text(
+                modifier = Modifier.testTag("firebaseError"),
                 text = "Error fetching campsites from Firebase",
                 color = Color.Red
                 )
