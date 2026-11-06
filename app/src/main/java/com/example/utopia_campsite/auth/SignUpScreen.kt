@@ -176,12 +176,13 @@ fun SignUpScreen(
             OutlinedTextField(
                 value = userPhoneNumber,
                 onValueChange = { userPhoneNumber = it },
-                label = { Text("eg. 444-444-4444") },
+                label = { Text("Phone Number") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Phone
                 ),
-                singleLine = true
+                singleLine = true,
+                supportingText = { Text("Eg. 444-444-4444")}
             )
 
         }

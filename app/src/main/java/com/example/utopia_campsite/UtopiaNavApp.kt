@@ -1,6 +1,8 @@
 package com.example.utopia_campsite
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.utopia_campsite.admin.AdminCampsiteDetailScreen
 import com.example.utopia_campsite.admin.AdminCampsiteListScreen
@@ -29,6 +32,7 @@ import com.example.utopia_campsite.user.UserFilterScreen
 import com.example.utopia_campsite.user.UserFilterResultScreen
 import com.example.utopia_campsite.user.UserProfileScreen
 import com.example.utopia_campsite.user.UserRepository
+import com.example.utopia_campsite.user.util.BottomNavigationBar
 import com.google.firebase.auth.FirebaseAuth
 
 /**
@@ -38,32 +42,42 @@ import com.google.firebase.auth.FirebaseAuth
  */
 @Composable
 fun UtopiaNavApp() {
+    var showUserNavigation by remember { mutableStateOf(false) }
+    var showOwnerNavigation by remember { mutableStateOf(false) }
+    var showAdminNavigation by remember { mutableStateOf(true) }
     val navController = rememberNavController()
+
+    // Initializing home screen routes and profile routes for navigation bar
+    val homeScreenRoute = when {
+        showUserNavigation -> "user/campsites"
+        showOwnerNavigation -> "owner/campsites"
+        showAdminNavigation -> "admin/campsites"
+        else -> "user/campsites"
+    }
+    val profileScreenRoute = "user/profile" // For now, profile screen is set to already implemented user/profile route
+
+    // Observing the current Screen
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+    val showBottomNavigationBar = currentRoute == homeScreenRoute || currentRoute == profileScreenRoute
+
+
     val filterViewModel: UserCampsiteFilterViewModel = viewModel() // Shared instance of filter-view-model for filter screens
     val userRepository = remember{ UserRepository() }
     val currentUser = FirebaseAuth.getInstance().currentUser
-    val startPage = if (currentUser != null) "user/campsites" else "welcome"
-    NavHost(navController = navController, startDestination = startPage) { // TODO: when firebase authentication is working, logic needs to be placed here depending on new user or not. if new user -> welcome, otherwise -> home-screen
-        // Composable routers for authentication
+    val startPage = if (currentUser != null) homeScreenRoute else "welcome"
 
-        composable("welcome") {
-            WelcomeScreen(
-                modifier = Modifier,
-                onSignUp = {
-                    navController.navigate("sign_up")
-                }
-            )
+    Scaffold(
+        bottomBar = {
+            if (showBottomNavigationBar) {
+                BottomNavigationBar(
+                    navController = navController,
+                    homeScreenRoute = homeScreenRoute,
+                    profileScreenRoute = profileScreenRoute
+                )
+            }
         }
-
-        composable("sign_up") {
-            SignUpScreen(
-                modifier = Modifier,
-                navController = navController,
-                onCreateAccount = { firstName, lastName, email, phone ->
-                    // Firebase account creation will go here
-                }
-            )
-        }
+    ) { innerPadding ->
 
         // Composable routers for Campsite Owner
         // TODO: Retrieve the owner object from Firestore when we have owner profiles
@@ -123,100 +137,128 @@ fun UtopiaNavApp() {
                     },
                     onFailure = { loadFailed = true }
                 )
-            }//end launchedeffect
-            when {
-                campsite != null -> CampsiteDetailsScreen(campsite = campsite!!)
-                loadFailed -> Text("Campsite not found")
-                else -> CircularProgressIndicator()
             }
-        }
 
-        // Composable route for the user profile
-        composable("user/profile") {
-            var profileUser by remember { mutableStateOf<User?>(null) }
-            var loadFailed by remember { mutableStateOf(false) }
-            val uid = FirebaseAuth.getInstance().currentUser?.uid
-
-            LaunchedEffect(uid) {
-                if (uid != null) {
-                    userRepository.getUser(
-                        userId = uid,
-                        onSuccess = { profileUser = it },
+            composable("sign_up") {
+                SignUpScreen(
+                    modifier = Modifier,
+                    navController = navController,
+                    onCreateAccount = { firstName, lastName, email, phone ->
+                        // TODO: Firebase account creation will go here
+                    }
+                )
+            }
+            //composable routers for campsite list and campsite details screen
+            composable("user/campsites"){ UserCampsiteListScreen(filterViewModel = filterViewModel, onFilterClick = { navController.navigate("user/filter") }, navController = navController) }
+            composable("user/campsite/{campsiteId}") { backStackEntry ->
+                val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+                var campsite by remember { mutableStateOf<Campsites?>(null) }
+                var loadFailed by remember { mutableStateOf(false) }
+                // loads fresh from the database each time this screen opens
+                LaunchedEffect(campsiteId) {
+                    CampsiteRepository().getCampsites(
+                        onSuccess = { campsites ->
+                            val found = campsites.find { it.id == campsiteId }
+                            if (found != null) campsite = found else loadFailed = true
+                        },
                         onFailure = { loadFailed = true }
                     )
-                } else {
-                    loadFailed = true
+                }//end launchedeffect
+                when {
+                    campsite != null -> CampsiteDetailsScreen(campsite = campsite!!)
+                    loadFailed -> Text("Campsite not found")
+                    else -> CircularProgressIndicator()
                 }
             }
 
-            val loaded = profileUser
-            when {
-                loaded != null -> UserProfileScreen(
-                    user = loaded,
-                    saveUser = { updatedUser, onSuccess, onFailure -> userRepository.updateUser(updatedUser, onSuccess, onFailure) },
-                    deleteUser = { _, onFailure ->
-                        userRepository.deleteUser(
-                            userId = loaded.deviceID,
-                            onSuccess = {
-                                FirebaseAuth.getInstance().currentUser?.delete()
-                                navController.navigate("welcome")
-                            },
-                            onFailure =  onFailure
+            // Composable route for the user profile
+            composable("user/profile") {
+                var profileUser by remember { mutableStateOf<User?>(null) }
+                var loadFailed by remember { mutableStateOf(false) }
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+                LaunchedEffect(uid) {
+                    if (uid != null) {
+                        userRepository.getUser(
+                            userId = uid,
+                            onSuccess = { profileUser = it },
+                            onFailure = { loadFailed = true }
                         )
+                    } else {
+                        loadFailed = true
                     }
-                )
-                loadFailed -> Text("Couldn't load your profile")
-                else -> CircularProgressIndicator()
+                }
+
+                val loaded = profileUser
+                when {
+                    loaded != null -> UserProfileScreen(
+                        user = loaded,
+                        saveUser = { updatedUser, onSuccess, onFailure -> userRepository.updateUser(updatedUser, onSuccess, onFailure) },
+                        deleteUser = { _, onFailure ->
+                            userRepository.deleteUser(
+                                userId = loaded.deviceID,
+                                onSuccess = {
+                                    FirebaseAuth.getInstance().currentUser?.delete()
+                                    navController.navigate("welcome")
+                                },
+                                onFailure =  onFailure
+                            )
+                        }
+                    )
+                    loadFailed -> Text("Couldn't load your profile")
+                    else -> CircularProgressIndicator()
+                }
             }
-        }
 
-        // Composable routes for user filter
-        composable("user/filter") { UserFilterScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController) }
-        composable("user/filter/result") { UserFilterResultScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController, onCampsiteClick = { navController.navigate("user/campsite/${it.id}") }) }
+            // Composable routes for user filter
+            composable("user/filter") { UserFilterScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController) }
+            composable("user/filter/result") { UserFilterResultScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController, onCampsiteClick = { navController.navigate("user/campsite/${it.id}") }) }
 
-        composable("admin/campsites") {
-            AdminCampsiteListScreen(
-                onFilterClick = { navController.navigate("admin/filter") },
-                navController = navController
-            )
-        }
-        composable("admin/filter") {
-            UserFilterScreen(
-                modifier = Modifier,
-                filterViewModel = filterViewModel,
-                navController = navController,
-                resultRoute = "admin/filter/result"
-            )
-        }
-
-        composable("admin/filter/result") {
-            UserFilterResultScreen(
-                modifier = Modifier,
-                filterViewModel = filterViewModel,
-                navController = navController,
-                onCampsiteClick = { navController.navigate("admin/campsite/${it.id}") }
-            )
-        }
-
-        composable("admin/campsite/{campsiteId}") { backStackEntry ->
-            val campsiteId = backStackEntry.arguments?.getString("campsiteId")
-            var campsite by remember { mutableStateOf<Campsites?>(null) }
-            var loadFailed by remember {mutableStateOf(false)}
-            // loads fresh from the database each time this screen opens
-            LaunchedEffect(campsiteId) {
-                CampsiteRepository().getCampsites(
-                    onSuccess = { campsites ->
-                        val found = campsites.find { it.id == campsiteId }
-                        if (found != null) campsite = found else loadFailed = true
-                    },
-                    onFailure = { loadFailed = true }
+            composable("admin/campsites") {
+                AdminCampsiteListScreen(
+                    onFilterClick = { navController.navigate("admin/filter") },
+                    navController = navController
                 )
-            }//end launchedeffect
-            when {
-                campsite != null -> AdminCampsiteDetailScreen(campsite = campsite!!, navController = navController)
-                loadFailed -> Text("Couldn't load campsite")
-                else -> CircularProgressIndicator()
+            }
+            composable("admin/filter") {
+                UserFilterScreen(
+                    modifier = Modifier,
+                    filterViewModel = filterViewModel,
+                    navController = navController,
+                    resultRoute = "admin/filter/result"
+                )
+            }
+
+            composable("admin/filter/result") {
+                UserFilterResultScreen(
+                    modifier = Modifier,
+                    filterViewModel = filterViewModel,
+                    navController = navController,
+                    onCampsiteClick = { navController.navigate("admin/campsite/${it.id}") }
+                )
+            }
+
+            composable("admin/campsite/{campsiteId}") { backStackEntry ->
+                val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+                var campsite by remember { mutableStateOf<Campsites?>(null) }
+                var loadFailed by remember {mutableStateOf(false)}
+                // loads fresh from the database each time this screen opens
+                LaunchedEffect(campsiteId) {
+                    CampsiteRepository().getCampsites(
+                        onSuccess = { campsites ->
+                            val found = campsites.find { it.id == campsiteId }
+                            if (found != null) campsite = found else loadFailed = true
+                        },
+                        onFailure = { loadFailed = true }
+                    )
+                }//end launchedeffect
+                when {
+                    campsite != null -> AdminCampsiteDetailScreen(campsite = campsite!!, navController = navController)
+                    loadFailed -> Text("Couldn't load campsite")
+                    else -> CircularProgressIndicator()
+                }
             }
         }
     }
+
 }
