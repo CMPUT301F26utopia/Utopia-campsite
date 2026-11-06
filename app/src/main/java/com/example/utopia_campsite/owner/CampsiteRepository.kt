@@ -250,5 +250,30 @@ class CampsiteRepository{
             .addOnFailureListener { onFailure(it) }
     } //end deleteCampsite
 
+    /**
+     * Retrieves all the campsites that are tied to the owner. method calls the getCampsites method,
+     * but filters internally
+     *
+     * @param owner: the campsite owner to retrieve the campsites from
+     * @param onSuccess: called once the filtered campsites have been successfully retrieved
+     * @param onFailure: called if anything fails, nothing changes
+     */
+    fun getOwnerCampsites(
+        owner: Owner,
+        onSuccess: (List<Campsites>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        getCampsites(
+            onSuccess = { allCampsites ->
+                val ownerCampsites = allCampsites.filter { campsite ->
+                    campsite.id in owner.postedCampsitesId
+                }
+
+                onSuccess(ownerCampsites)
+            },
+            onFailure = onFailure
+        )
+    } //end getOwnerCampsites
+
 
 }//end campsite controller

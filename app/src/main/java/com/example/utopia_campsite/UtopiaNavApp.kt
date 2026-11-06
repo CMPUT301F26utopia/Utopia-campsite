@@ -19,6 +19,8 @@ import com.example.utopia_campsite.auth.SignUpScreen
 import com.example.utopia_campsite.auth.WelcomeScreen
 import com.example.utopia_campsite.owner.CampsiteRepository
 import com.example.utopia_campsite.owner.Campsites
+import com.example.utopia_campsite.owner.Owner
+import com.example.utopia_campsite.owner.OwnerCampsiteListScreen
 import com.example.utopia_campsite.user.CampsiteDetailsScreen
 import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
@@ -61,6 +63,48 @@ fun UtopiaNavApp() {
                     // Firebase account creation will go here
                 }
             )
+        }
+
+        // Composable routers for Campsite Owner
+        // TODO: Retrieve the owner object from Firestore when we have owner profiles
+        // Constructing a temporary "owner" to allow for navigation
+        composable("owner/campsites") {
+            if (currentUser != null) {
+
+                val tempOwner = Owner(
+                    postedCampsitesId = mutableListOf(),
+                    deviceID = currentUser.uid,
+                    photoUrl = currentUser.photoUrl?.toString(),
+                    email = currentUser.email ?: "",
+                    firstName = currentUser.displayName ?: "",
+                    lastName = "",
+                    notificationsEnabled = false,
+                    phone = currentUser.phoneNumber ?: "",
+                    policyViolated = false
+                )
+
+                OwnerCampsiteListScreen(
+                    modifier = Modifier,
+                    owner = tempOwner,
+
+                    onCampsiteClick = { campsite ->
+                        navController.navigate("user/campsite/${campsite.id}")
+                    },
+
+                    onFilterClick = {
+                        navController.navigate("user/filter")
+                    },
+
+                    // TODO: Connect to owner waitlist screen
+                    onWaitListClick = {},
+
+                    // TODO: Connect to owner booked spots screen
+                    onBookedSpotsClick = {}
+                )
+
+            } else {
+                Text("Error Occured")
+            }
         }
 
 
