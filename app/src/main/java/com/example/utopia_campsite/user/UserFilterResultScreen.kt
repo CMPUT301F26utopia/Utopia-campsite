@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +51,7 @@ fun UserFilterResultScreen(modifier: Modifier, filterViewModel: UserCampsiteFilt
             modifier = modifier.fillMaxWidth()
         ) {
             Button(
+                modifier = Modifier.testTag("backToFilterButton"),
                 onClick = {
                     navController.popBackStack()
                 }
@@ -58,7 +60,10 @@ fun UserFilterResultScreen(modifier: Modifier, filterViewModel: UserCampsiteFilt
             }
         }
         Spacer(modifier = modifier.padding(16.dp))
-        Text("Matching Campsites: ${filteredCampsites.size}", fontSize = 24.sp)
+        Text(
+            modifier = Modifier.testTag("matchingCampsitesFound"),
+            text = "Matching Campsites: ${filteredCampsites.size}",
+            fontSize = 24.sp)
 
         LazyColumn (
             modifier = modifier.weight(1f)
@@ -69,6 +74,7 @@ fun UserFilterResultScreen(modifier: Modifier, filterViewModel: UserCampsiteFilt
                         .fillMaxWidth()
                         .padding(8.dp)
                         .clickable{onCampsiteClick(campsite)}
+                        .testTag("campsiteCard_${campsite.id}")
                 ) {
                     Column(
                         modifier = modifier.padding(16.dp)
