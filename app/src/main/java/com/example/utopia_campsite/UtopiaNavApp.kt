@@ -22,6 +22,8 @@ import com.example.utopia_campsite.auth.SignUpScreen
 import com.example.utopia_campsite.auth.WelcomeScreen
 import com.example.utopia_campsite.owner.CampsiteRepository
 import com.example.utopia_campsite.owner.Campsites
+import com.example.utopia_campsite.owner.Owner
+import com.example.utopia_campsite.owner.OwnerCampsiteListScreen
 import com.example.utopia_campsite.user.CampsiteDetailsScreen
 import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
@@ -77,14 +79,63 @@ fun UtopiaNavApp() {
         }
     ) { innerPadding ->
 
-        NavHost(navController = navController, startDestination = startPage, modifier = Modifier.padding(innerPadding)) {
-            // Composable routers for authentication
-            composable("welcome") {
-                WelcomeScreen(
+        // Composable routers for Campsite Owner
+        // TODO: Retrieve the owner object from Firestore when we have owner profiles
+        // Constructing a temporary "owner" to allow for navigation
+        composable("owner/campsites") {
+            if (currentUser != null) {
+
+                val tempOwner = Owner(
+                    postedCampsitesId = mutableListOf(),
+                    deviceID = currentUser.uid,
+                    photoUrl = currentUser.photoUrl?.toString(),
+                    email = currentUser.email ?: "",
+                    firstName = currentUser.displayName ?: "",
+                    lastName = "",
+                    notificationsEnabled = false,
+                    phone = currentUser.phoneNumber ?: "",
+                    policyViolated = false
+                )
+
+                OwnerCampsiteListScreen(
                     modifier = Modifier,
-                    onSignUp = {
-                        navController.navigate("sign_up")
-                    }
+                    owner = tempOwner,
+
+                    onCampsiteClick = { campsite ->
+                        navController.navigate("user/campsite/${campsite.id}")
+                    },
+
+                    onFilterClick = {
+                        navController.navigate("user/filter")
+                    },
+
+                    // TODO: Connect to owner waitlist screen
+                    onWaitListClick = {},
+
+                    // TODO: Connect to owner booked spots screen
+                    onBookedSpotsClick = {}
+                )
+
+            } else {
+                Text("Error Occured")
+            }
+        }
+
+
+        //composable routers for campsite list and campsite details screen
+        composable("user/campsites"){ UserCampsiteListScreen(filterViewModel = filterViewModel, onFilterClick = { navController.navigate("user/filter") }, navController = navController) }
+        composable("user/campsite/{campsiteId}") { backStackEntry ->
+            val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+            var campsite by remember { mutableStateOf<Campsites?>(null) }
+            var loadFailed by remember { mutableStateOf(false) }
+            // loads fresh from the database each time this screen opens
+            LaunchedEffect(campsiteId) {
+                CampsiteRepository().getCampsites(
+                    onSuccess = { campsites ->
+                        val found = campsites.find { it.id == campsiteId }
+                        if (found != null) campsite = found else loadFailed = true
+                    },
+                    onFailure = { loadFailed = true }
                 )
             }
 
