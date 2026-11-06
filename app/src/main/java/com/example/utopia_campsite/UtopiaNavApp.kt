@@ -78,6 +78,8 @@ fun UtopiaNavApp() {
             }
         }
     ) { innerPadding ->
+        NavHost(navController = navController, startDestination = startPage, modifier = Modifier.padding(innerPadding)){
+        composable("welcome") { WelcomeScreen(modifier = Modifier, onSignUp = { navController.navigate("sign_up") })}
 
         // Composable routers for Campsite Owner
         // TODO: Retrieve the owner object from Firestore when we have owner profiles
@@ -122,22 +124,22 @@ fun UtopiaNavApp() {
         }
 
 
-        //composable routers for campsite list and campsite details screen
-        composable("user/campsites"){ UserCampsiteListScreen(filterViewModel = filterViewModel, onFilterClick = { navController.navigate("user/filter") }, navController = navController) }
-        composable("user/campsite/{campsiteId}") { backStackEntry ->
-            val campsiteId = backStackEntry.arguments?.getString("campsiteId")
-            var campsite by remember { mutableStateOf<Campsites?>(null) }
-            var loadFailed by remember { mutableStateOf(false) }
-            // loads fresh from the database each time this screen opens
-            LaunchedEffect(campsiteId) {
-                CampsiteRepository().getCampsites(
-                    onSuccess = { campsites ->
-                        val found = campsites.find { it.id == campsiteId }
-                        if (found != null) campsite = found else loadFailed = true
-                    },
-                    onFailure = { loadFailed = true }
-                )
-            }
+//        //composable routers for campsite list and campsite details screen
+//        composable("user/campsites"){ UserCampsiteListScreen(filterViewModel = filterViewModel, onFilterClick = { navController.navigate("user/filter") }, navController = navController) }
+//        composable("user/campsite/{campsiteId}") { backStackEntry ->
+//            val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+//            var campsite by remember { mutableStateOf<Campsites?>(null) }
+//            var loadFailed by remember { mutableStateOf(false) }
+//            // loads fresh from the database each time this screen opens
+//            LaunchedEffect(campsiteId) {
+//                CampsiteRepository().getCampsites(
+//                    onSuccess = { campsites ->
+//                        val found = campsites.find { it.id == campsiteId }
+//                        if (found != null) campsite = found else loadFailed = true
+//                    },
+//                    onFailure = { loadFailed = true }
+//                )
+//            }
 
             composable("sign_up") {
                 SignUpScreen(
