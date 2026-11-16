@@ -17,4 +17,7 @@ data class Reservation(
     val endReservedDate: String,
     val numOfGuests: Int,
     val appPolicyRead: Boolean
-)
+) //change code so that we have a collection of reservation instead of storing them in an array field
+//of users since a document have a limit size. reservation should store user id to tie it to the user
+// who made the reservation.
+// might change end reserved date to a timestamp object so its easier to filter current and past reservations
