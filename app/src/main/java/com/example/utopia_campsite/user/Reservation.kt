@@ -12,9 +12,9 @@ import java.util.UUID
 */
 data class Reservation(
     val reservationId : String = UUID.randomUUID().toString(),
-    val campsiteId : String,
-    val startReservedDate: String,
-    val endReservedDate: String,
-    val numOfGuests: Int,
-    val appPolicyRead: Boolean
+    val campsiteId : String = "",
+    val startReservedDate: String = "",
+    val endReservedDate: String = "",
+    val numOfGuests: Int = 0,
+    val appPolicyRead: Boolean = false
 )
