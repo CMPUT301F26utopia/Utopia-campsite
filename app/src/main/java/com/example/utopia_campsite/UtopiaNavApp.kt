@@ -42,9 +42,9 @@ import com.google.firebase.auth.FirebaseAuth
  */
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(true) }
+    var showUserNavigation by remember { mutableStateOf(false) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
-    var showAdminNavigation by remember { mutableStateOf(false) }
+    var showAdminNavigation by remember { mutableStateOf(true) }
     val navController = rememberNavController()
 
     // Initializing home screen routes and profile routes for navigation bar
