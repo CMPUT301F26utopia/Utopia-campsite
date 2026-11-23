@@ -32,7 +32,7 @@ data class User (
     val notificationsEnabled: Boolean = false,
     val phone: String = "",
     val currentReservations: MutableList<Reservation> = mutableListOf(),
-    val pastReservations : List<Reservation> = mutableListOf()
+    var pastReservations : MutableList<Reservation> = mutableListOf()
 
     ) {
 

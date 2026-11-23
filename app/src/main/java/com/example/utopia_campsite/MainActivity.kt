@@ -1,15 +1,18 @@
 package com.example.utopia_campsite
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import com.example.utopia_campsite.owner.drawEndedLotteries
 import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
 import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserProfileMeScreen
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

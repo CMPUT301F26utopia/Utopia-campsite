@@ -1,5 +1,7 @@
 package com.example.utopia_campsite
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -40,11 +42,12 @@ import com.google.firebase.auth.FirebaseAuth
  * Initializes a shared campsite filtering ViewModel for the filter and results screens
  * Uses NavController to handle navigation between registered destinations
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(false) }
+    var showUserNavigation by remember { mutableStateOf(true) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
-    var showAdminNavigation by remember { mutableStateOf(true) }
+    var showAdminNavigation by remember { mutableStateOf(false) }
     val navController = rememberNavController()
 
     // Initializing home screen routes and profile routes for navigation bar
