@@ -13,6 +13,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.collections.toMutableList
+import com.example.utopia_campsite.user.UserRepository
+import com.google.firebase.auth.FirebaseAuth
 
 /**
  *
@@ -75,7 +77,8 @@ class CampsiteRepository{
                         maximumOccupants = document.getLong("maxOccupancy")?.toInt() ?: 0,
                         availableStartDate = document.getString("availableStartDate") ?: "",
                         availableEndDate = document.getString("availableEndDate") ?: "",
-                        usersBooked = getUserIdsFromDocument(document, "usersBooked")
+                        usersBooked = getUserIdsFromDocument(document, "usersBooked"),
+                        reviews = (document.get("reviews") as? List<*>)?.filterIsInstance<String>() ?: emptyList() //this casts firebase's List<Any?> to a List<String>
                     )
                     campsites.add(campsite)
                 }//end for
@@ -144,7 +147,8 @@ class CampsiteRepository{
             "maxOccupancy" to campsite.maximumOccupants,
             "availableStartDate" to campsite.availableStartDate,
             "availableEndDate" to campsite.availableEndDate,
-            "usersBooked" to campsite.usersBooked.map{db.collection("users").document(it)}
+            "usersBooked" to campsite.usersBooked.map{db.collection("users").document(it)},
+            "reviews" to campsite.reviews
         )
         db.collection("campsites").add(data)
             .addOnSuccessListener { onSuccess() }
@@ -274,6 +278,41 @@ class CampsiteRepository{
             onFailure = onFailure
         )
     } //end getOwnerCampsites
+    /**
+     * Adds a review to a campsite in the firebase firestore (entrant posts a review)
+     * Looks up the signed in user's name with getUser, then saves the review as one string, e.g. "John Doe: Great spot!"
+     * arrayUnion appends to the reviews array without overwriting the other reviews
+     * Note: arrayUnion skips an exact duplicate string, so the same person posting the same text twice is only saved once
+     *
+     * @param campsiteId: the Firestore document ID of the campsite
+     * @param reviewText: the text the user wrote, without their name
+     * @param onSuccess: called with the full saved review once it is saved
+     * @param onFailure: called if the user or the review could not be loaded/saved
+     */
+    fun addReview(
+        campsiteId: String,
+        reviewText: String,
+        onSuccess: (String) -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ){
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid == null) {
+            onFailure(Exception("No user is signed in"))
+            return
+        } //end if
+
+        UserRepository().getUser(
+            userId = uid,
+            onSuccess = { user ->
+                val review = "${user.firstName} ${user.lastName}: $reviewText"
+                db.collection("campsites").document(campsiteId)
+                    .update("reviews", FieldValue.arrayUnion(review))
+                    .addOnSuccessListener { onSuccess(review) }
+                    .addOnFailureListener { onFailure(it) }
+            },
+            onFailure = onFailure
+        )
+    } //end addReview
 
 
 }//end campsite controller

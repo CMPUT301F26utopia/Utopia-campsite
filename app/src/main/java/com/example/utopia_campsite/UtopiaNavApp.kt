@@ -42,9 +42,9 @@ import com.google.firebase.auth.FirebaseAuth
  */
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(false) }
+    var showUserNavigation by remember { mutableStateOf(true) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
-    var showAdminNavigation by remember { mutableStateOf(true) }
+    var showAdminNavigation by remember { mutableStateOf(false) }
     val navController = rememberNavController()
 
     // Initializing home screen routes and profile routes for navigation bar
@@ -167,7 +167,22 @@ fun UtopiaNavApp() {
                     )
                 }//end launchedeffect
                 when {
-                    campsite != null -> CampsiteDetailsScreen(campsite = campsite!!)
+                    campsite != null -> CampsiteDetailsScreen(
+                        campsite = campsite!!,
+                        onBack = { navController.popBackStack() },
+                        onPostReview = { reviewText, onSuccess, onFailure ->
+                            CampsiteRepository().addReview(
+                                campsiteId = campsite!!.id,
+                                reviewText = reviewText,
+                                onSuccess = { review ->
+                                    // show the new review right away without reloading from firebase
+                                    campsite = campsite?.let { it.copy(reviews = it.reviews + review) }
+                                    onSuccess()
+                                },
+                                onFailure = onFailure
+                            )
+                        }
+                    )
                     loadFailed -> Text("Campsite not found")
                     else -> CircularProgressIndicator()
                 }

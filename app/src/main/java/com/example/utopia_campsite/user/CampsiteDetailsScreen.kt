@@ -26,29 +26,18 @@ import com.example.utopia_campsite.user.util.CampsiteDetailsContent
  * Shows every detail of one campsite, opened by tapping it in the campsite list
  *
  * @param campsite: the campsite to show
+ * @param onBack: called when the back button is pressed
+ * @param onPostReview: called when the post review button is pressed
  */
 @Composable
-fun CampsiteDetailsScreen(campsite: Campsites){
-    CampsiteDetailsContent(campsite = campsite)
-        /*
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            if (user.deviceID in campsite.lotteryWaitlist){
-                Button(
-                    onClick = { user.leaveLottery(campsite)}
-                ) {
-                    Text("Leave waitlist")
-                } // end button
-            } else {
-                Button(
-                    onClick = { user.joinLottery(campsite)}
-                ) {
-                    Text("Join waitlist")
-                } // end button
-            } // end if-else block
-
-        } // end row*/
-
-} //end CampsiteDetailsScreen
+fun CampsiteDetailsScreen(
+    campsite: Campsites,
+    onBack: (() -> Unit)? = null,
+    onPostReview: ((String, () -> Unit, (Exception) -> Unit) -> Unit)? = null
+) {
+    CampsiteDetailsContent(
+        campsite = campsite,
+        onBack = onBack,
+        onPostReview = onPostReview
+    )
+}
