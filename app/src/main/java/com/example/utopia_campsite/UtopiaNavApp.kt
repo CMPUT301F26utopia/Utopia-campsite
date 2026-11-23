@@ -167,7 +167,22 @@ fun UtopiaNavApp() {
                     )
                 }//end launchedeffect
                 when {
-                    campsite != null -> CampsiteDetailsScreen(campsite = campsite!!)
+                    campsite != null -> CampsiteDetailsScreen(
+                        campsite = campsite!!,
+                        onBack = { navController.popBackStack() },
+                        onPostReview = { reviewText, onSuccess, onFailure ->
+                            CampsiteRepository().addReview(
+                                campsiteId = campsite!!.id,
+                                reviewText = reviewText,
+                                onSuccess = { review ->
+                                    // show the new review right away without reloading from firebase
+                                    campsite = campsite?.let { it.copy(reviews = it.reviews + review) }
+                                    onSuccess()
+                                },
+                                onFailure = onFailure
+                            )
+                        }
+                    )
                     loadFailed -> Text("Campsite not found")
                     else -> CircularProgressIndicator()
                 }
