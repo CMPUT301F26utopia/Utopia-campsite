@@ -1,5 +1,7 @@
 package com.example.utopia_campsite
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
@@ -40,11 +42,15 @@ import com.google.firebase.auth.FirebaseAuth
  * Initializes a shared campsite filtering ViewModel for the filter and results screens
  * Uses NavController to handle navigation between registered destinations
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
     var showUserNavigation by remember { mutableStateOf(true) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
     var showAdminNavigation by remember { mutableStateOf(false) }
+
+    // Tracks the authenticated user's role for admin switching
+    var userRole by remember { mutableStateOf("user") }
     val navController = rememberNavController()
 
     // Initializing home screen routes and profile routes for navigation bar
@@ -67,13 +73,24 @@ fun UtopiaNavApp() {
     val currentUser = FirebaseAuth.getInstance().currentUser
     val startPage = if (currentUser != null) homeScreenRoute else "welcome"
 
+    LaunchedEffect(currentUser?.uid) {
+        currentUser?.uid?.let { uid -> userRepository.getUser(uid, onSuccess = { userRole = it.role }, onFailure = {}) }
+    }
+
     Scaffold(
         bottomBar = {
             if (showBottomNavigationBar) {
                 BottomNavigationBar(
                     navController = navController,
                     homeScreenRoute = homeScreenRoute,
-                    profileScreenRoute = profileScreenRoute
+                    profileScreenRoute = profileScreenRoute,
+                    onSwitchRole = if (userRole == "admin") { newRole ->
+                        showUserNavigation = newRole == "user"
+                        showOwnerNavigation = newRole == "owner"
+                        showAdminNavigation = newRole == "admin"
+                        // fresh back stack so Back doesn't return to the previous role's screens
+                        navController.navigate("$newRole/campsites") { popUpTo(navController.graph.id) { inclusive = true } }
+                    } else null
                 )
             }
         }

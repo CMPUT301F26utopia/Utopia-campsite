@@ -62,7 +62,7 @@ class UserCampsiteListScreenTest {
             notificationsEnabled = true,
             phone = "fds",
             currentReservations = mutableListOf(),
-            pastReservations = emptyList()
+            pastReservations = mutableListOf()
         )
 
 
