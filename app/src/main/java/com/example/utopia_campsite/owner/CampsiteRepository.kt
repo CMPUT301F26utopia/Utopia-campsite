@@ -313,6 +313,27 @@ class CampsiteRepository{
             onFailure = onFailure
         )
     } //end addReview
+    /**
+     * Removes one review from a campsite in the firebase firestore (admin)
+     * arrayRemove deletes every array entry equal to the given string, so the review must match exactly
+     * what is stored, e.g. "John Doe: Great spot!"
+     *
+     * @param campsiteId: the Firestore document ID of the campsite
+     * @param review: the full review string to remove, name included
+     * @param onSuccess: called once the review is removed
+     * @param onFailure: called if the review could not be removed
+     */
+    fun removeReview(
+        campsiteId: String,
+        review: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit
+    ){
+        db.collection("campsites").document(campsiteId)
+            .update("reviews", FieldValue.arrayRemove(review))
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }//end removeReview
 
 
 }//end campsite controller

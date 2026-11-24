@@ -20,6 +20,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.utopia_campsite.admin.AdminCampsiteDetailScreen
 import com.example.utopia_campsite.admin.AdminCampsiteListScreen
+import com.example.utopia_campsite.admin.AdminCampsiteReviewsScreen
 import com.example.utopia_campsite.auth.SignUpScreen
 import com.example.utopia_campsite.auth.WelcomeScreen
 import com.example.utopia_campsite.owner.CampsiteRepository
@@ -45,9 +46,9 @@ import com.google.firebase.auth.FirebaseAuth
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(true) }
+    var showUserNavigation by remember { mutableStateOf(false) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
-    var showAdminNavigation by remember { mutableStateOf(false) }
+    var showAdminNavigation by remember { mutableStateOf(true) }
     var userRole by remember { mutableStateOf("user") } // signed-in User.role; admins can switch between all three UIs (US 03.11.01)
     val navController = rememberNavController()
 
@@ -286,6 +287,26 @@ fun UtopiaNavApp() {
                 }//end launchedeffect
                 when {
                     campsite != null -> AdminCampsiteDetailScreen(campsite = campsite!!, navController = navController)
+                    loadFailed -> Text("Couldn't load campsite")
+                    else -> CircularProgressIndicator()
+                }
+            }
+            composable("admin/campsite/{campsiteId}/reviews") { backStackEntry ->
+                val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+                var campsite by remember { mutableStateOf<Campsites?>(null) }
+                var loadFailed by remember { mutableStateOf(false) }
+                // loads fresh from the database each time this screen opens
+                LaunchedEffect(campsiteId) {
+                    CampsiteRepository().getCampsites(
+                        onSuccess = { campsites ->
+                            val found = campsites.find { it.id == campsiteId }
+                            if (found != null) campsite = found else loadFailed = true
+                        },
+                        onFailure = { loadFailed = true }
+                    )
+                }//end launchedeffect
+                when {
+                    campsite != null -> AdminCampsiteReviewsScreen(campsite = campsite!!, navController = navController)
                     loadFailed -> Text("Couldn't load campsite")
                     else -> CircularProgressIndicator()
                 }

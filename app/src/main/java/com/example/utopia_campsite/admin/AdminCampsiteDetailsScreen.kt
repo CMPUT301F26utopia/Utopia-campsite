@@ -70,6 +70,13 @@ fun AdminCampsiteDetailScreen(
             Text(text = errorMessage!!, color = Color.Red, modifier = Modifier.padding(horizontal = 16.dp))
         } //end if
 
+        // Opens the screen where the admin can read and remove this campsite's reviews
+        Button(
+            onClick = {navController.navigate("admin/campsite/${campsite.id}/reviews")},
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        ){
+            Text("Reviews")
+        }
         // Admin-only actions
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
