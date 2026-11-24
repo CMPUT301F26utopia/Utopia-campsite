@@ -48,6 +48,7 @@ fun UtopiaNavApp() {
     var showUserNavigation by remember { mutableStateOf(true) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
     var showAdminNavigation by remember { mutableStateOf(false) }
+    var userRole by remember { mutableStateOf("user") } // signed-in User.role; admins can switch between all three UIs (US 03.11.01)
     val navController = rememberNavController()
 
     // Initializing home screen routes and profile routes for navigation bar
@@ -70,13 +71,24 @@ fun UtopiaNavApp() {
     val currentUser = FirebaseAuth.getInstance().currentUser
     val startPage = if (currentUser != null) homeScreenRoute else "welcome"
 
+    LaunchedEffect(currentUser?.uid) {
+        currentUser?.uid?.let { uid -> userRepository.getUser(uid, onSuccess = { userRole = it.role }, onFailure = {}) }
+    }
+
     Scaffold(
         bottomBar = {
             if (showBottomNavigationBar) {
                 BottomNavigationBar(
                     navController = navController,
                     homeScreenRoute = homeScreenRoute,
-                    profileScreenRoute = profileScreenRoute
+                    profileScreenRoute = profileScreenRoute,
+                    onSwitchRole = if (userRole == "admin") { newRole ->
+                        showUserNavigation = newRole == "user"
+                        showOwnerNavigation = newRole == "owner"
+                        showAdminNavigation = newRole == "admin"
+                        // fresh back stack so Back doesn't return to the previous role's screens
+                        navController.navigate("$newRole/campsites") { popUpTo(navController.graph.id) { inclusive = true } }
+                    } else null
                 )
             }
         }
