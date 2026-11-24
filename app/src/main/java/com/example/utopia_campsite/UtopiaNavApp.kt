@@ -183,15 +183,18 @@ fun UtopiaNavApp() {
                             )
                         },
                         onSubmitRating = { rating, onSuccess, onFailure ->
-                            // Temporary rating functionality (no Firebase)
-                            println("Selected rating: $rating")
-
-                            // Update the displayed rating locally
-                            campsite = campsite?.let {
-                                it.copy(ratings = it.ratings + rating)
-                            }
-
-                            onSuccess()
+                            CampsiteRepository().addRating(
+                                campsiteId = campsite!!.id,
+                                rating = rating,
+                                onSuccess = {
+                                    // Update the displayed average after Firebase succeeds
+                                    campsite = campsite?.let {
+                                        it.copy(ratings = it.ratings + rating)
+                                    }
+                                    onSuccess()
+                                },
+                                onFailure = onFailure
+                            )
                         }
 
                     )

@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -31,6 +30,10 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Allows a user to give a rating for a Campsite Listing
+ *
+ * @param modifier: modifiying for UI compose elements
+ * @Param onDismiss: callback for when user cancels their rating
+ * @Param onSubmit: Callback for when user confirms their rating
  */
 @OptIn(ExperimentalMaterial3Api::class) // Needed as BasicAlertDialog is experimental and may change
 @Composable
