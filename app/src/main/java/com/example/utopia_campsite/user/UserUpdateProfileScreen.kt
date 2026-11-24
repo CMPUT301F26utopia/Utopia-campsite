@@ -5,6 +5,12 @@
 
 package com.example.utopia_campsite.user
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,10 +32,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
+import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.runtime.DisposableEffect
 
 /**
  * This screen will allow the user to update their profile details.
@@ -38,6 +51,7 @@ import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
  * @param onCancel: a callback function to cancel the update
  * @param onDeleteProfile: a callback function to delete the user's profile
  */
+
 @Composable
 fun UserUpdateProfileScreen(
     user: User,
@@ -45,12 +59,66 @@ fun UserUpdateProfileScreen(
     onCancel: () -> Unit = {},
     onDeleteProfile: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    fun hasNotificationPermission(): Boolean {
+        return NotificationManagerCompat.from(context)
+            .areNotificationsEnabled() &&
+                (Build.VERSION.SDK_INT < 33 ||
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED)
+    }
+
+    var hasPermission by remember {
+        mutableStateOf(hasNotificationPermission())
+    }
+
+    var notificationsEnabled by remember(user) {
+        mutableStateOf(
+            user.notificationsEnabled && hasNotificationPermission()
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasPermission = hasNotificationPermission()
+
+        // Only enable the switch if permission was granted.
+        notificationsEnabled = granted && hasPermission
+
+        Log.d("FCM", "Notification permission: $hasPermission")
+    }
+
+// Check again when returning from Android Settings.
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasPermission = hasNotificationPermission()
+
+                if (!hasPermission) {
+                    notificationsEnabled = false
+                }
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+
     // Text fields start empty; the user's current values show as placeholders
     var firstName by remember(user) { mutableStateOf("") }
     var lastName by remember(user) { mutableStateOf("") }
     var email by remember(user) { mutableStateOf("") }
     var phone by remember(user) { mutableStateOf("") }
-    var notificationsEnabled by remember(user) { mutableStateOf(user.notificationsEnabled) }
     var photoUrl by remember(user) { mutableStateOf("") }
 
     // Whether the "are you sure?" popup for deleting the profile is showing
@@ -111,17 +179,38 @@ fun UserUpdateProfileScreen(
                 .testTag("phoneTextField")
         )
 
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Notifications", modifier = Modifier.weight(1f))
+            Text(
+                "Notifications",
+                modifier = Modifier.weight(1f)
+            )
+
             Switch(
-                checked = notificationsEnabled,
-                onCheckedChange = { notificationsEnabled = it },
+                checked = notificationsEnabled && hasPermission,
+                onCheckedChange = { isChecked ->
+                    if (!isChecked) {
+                        notificationsEnabled = false
+                    } else if (hasNotificationPermission()) {
+                        hasPermission = true
+                        notificationsEnabled = true
+                    } else if (Build.VERSION.SDK_INT >= 33) {
+                        permissionLauncher.launch(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    } else {
+                        // Notifications are blocked in Android Settings.
+                        hasPermission = false
+                        notificationsEnabled = false
+                    }
+                },
                 modifier = Modifier.testTag("notificationsSwitch")
             )
         }
+
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(

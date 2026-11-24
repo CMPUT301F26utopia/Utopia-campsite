@@ -11,6 +11,8 @@
 package com.example.utopia_campsite.user
 
 import com.example.utopia_campsite.owner.Campsites
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 /**
  *Stores details about a user
@@ -32,19 +34,31 @@ data class User (
     val notificationsEnabled: Boolean = false,
     val phone: String = "",
     val currentReservations: MutableList<Reservation> = mutableListOf(),
-    val pastReservations : List<Reservation> = mutableListOf()
-
+    val pastReservations : List<Reservation> = mutableListOf(),
     ) {
+
+
+    private fun currentUserId(): String? {
+        return try {
+            Firebase.auth.currentUser?.uid
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     fun joinLottery(campsite: Campsites) {
         // take campsite object
         // add user details to campsite lottery list
-        campsite.lotteryWaitlist.add(deviceID)
+        val uid = currentUserId() ?: deviceID.ifEmpty { "current_user" }
+        if (!campsite.lotteryWaitlist.contains(uid)) {
+            campsite.lotteryWaitlist.add(uid)
+        }
     } // end joinLottery()
 
     fun leaveLottery(campsite: Campsites) {
         // take campsite object
         // remove user details from campsite lottery list
-        campsite.lotteryWaitlist.remove(deviceID)
+        val uid = currentUserId() ?: deviceID.ifEmpty { "current_user" }
+        campsite.lotteryWaitlist.remove(uid)
     } // end leaveLottery()
 }
