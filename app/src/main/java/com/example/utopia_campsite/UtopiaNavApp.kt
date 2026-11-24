@@ -181,7 +181,19 @@ fun UtopiaNavApp() {
                                 },
                                 onFailure = onFailure
                             )
+                        },
+                        onSubmitRating = { rating, onSuccess, onFailure ->
+                            // Temporary rating functionality (no Firebase)
+                            println("Selected rating: $rating")
+
+                            // Update the displayed rating locally
+                            campsite = campsite?.let {
+                                it.copy(ratings = it.ratings + rating)
+                            }
+
+                            onSuccess()
                         }
+
                     )
                     loadFailed -> Text("Campsite not found")
                     else -> CircularProgressIndicator()

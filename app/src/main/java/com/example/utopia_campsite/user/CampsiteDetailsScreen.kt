@@ -33,11 +33,13 @@ import com.example.utopia_campsite.user.util.CampsiteDetailsContent
 fun CampsiteDetailsScreen(
     campsite: Campsites,
     onBack: (() -> Unit)? = null,
-    onPostReview: ((String, () -> Unit, (Exception) -> Unit) -> Unit)? = null
+    onPostReview: ((String, () -> Unit, (Exception) -> Unit) -> Unit)? = null,
+    onSubmitRating: ((Int, () -> Unit, (Exception) -> Unit) -> Unit)? = null
 ) {
     CampsiteDetailsContent(
         campsite = campsite,
         onBack = onBack,
-        onPostReview = onPostReview
+        onPostReview = onPostReview,
+        onSubmitRating = onSubmitRating
     )
 }
