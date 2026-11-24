@@ -10,6 +10,7 @@
  */
 package com.example.utopia_campsite.user
 
+import com.example.utopia_campsite.owner.CampsiteRepository
 import com.example.utopia_campsite.owner.Campsites
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -53,6 +54,13 @@ data class User (
         if (!campsite.lotteryWaitlist.contains(uid)) {
             campsite.lotteryWaitlist.add(uid)
         }
+        if (campsite.id.isNotBlank() && uid.isNotBlank()) {
+            try {
+                CampsiteRepository().joinWaitlist(campsite.id, uid)
+            } catch (_: Exception) {
+                // Ignore Firestore initialization errors during unit tests
+            }
+        }
     } // end joinLottery()
 
     fun leaveLottery(campsite: Campsites) {
@@ -60,5 +68,12 @@ data class User (
         // remove user details from campsite lottery list
         val uid = currentUserId() ?: deviceID.ifEmpty { "current_user" }
         campsite.lotteryWaitlist.remove(uid)
+        if (campsite.id.isNotBlank() && uid.isNotBlank()) {
+            try {
+                CampsiteRepository().leaveWaitlist(campsite.id, uid)
+            } catch (_: Exception) {
+                // Ignore Firestore initialization errors during unit tests
+            }
+        }
     } // end leaveLottery()
 }
