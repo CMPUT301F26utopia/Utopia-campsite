@@ -60,18 +60,7 @@ fun AdminCampsiteListScreen(
             }
         )
 
-        //add campsite button
-        FloatingActionButton(
-            onClick = { /*TODO add campsite*/ },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add Campsite"
-            )
-        }//end floatingActionButton
+
 
     }//end box
 

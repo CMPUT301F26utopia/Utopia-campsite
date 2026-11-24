@@ -7,7 +7,10 @@
 
 package com.example.utopia_campsite.user
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -30,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color.Companion.Black
@@ -39,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UserProfileScreen(
     user: User,
@@ -50,12 +56,24 @@ fun UserProfileScreen(
     var currentUser by remember(user) { mutableStateOf(user) }
     var saveError by remember { mutableStateOf<String?>(null) }
     var deleteError by remember { mutableStateOf<String?>(null) }
+    var loadingFilterReservations by remember { mutableStateOf(true) }
+    var errorFilterReservations by remember { mutableStateOf<String?>(null) }
 
     // Define your highlight colors once for buttons
     val selectedContainer = Black
     val selectedContent   = White
     val unselectedContainer = White
     val unselectedContent   = Black
+
+    //filter past reservations in firebase
+    LaunchedEffect(user.deviceID) {
+        loadingFilterReservations = true
+        errorFilterReservations = null
+        runCatching { UserRepository().filterReservations(user.deviceID) }
+            .onSuccess { user.pastReservations = it }
+            .onFailure { errorFilterReservations = it.message }
+        loadingFilterReservations = false
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -134,6 +152,7 @@ fun UserProfileScreen(
 
         when (currentScreen) { //toggles partial ui composition depending on button selected
             "Current Reservations" -> UserProfileCurrentReservationScreen(currentUser)
+            "Past Reservations" -> UserProfilePastReservationScreen(currentUser)
             "Me" -> UserProfileMeScreen(user = currentUser, onEditProfileClick = {currentScreen = "Update Profile"})
             "Update Profile" -> {
                 UserUpdateProfileScreen(

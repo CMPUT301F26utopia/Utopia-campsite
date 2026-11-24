@@ -28,6 +28,10 @@ import com.example.utopia_campsite.owner.CampsiteRepository
 import com.example.utopia_campsite.owner.Campsites
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
 import com.example.utopia_campsite.user.util.CampsiteDetailsContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 
 /**
  * Shows every detail of one campsite, opened by clicking the card in AdminCampsiteDetailsScreen
@@ -53,16 +57,22 @@ fun AdminCampsiteDetailScreen(
     // Message shown if removing the image or deleting fails
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    Column {
-        CampsiteDetailsContent(campsite = shownCampsite)
+    Column(modifier = Modifier.fillMaxSize()) {
+        // weight(1f) gives the details only the space left over, so the admin buttons below stay on screen
+        Box(modifier = Modifier.weight(1f)) {
+            CampsiteDetailsContent(
+                campsite = shownCampsite,
+                onBack = { navController.popBackStack() }
+            )
+        }
 
         if (errorMessage != null) {
-            Text(text = errorMessage!!, color = Color.Red)
+            Text(text = errorMessage!!, color = Color.Red, modifier = Modifier.padding(horizontal = 16.dp))
         } //end if
 
         // Admin-only actions
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             // Nothing to remove if the campsite has no image

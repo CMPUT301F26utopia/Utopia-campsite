@@ -1,13 +1,23 @@
 package com.example.utopia_campsite.user
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.Updater
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.runtime.toMutableStateList
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.QuerySnapshot
+import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 class UserRepository {
     private val db = FirebaseFirestore.getInstance()
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private val reservationDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     /**
      * fetches all users from firebase
@@ -73,7 +83,7 @@ class UserRepository {
 
 
     /**
-     * Deletes a user's reservation in the firebase
+     * Deletes a user's  current reservation in the firebase
      * @param userId: the firebase document ID of the user (their deviceID)
      * @param reservationId: the reservation id of the reservation
      * @param onSuccess: callback function that is called if the reservation is successfully deleted
@@ -111,7 +121,47 @@ class UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     } //end deleteCurrentReservation
- 
+
+
+    /**
+     * Deletes a user's  past reservation in the firebase
+     * @param userId: the firebase document ID of the user (their deviceID)
+     * @param reservationId: the reservation id of the reservation
+     * @param onSuccess: callback function that is called if the reservation is successfully deleted
+     * @param onFailure:  callback function that is called if the reservation is not deleted successfully
+     */
+
+    fun deletePastReservation(
+        userId: String,
+        reservationId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val userDoc = db.collection("users").document(userId)
+
+        userDoc.get()
+            .addOnSuccessListener { snapshot ->
+
+                val array = snapshot.get("pastReservations") as?  List<Map<String, Any?>>  //get the array field
+
+                if (array == null) {
+                    onFailure(IllegalStateException("reservations field missing or wrong type"))
+                    return@addOnSuccessListener
+                }
+
+                val target = array.firstOrNull { it["reservationId"] == reservationId } //Find the map whose "reservationId" matches
+
+                if (target == null) {
+                    onFailure(NoSuchElementException("Reservation $reservationId not found"))
+                    return@addOnSuccessListener
+                }
+                //remove the map which is the reservation in firebase
+                userDoc.update("pastReservations", FieldValue.arrayRemove(target))
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    } //end deleteCurrentReservation
 
 
     /**
@@ -129,6 +179,73 @@ class UserRepository {
         }
         return ""
     }
+
+
+    /**
+     * helper function for parsing reservation dates
+     * Returns true if the reservation date is strictly before today's date.
+     * Malformed or unparseable dates return false (treated as not ended)
+     * @param reservationDate: end date of the reservation
+     * @param today: the current date
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun hasReservationEnded(
+        reservationDate: String,
+        today: LocalDate
+    ): Boolean {
+        return try {
+            val date = LocalDate.parse(reservationDate.trim(), reservationDateFormatter)
+            date.isBefore(today)
+        } catch (e: DateTimeParseException) {
+            false
+        }
+    } //end hasReservation ended
+
+
+    /**
+     * Moves  reservations that ended from current Reservations to past Reservations
+     * in firebase and returns the updated past Reservations list.
+     * @param userId: unique identifier of the user
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun filterReservations(userId: String): MutableList<Reservation> {
+        val userDocRef = db.collection("users").document(userId)
+        val today = LocalDate.now()
+
+        return db.runTransaction { transaction ->
+            val snapshot = transaction.get(userDocRef)
+
+            val user = snapshot.toObject(User::class.java)
+                ?: return@runTransaction mutableListOf<Reservation>()
+
+            val currentList = user.currentReservations
+            val pastReservations = mutableListOf<Reservation>()
+            val currentReservations = mutableListOf<Reservation>()
+
+            for (r in currentList) {
+                val isEnded = runCatching {
+                    hasReservationEnded(r.endReservedDate, today)
+                }.getOrDefault(false)
+
+                //moves reservations that ended to past reservations list
+                if (isEnded) pastReservations += r else currentReservations += r
+            }
+
+            //merge it to the reservations already in the past reservations
+            val updatedPastReservations = user.pastReservations + pastReservations
+
+            if (pastReservations.isNotEmpty()) {
+                transaction.update(
+                    userDocRef,
+                    "currentReservations", currentReservations,
+                    "pastReservations", updatedPastReservations
+                )
+            }
+
+            updatedPastReservations
+        }.await() as MutableList<Reservation> //end runTransaction
+    } //end filterReservations
+
 
     /**
      * Updates a user's editable profile fields in firebase
