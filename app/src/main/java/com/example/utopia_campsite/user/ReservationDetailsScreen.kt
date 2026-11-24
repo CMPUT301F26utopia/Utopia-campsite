@@ -68,7 +68,7 @@ import com.google.apps.card.v1.Divider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReservationDetailsScreen(reservation: Reservation, onBackClick: () -> Unit, onCancelReservation : () -> Unit) {
+fun ReservationDetailsScreen(reservation: Reservation, onBackClick: () -> Unit, onButtonClick : () -> Unit) {
     var loadedCampsite by remember(reservation.campsiteId) { mutableStateOf<Campsites?>(null)}
     LaunchedEffect(reservation.campsiteId) {
         CampsiteRepository().getCampsite(
@@ -269,13 +269,13 @@ fun ReservationDetailsScreen(reservation: Reservation, onBackClick: () -> Unit, 
 
             //cancel reservation button
             Button(
-                onClick = { onCancelReservation() },
+                onClick = { onButtonClick() },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF5252)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
             ) {
-                Text(text = "Cancel Reservation", color = Color.White)
+                Text(text = "Delete Reservation", color = Color.White)
             }
         } //end outside column
     } //end scaffold

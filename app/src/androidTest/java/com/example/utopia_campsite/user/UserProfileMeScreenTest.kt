@@ -32,7 +32,7 @@ class UserProfileMeScreenTest {
                 notificationsEnabled = true,
                 phone = "123456789",
                 currentReservations = mutableListOf(),
-                pastReservations = emptyList()
+                pastReservations = mutableListOf()
         )
 
         composeTestRule.setContent {

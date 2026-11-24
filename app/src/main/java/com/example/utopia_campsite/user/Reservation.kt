@@ -6,8 +6,8 @@ import java.util.UUID
 *Stores details about a reservation
 * @property reservationId: unique id generated when a reservation object is created
 * @property campsiteId: the id of the campsite the user is reserved to
-* @property startReservedDate: the start date of the reservation
-* @property endReservedDate: the end date of the reservation
+* @property startReservedDate: the start date of the reservation in form dd/mm/yyyy
+* @property endReservedDate: the end date of the reservation in form dd/mm/yyyy
 * @property numOfGuests: number of people reserved
 */
 data class Reservation(

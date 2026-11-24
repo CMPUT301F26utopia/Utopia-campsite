@@ -2,9 +2,6 @@
  * Displays the list of Reservations if there are current reservations
  *  Displays message if no current reservations
  *  Utopia 01.06.01
- *  Outstanding issues:
- *  the if block where ReservationDetailsScreen
- *  is called should be in navApp
  */
 
 package com.example.utopia_campsite.user
@@ -36,7 +33,7 @@ fun UserProfileCurrentReservationScreen(user: User) {
         ReservationDetailsScreen(
             reservation = selectedReservation!!,
             onBackClick = { selectedReservation = null }, //go back to currentReservation screen
-            onCancelReservation = {
+            onButtonClick = {
                 currentReservations.remove(selectedReservation) //removes the reservation and updates screen
                 user.currentReservations.remove(selectedReservation) //remove the reservation locally
 

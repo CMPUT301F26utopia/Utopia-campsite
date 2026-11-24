@@ -190,7 +190,7 @@ fun UserUpdateProfileScreenPreview() {
         notificationsEnabled = true,
         phone = "123-456-7890",
         currentReservations = mutableListOf(),
-        pastReservations = emptyList()
+        pastReservations = mutableListOf()
     )
     UtopiacampsiteTheme {
         UserUpdateProfileScreen(user = sampleUser)
