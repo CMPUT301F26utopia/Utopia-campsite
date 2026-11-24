@@ -74,7 +74,7 @@ fun UserCampsiteRating(
                                 .clickable{
                                     selectedRating = rating
                                 }
-                                .testTag("ratingStar")
+                                .testTag("ratingStar_$rating")
                         )
                     }
                 }
