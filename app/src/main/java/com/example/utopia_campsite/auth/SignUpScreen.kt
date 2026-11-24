@@ -9,6 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -20,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -50,13 +56,24 @@ fun createUser(
     lastName: String,
     email: String,
     phone: String,
+    role: String,
     onSuccess: () -> Unit = {},
     onError: (String) -> Unit = {}
 ) {
-    val user = hashMapOf("firstName" to firstName, "lastName" to lastName, "email" to email, "phone" to phone)
-    db.collection("users").document(uid).set(user, SetOptions.merge())
-        .addOnSuccessListener { onSuccess() }
-        .addOnFailureListener { exception -> onError(exception.message ?: "Could not create user") }
+    val user = hashMapOf("firstName" to firstName, "lastName" to lastName, "email" to email, "phone" to phone, "role" to role)
+
+    if (role == "user") {
+        db.collection("users").document(uid).set(user, SetOptions.merge())
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { exception -> onError(exception.message ?: "Could not create user") }
+    }
+
+    else {
+        db.collection("owners").document(uid).set(user, SetOptions.merge())
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { exception -> onError(exception.message ?: "Could not create owner") }
+    }
+
 }
 
 fun onCreateAccount(
@@ -64,6 +81,7 @@ fun onCreateAccount(
     lastName: String,
     email: String,
     phone: String,
+    role: String,
     onSuccess: () -> Unit = {},
     onError: (String) -> Unit = {}
 ) {
@@ -74,7 +92,7 @@ fun onCreateAccount(
 
     if (currentUser != null) {
         if (currentUser.isAnonymous) {
-            createUser(db, currentUser.uid, firstName, lastName, email, phone, onSuccess, onError)
+            createUser(db, currentUser.uid, firstName, lastName, email, phone, role, onSuccess, onError)
         } else {
             onError("Already signed in")
         }
@@ -85,7 +103,7 @@ fun onCreateAccount(
                     val uid = auth.currentUser?.uid
 
                     if (uid != null) {
-                        createUser(db, uid, firstName, lastName, email, phone, onSuccess, onError)
+                        createUser(db, uid, firstName, lastName, email, phone, role, onSuccess, onError)
                     } else {
                         onError("Could not retrieve user ID.")
                     }
@@ -99,6 +117,7 @@ fun onCreateAccount(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
     modifier: Modifier = Modifier,
@@ -187,6 +206,52 @@ fun SignUpScreen(
 
         }
 
+        val roleOptions = listOf("User", "Owner")
+
+        //track if the drop-down menu is open or closed
+        var expanded by remember { mutableStateOf(false) }
+
+        //track the currently selected role
+        var selectedRole by remember { mutableStateOf("") }
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // 4. The TextField that acts as the clickable trigger
+            OutlinedTextField(
+                value = selectedRole,
+                onValueChange = {}, // Empty because this is a read-only selection field
+                readOnly = true,    // Prevents the keyboard from popping up
+                label = { Text("Role") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                colors = ExposedDropdownMenuDefaults.textFieldColors(),
+
+                //This modifier anchors the menu to the text field
+                modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                    .fillMaxWidth()
+            )
+
+            // 5. The dropdown menu that appears below
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                roleOptions.forEach { role ->
+                    DropdownMenuItem(
+                        text = { Text(role) },
+                        onClick = {
+                            selectedRole = role
+                            expanded = false // Close the menu after selection
+                        }
+                    )
+                }
+            }
+        }
+
         Spacer(modifier = modifier.padding(32.dp))
 
         if (showError) {
@@ -226,6 +291,7 @@ fun SignUpScreen(
                         userLastName,
                         userEmail,
                         userPhoneNumber,
+                        role = selectedRole,
                         onSuccess = {
                             loadingState = false
                             navController.navigate("user/campsites")

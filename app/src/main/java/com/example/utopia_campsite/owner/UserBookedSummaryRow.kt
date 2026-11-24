@@ -5,7 +5,6 @@
  * Utopia 02.06.01
  * Utopia 02.07.01
  * Outstanding Issues:
- * Reserved date text not implemented(should come from user)
  * Message not implemented
  * Delete not implemented
  */
