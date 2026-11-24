@@ -22,6 +22,7 @@ import com.example.utopia_campsite.owner.Campsites
  * @property phone: phone number
  * @property currentReservations: stores a list of current reservations
  * @property pastReservations: stores a list of past reservations
+ * @property role: "user" or "admin" (admin is set by hand in Firestore, never through the app)
  */
 data class User (
     val deviceID: String = "",
@@ -32,7 +33,8 @@ data class User (
     val notificationsEnabled: Boolean = false,
     val phone: String = "",
     val currentReservations: MutableList<Reservation> = mutableListOf(),
-    var pastReservations : MutableList<Reservation> = mutableListOf()
+    var pastReservations : MutableList<Reservation> = mutableListOf(),
+    val role: String = "user"
 
     ) {
 
