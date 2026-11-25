@@ -157,7 +157,7 @@ fun ReservationDetailsScreen(reservation: Reservation, onBackClick: () -> Unit, 
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            text = "Rating: ${campsite.ratings.average()}",
+                            text = "Rating: ${campsite.ratings.values.average()}",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Medium,
                             modifier = Modifier.padding(start = 2.dp)

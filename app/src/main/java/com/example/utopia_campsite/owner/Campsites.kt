@@ -23,7 +23,7 @@ import com.example.utopia_campsite.user.User
  * @property address: the address of the campsite
  * @property latitude: the latitude of the campsite
  * @property longitude: the longitude of the campsite
- * @property ratings: a list of ratings for the campsite
+ * @property ratings: A map of string user_id's to match their respective ratings of this specific campsite
  * @property tags: a list of tags for the campsite
  * @property lotteryWinners: the number of lottery winners for the campsite
  * @property lotteryWaitlist: a list of user ids of users in a waitlist for the campsite lottery
@@ -43,7 +43,7 @@ data class Campsites(
     val address: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
-    val ratings: List<Int> = emptyList(),
+    val ratings: Map<String, Int> = emptyMap(),
     val tags: List<String> = emptyList(),
     val lotteryWinners: Int = 0,
     val lotteryWaitlist: MutableList<String> = mutableListOf(),
