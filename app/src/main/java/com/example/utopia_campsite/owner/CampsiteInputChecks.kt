@@ -84,7 +84,7 @@ fun buildCampsite(
         address = address,
         latitude = latitudeNumber,
         longitude = longitudeNumber,
-        ratings = mutableListOf(), // a new campsite has no ratings
+        ratings = emptyMap(), // a new campsite has no ratings
         tags = tagList.toMutableList(), // Campsites stores tags as a MutableList
         lotteryWinners = winnersNumber,
         lotteryWaitlist = mutableListOf(), // nobody has joined yet
