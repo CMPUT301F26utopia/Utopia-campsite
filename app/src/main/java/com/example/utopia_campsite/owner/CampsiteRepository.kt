@@ -369,6 +369,32 @@ class CampsiteRepository{
             onFailure = onFailure
         )
     } //end addReview
+    /**
+     * Saves the fields edited on the owner campsite details screen.
+     *
+     * Other fields, such as the lottery waitlist and reviews, are preserved.
+     */
+    fun updateCampsiteDetails(
+        campsite: Campsites,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("campsites")
+            .document(campsite.id)
+            .update(
+                mapOf(
+                    "name" to campsite.name,
+                    "address" to campsite.address,
+                    "description" to campsite.description,
+                    "maxOccupancy" to campsite.maximumOccupants,
+                    "tags" to campsite.tags,
+                    "latitude" to campsite.latitude,
+                    "longitude" to campsite.longitude
+                )
+            )
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 
     /**
      * Adds the user specified rating on the specific campsite, in its current implementation, there isnt any specification on which user gave which ratings
