@@ -46,9 +46,9 @@ import com.google.firebase.auth.FirebaseAuth
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(false) }
+    var showUserNavigation by remember { mutableStateOf(true) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
-    var showAdminNavigation by remember { mutableStateOf(true) }
+    var showAdminNavigation by remember { mutableStateOf(false) }
     var userRole by remember { mutableStateOf("user") } // signed-in User.role; admins can switch between all three UIs (US 03.11.01)
     val navController = rememberNavController()
 

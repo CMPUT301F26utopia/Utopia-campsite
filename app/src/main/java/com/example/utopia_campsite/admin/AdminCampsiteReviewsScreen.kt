@@ -37,10 +37,11 @@ import com.example.utopia_campsite.owner.Campsites
 @Composable
 fun AdminCampsiteReviewsScreen(
     campsite: Campsites,
-    navController: NavController
-){
-    val campsiteRepository = remember { CampsiteRepository() }
+    navController: NavController,
+    removeReview: (String, String, () -> Unit, (Exception) -> Unit) -> Unit =
+        { id, review, onSuccess, onFailure -> CampsiteRepository().removeReview(id, review, onSuccess, onFailure) }
 
+){
     val reviews = remember(campsite.id) { mutableStateListOf<String>().apply { addAll(campsite.reviews) } }
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -81,12 +82,11 @@ fun AdminCampsiteReviewsScreen(
                         Button(
                             onClick = {
                                 errorMessage=null
-                                campsiteRepository.removeReview(
-                                    campsiteId = campsite.id,
-                                    review = review,
-                                    onSuccess = {reviews.remove(review)},
-                                    onFailure = {errorMessage = "Could not remove review"}
-                                )
+                                removeReview(
+                                    campsite.id,
+                                    review,
+                                    { reviews.remove(review) },
+                                    { errorMessage = "Could not remove review" })
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Red,
