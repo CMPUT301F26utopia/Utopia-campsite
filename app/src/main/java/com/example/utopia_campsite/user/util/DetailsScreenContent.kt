@@ -21,10 +21,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import com.example.utopia_campsite.owner.Campsites
+import com.example.utopia_campsite.user.User
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,7 +43,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
@@ -71,6 +74,16 @@ fun CampsiteDetailsContent(
     var showRatingDialog by remember { mutableStateOf(false) }
     var isSubmittingRating by remember { mutableStateOf(false) }
     var ratingError by remember { mutableStateOf<String?>(null) }
+
+    val currentUserId = try {
+        Firebase.auth.currentUser?.uid ?: "current_user"
+    } catch (_: Exception) {
+        "current_user"
+    }
+    val user = remember(currentUserId) { User(deviceID = currentUserId) }
+    var isJoined by remember(campsite, currentUserId) {
+        mutableStateOf(campsite.lotteryWaitlist.contains(currentUserId) || (user.deviceID.isNotEmpty() && campsite.lotteryWaitlist.contains(user.deviceID)))
+    }
 
     // Stack the campsite's details from top to bottom
     Column(modifier = Modifier.fillMaxSize()) {
@@ -158,25 +171,31 @@ fun CampsiteDetailsContent(
                         Text(text = "I confirm that I have read the terms and conditions.")
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Button(
-                            onClick = { /*TODO*/ },
-                            enabled = checkedState
-                        ) {
-                            Text(text = "Join Lottery")
-                        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (isJoined) {
+                Button(
+                    onClick = {
+                        user.leaveLottery(campsite)
+                        isJoined = false
                     }
+                ) {
+                    Text(text = "Leave Lottery")
+                }
+            } else {
+                Button(
+                    onClick = {
+                        user.joinLottery(campsite)
+                        isJoined = true
+                    },
+                    enabled = checkedState
+                ) {
+                    Text(text = "Join Lottery")
                 }
             }
-
-            // Reviews header and, for entrants, the box to write a new review
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Reviews", style = MaterialTheme.typography.titleMedium)
+        }
 
                     if (onPostReview != null) {
                         OutlinedTextField(
