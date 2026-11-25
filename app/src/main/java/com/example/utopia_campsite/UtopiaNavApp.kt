@@ -46,7 +46,7 @@ import com.google.firebase.auth.FirebaseAuth
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(true) }
+    var showUserNavigation by remember { mutableStateOf(false) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
@@ -205,9 +205,12 @@ fun UtopiaNavApp() {
                                 campsiteId = campsite!!.id,
                                 rating = rating,
                                 onSuccess = {
-                                    // Update the displayed average after Firebase succeeds
-                                    campsite = campsite?.let {
-                                        it.copy(ratings = it.ratings + rating)
+                                    // Update the displayed average after Firebase succeeds and put the user as a map, and the rating they gave as the value
+                                    val uid = FirebaseAuth.getInstance().currentUser?.uid
+                                    if (uid != null) {
+                                        campsite = campsite?.let {
+                                            it.copy(ratings = it.ratings + (uid to rating))
+                                        }
                                     }
                                     onSuccess()
                                 },

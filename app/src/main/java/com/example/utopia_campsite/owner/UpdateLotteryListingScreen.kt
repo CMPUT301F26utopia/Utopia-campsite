@@ -272,7 +272,7 @@ fun UpdateLotteryListingPreview() {
         address = "Elk Island National Park, Alberta",
         latitude = 53.6,
         longitude = -112.8,
-        ratings = listOf(4, 5, 5),
+        ratings = mapOf("user1" to 4, "user2" to 5, "user3" to 5),
         tags = listOf("Nature", "Hiking", "Camping"),
         lotteryWinners = 10,
         lotteryWaitlist = mutableListOf("user1", "user2"),
