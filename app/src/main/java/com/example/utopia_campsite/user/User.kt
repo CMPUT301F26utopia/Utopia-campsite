@@ -38,6 +38,7 @@ data class User (
     val currentReservations: MutableList<Reservation> = mutableListOf(),
     var pastReservations : MutableList<Reservation> = mutableListOf(),
     val role: String = "user"
+) {
 
 
     private fun currentUserId(): String? {
