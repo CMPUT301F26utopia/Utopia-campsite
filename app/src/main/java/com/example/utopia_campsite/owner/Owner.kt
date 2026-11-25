@@ -32,6 +32,6 @@ data class Owner (
      val notificationsEnabled: Boolean = true,
      val phone: String = "",
      val policyViolated: Boolean = false,
-     val role: String = ""
+     val role: String = "owner"
 ) {
 }
