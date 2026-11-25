@@ -156,6 +156,56 @@ class CampsiteRepository{
     } //end addCampsite
 
     /**
+     * Adds a user to a campsite's lottery waitlist in Firebase Firestore
+     * @param campsiteId: campsite firestore id
+     * @param userId: user firestore id
+     * @param onSuccess: callback function called when updated
+     * @param onFailure: callback function called on error
+     */
+    fun joinWaitlist(
+        campsiteId: String,
+        userId: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        if (campsiteId.isBlank() || userId.isBlank()) return
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.collection("campsites").document(campsiteId)
+                .update("lotteryWaitlist", FieldValue.arrayUnion(userRef))
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { onFailure(it) }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    /**
+     * Removes a user from a campsite's lottery waitlist in Firebase Firestore
+     * @param campsiteId: campsite firestore id
+     * @param userId: user firestore id
+     * @param onSuccess: callback function called when updated
+     * @param onFailure: callback function called on error
+     */
+    fun leaveWaitlist(
+        campsiteId: String,
+        userId: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        if (campsiteId.isBlank() || userId.isBlank()) return
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.collection("campsites").document(campsiteId)
+                .update("lotteryWaitlist", FieldValue.arrayRemove(userRef))
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { onFailure(it) }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    /**
      * Saves a campsite's lottery registration period to the firebase firestore (US 02.04.01, 02.04.03)
      * Only the registrationDate field changes; the rest of the campsite stays the same
      *
@@ -314,5 +364,36 @@ class CampsiteRepository{
         )
     } //end addReview
 
+    /**
+     * Adds the user specified rating on the specific campsite, in its current implementation, there isnt any specification on which user gave which ratings
+     *
+     * */
+    fun addRating(
+        campsiteId: String,
+        rating: Int,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        if (rating !in 1..5) {
+            onFailure(IllegalArgumentException("Rating must be between 1 and 5"))
+            return
+        }
+        val campsiteReference = db.collection("campsites").document(campsiteId)
+        db.runTransaction { transaction ->
+            val campsite = transaction.get(campsiteReference)
 
+            // Retrieve existing ratings and handling edge cases for retrieval
+            val ratings = (campsite.get("ratings") as? List<*>)
+                ?.mapNotNull { (it as? Number)?.toInt() }
+                ?.toMutableList()
+                ?: mutableListOf()
+
+            ratings.add(rating)
+            transaction.update(campsiteReference, "ratings", ratings)
+
+            null
+        }
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 }//end campsite controller

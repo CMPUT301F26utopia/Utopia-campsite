@@ -21,10 +21,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import com.example.utopia_campsite.owner.Campsites
+import com.example.utopia_campsite.user.User
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,9 +43,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.example.utopia_campsite.user.UserCampsiteRating
 
 /**
  * Shows every detail of one campsite, followed by its reviews
@@ -55,7 +61,8 @@ import androidx.compose.ui.text.font.FontWeight
 fun CampsiteDetailsContent(
     campsite: Campsites,
     onBack: (() -> Unit)? = null,
-    onPostReview: ((reviewText: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit)? = null
+    onPostReview: ((reviewText: String, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit)? = null,
+    onSubmitRating: ((Int, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit)? = null
 ) {
     // Show the average of all ratings, or a message if the campsite has none yet
     // (average() of an empty list gives NaN)
@@ -64,6 +71,19 @@ fun CampsiteDetailsContent(
     var reviewText by remember { mutableStateOf("") }
     var isPosting by remember { mutableStateOf(false) }
     var postError by remember { mutableStateOf<String?>(null) }
+    var showRatingDialog by remember { mutableStateOf(false) }
+    var isSubmittingRating by remember { mutableStateOf(false) }
+    var ratingError by remember { mutableStateOf<String?>(null) }
+
+    val currentUserId = try {
+        Firebase.auth.currentUser?.uid ?: "current_user"
+    } catch (_: Exception) {
+        "current_user"
+    }
+    val user = remember(currentUserId) { User(deviceID = currentUserId) }
+    var isJoined by remember(campsite, currentUserId) {
+        mutableStateOf(campsite.lotteryWaitlist.contains(currentUserId) || (user.deviceID.isNotEmpty() && campsite.lotteryWaitlist.contains(user.deviceID)))
+    }
 
     // Stack the campsite's details from top to bottom
     Column(modifier = Modifier.fillMaxSize()) {
@@ -103,7 +123,41 @@ fun CampsiteDetailsContent(
                     Text(text = campsite.description) // description of the campsite and its amenities
                     Text(text = "Tags: ${campsite.tags.joinToString(", ")}") // all tags on one line
                     Text(text = "Max occupancy: ${campsite.maximumOccupants}") // most people the campsite can hold
-                    Text(text = "Rating: $rating") // average rating, or "No ratings yet"
+
+                    // Rating
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(text = "Rating: $rating")
+                        if (onSubmitRating != null) {
+                            Button(
+                                modifier = Modifier
+                                    .height(32.dp)
+                                    .testTag("addRatingButton"),
+                                onClick = {
+                                    showRatingDialog = true
+                                },
+                                contentPadding = PaddingValues(
+                                    horizontal = 10.dp,
+                                    vertical = 0.dp
+                                )
+                            ) {
+                                Text(
+                                    text = "Add Rating",
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+
+                    ratingError?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+
                     Text(text = "Available: ${campsite.availableStartDate} - ${campsite.availableEndDate}") // dates the campsite can be booked
 
                     Row(
@@ -117,25 +171,31 @@ fun CampsiteDetailsContent(
                         Text(text = "I confirm that I have read the terms and conditions.")
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Button(
-                            onClick = { /*TODO*/ },
-                            enabled = checkedState
-                        ) {
-                            Text(text = "Join Lottery")
-                        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (isJoined) {
+                Button(
+                    onClick = {
+                        user.leaveLottery(campsite)
+                        isJoined = false
                     }
+                ) {
+                    Text(text = "Leave Lottery")
+                }
+            } else {
+                Button(
+                    onClick = {
+                        user.joinLottery(campsite)
+                        isJoined = true
+                    },
+                    enabled = checkedState
+                ) {
+                    Text(text = "Join Lottery")
                 }
             }
-
-            // Reviews header and, for entrants, the box to write a new review
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = "Reviews", style = MaterialTheme.typography.titleMedium)
+        }
 
                     if (onPostReview != null) {
                         OutlinedTextField(
@@ -202,4 +262,36 @@ fun CampsiteDetailsContent(
             } //end if
         } //end LazyColumn
     } //end Column
+
+    // Adding Rating Button
+    if (showRatingDialog && onSubmitRating != null) {
+        UserCampsiteRating(
+            modifier = Modifier,
+            onDismiss = {
+                if (!isSubmittingRating) {
+                    showRatingDialog = false
+                }
+            },
+            onSubmit = { selectedRating ->
+                if (!isSubmittingRating) {
+                    isSubmittingRating = true
+                    ratingError = null
+
+                    onSubmitRating(
+                        selectedRating,
+                        // On success
+                        {
+                            isSubmittingRating = false
+                            showRatingDialog = false
+                        },
+                        // On Failure
+                        {
+                            isSubmittingRating = false
+                            ratingError = "Couldn't submit rating"
+                        }
+                    )
+                }
+            }
+        )
+    }
 } //end CampsiteDetailsContent
