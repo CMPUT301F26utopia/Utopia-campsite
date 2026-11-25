@@ -162,6 +162,56 @@ class CampsiteRepository{
     } //end addCampsite
 
     /**
+     * Adds a user to a campsite's lottery waitlist in Firebase Firestore
+     * @param campsiteId: campsite firestore id
+     * @param userId: user firestore id
+     * @param onSuccess: callback function called when updated
+     * @param onFailure: callback function called on error
+     */
+    fun joinWaitlist(
+        campsiteId: String,
+        userId: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        if (campsiteId.isBlank() || userId.isBlank()) return
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.collection("campsites").document(campsiteId)
+                .update("lotteryWaitlist", FieldValue.arrayUnion(userRef))
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { onFailure(it) }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    /**
+     * Removes a user from a campsite's lottery waitlist in Firebase Firestore
+     * @param campsiteId: campsite firestore id
+     * @param userId: user firestore id
+     * @param onSuccess: callback function called when updated
+     * @param onFailure: callback function called on error
+     */
+    fun leaveWaitlist(
+        campsiteId: String,
+        userId: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        if (campsiteId.isBlank() || userId.isBlank()) return
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.collection("campsites").document(campsiteId)
+                .update("lotteryWaitlist", FieldValue.arrayRemove(userRef))
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { onFailure(it) }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    /**
      * Saves a campsite's lottery registration period to the firebase firestore (US 02.04.01, 02.04.03)
      * Only the registrationDate field changes; the rest of the campsite stays the same
      *
