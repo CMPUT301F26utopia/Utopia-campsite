@@ -335,5 +335,36 @@ class CampsiteRepository{
             .addOnFailureListener { onFailure(it) }
     }//end removeReview
 
+    /**
+     * Adds the user specified rating on the specific campsite, in its current implementation, there isnt any specification on which user gave which ratings
+     *
+     * */
+    fun addRating(
+        campsiteId: String,
+        rating: Int,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        if (rating !in 1..5) {
+            onFailure(IllegalArgumentException("Rating must be between 1 and 5"))
+            return
+        }
+        val campsiteReference = db.collection("campsites").document(campsiteId)
+        db.runTransaction { transaction ->
+            val campsite = transaction.get(campsiteReference)
 
+            // Retrieve existing ratings and handling edge cases for retrieval
+            val ratings = (campsite.get("ratings") as? List<*>)
+                ?.mapNotNull { (it as? Number)?.toInt() }
+                ?.toMutableList()
+                ?: mutableListOf()
+
+            ratings.add(rating)
+            transaction.update(campsiteReference, "ratings", ratings)
+
+            null
+        }
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 }//end campsite controller
