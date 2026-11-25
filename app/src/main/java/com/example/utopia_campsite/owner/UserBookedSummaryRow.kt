@@ -4,9 +4,9 @@
  * shows a message and delete icon per user
  * Utopia 02.06.01
  * Utopia 02.07.01
+ * Utopia 02.08.01
  * Outstanding Issues:
  * Message not implemented
- * Delete not implemented
  */
 
 package com.example.utopia_campsite.owner
@@ -51,9 +51,6 @@ fun UserBookedSummaryRow(
     onDeleteClick: () -> Unit,
     onMessageClick: () -> Unit
 ) {
-
-    //state to show dialog of cancelling a user reservation
-    var showCancelDialog by remember { mutableStateOf(false) }
 
     var loadedUser by remember(userId) { mutableStateOf<User?>(null)}
     LaunchedEffect(userId) {
@@ -150,26 +147,4 @@ fun UserBookedSummaryRow(
             )
         } //end column for message/delete icons
     } //end row
-
-    // Ask for confirmation for cancelling a users reservation
-    if (showCancelDialog) {
-        AlertDialog(
-            onDismissRequest = { showCancelDialog = false }, // tapping outside cancels
-            title = { Text("Delete Reserved User?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showCancelDialog = false
-                    },
-                    modifier = Modifier.testTag("confirmDeleteButton")
-                ) { Text("Delete") }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = { showCancelDialog = false },
-                    modifier = Modifier.testTag("cancelDeleteButton")
-                ) { Text("Cancel") }
-            }
-        )
-    } //end if showCancelDialog
 } //end UserBookedSummaryRow

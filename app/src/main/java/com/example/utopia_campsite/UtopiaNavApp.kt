@@ -52,8 +52,8 @@ import com.google.firebase.firestore.pipeline.Expression.Companion.type
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(true) }
-    var showOwnerNavigation by remember { mutableStateOf(false) }
+    var showUserNavigation by remember { mutableStateOf(false) }
+    var showOwnerNavigation by remember { mutableStateOf(true) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
     // Tracks the authenticated user's role for admin switching
@@ -167,7 +167,6 @@ fun UtopiaNavApp() {
                     // TODO: Connect to owner waitlist screen
                     onWaitListClick = {},
 
-                    // TODO: Connect to owner booked spots screen
                     onBookedSpotsClick = { campsite ->
                         navController.navigate("owner/bookedSlots/${campsite.id}")
                     }

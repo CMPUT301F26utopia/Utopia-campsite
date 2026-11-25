@@ -43,10 +43,15 @@ import com.google.firebase.firestore.SetOptions
  * Calls the onCreateAccount callback to pass the user's information for account registration
  * Provides a back button to return to the Welcome Screen
  *
- * @param modifier: the Modifier used to configure the screen layout
- * @param navController: the navigation controller used to return to the Welcome Screen
- * @param onCreateAccount: a callback function that receives the user's first name, last name,
- * email address, and phone number when the Create Account button is pressed with valid inputs
+ * @param db: the database we are storing the data
+ * @param uid: the unique identifier of the user which is their device id
+ * @param firstName: first name of the user
+ * @param lastName: last name of the user
+ * @param email: email address of the user
+ * @param phone: phone number of the user in format : 111-111-1111
+ * @param role: role of the account being created
+ * @param onSuccess: callback function for a success creation
+ * @param onError: callback function if creation failed
  */
 
 fun createUser(
@@ -117,6 +122,20 @@ fun onCreateAccount(
     }
 }
 
+
+/**
+* Displays the sign-up screen for users creating a new Utopia Campsite account
+* Allows users to enter their first name, last name, email address, and phone number
+* Validates that all required fields have been completed before attempting account creation
+* Displays an error message when one or more required fields are empty
+* Calls the onCreateAccount callback to pass the user's information for account registration
+* Provides a back button to return to the Welcome Screen
+ *
+ * @param modifier: modifier for ui customization
+ * @param navController: object for screen navigation
+ * @param onCreateAccount: function for adding the user data fields in database
+ *
+*/
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(

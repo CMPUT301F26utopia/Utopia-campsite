@@ -3,9 +3,6 @@
  * And number of users booked
  * Also displays the list of users who booked the campsites
  *
- * Outstanding issues:
- * View other listings navigation not implemented
- * line 203 implementation may change depending on how number of reservation available is implemented
  */
 
 package com.example.utopia_campsite.owner
@@ -258,6 +255,9 @@ fun CampsiteReservedUsersScreen(campsite: Campsites, onBack : () -> Unit) {
             confirmButton = {
                 TextButton(
                     onClick = {
+                        usersBooked.remove(userToDelete) //delete the user row and updates the screen
+                        campsite.usersBooked.remove(userToDelete) //delete the user id locally
+                        OwnerRepository().cancelUserReservation(userId = userToDelete, campsite = campsite) //delete user id from firebase
                         showCancelDialog = false
 
                     },
