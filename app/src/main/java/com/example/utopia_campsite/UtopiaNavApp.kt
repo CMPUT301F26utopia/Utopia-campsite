@@ -46,10 +46,12 @@ import com.google.firebase.auth.FirebaseAuth
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(true) }
+    var showUserNavigation by remember { mutableStateOf(false) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
     var showAdminNavigation by remember { mutableStateOf(false) }
-    var userRole by remember { mutableStateOf("user") } // signed-in User.role; admins can switch between all three UIs (US 03.11.01)
+
+    // Tracks the authenticated user's role for admin switching
+    var userRole by remember { mutableStateOf("user") }
     val navController = rememberNavController()
 
     // Initializing home screen routes and profile routes for navigation bar
@@ -242,7 +244,22 @@ fun UtopiaNavApp() {
                                 },
                                 onFailure = onFailure
                             )
+                        },
+                        onSubmitRating = { rating, onSuccess, onFailure ->
+                            CampsiteRepository().addRating(
+                                campsiteId = campsite!!.id,
+                                rating = rating,
+                                onSuccess = {
+                                    // Update the displayed average after Firebase succeeds
+                                    campsite = campsite?.let {
+                                        it.copy(ratings = it.ratings + rating)
+                                    }
+                                    onSuccess()
+                                },
+                                onFailure = onFailure
+                            )
                         }
+
                     )
                     loadFailed -> Text("Campsite not found")
                     else -> CircularProgressIndicator()

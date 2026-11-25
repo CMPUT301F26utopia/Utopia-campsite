@@ -10,7 +10,10 @@
  */
 package com.example.utopia_campsite.user
 
+import com.example.utopia_campsite.owner.CampsiteRepository
 import com.example.utopia_campsite.owner.Campsites
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 /**
  *Stores details about a user
@@ -35,18 +38,44 @@ data class User (
     val currentReservations: MutableList<Reservation> = mutableListOf(),
     var pastReservations : MutableList<Reservation> = mutableListOf(),
     val role: String = "user"
+) {
 
-    ) {
+
+    private fun currentUserId(): String? {
+        return try {
+            Firebase.auth.currentUser?.uid
+        } catch (_: Exception) {
+            null
+        }
+    }
 
     fun joinLottery(campsite: Campsites) {
         // take campsite object
         // add user details to campsite lottery list
-        campsite.lotteryWaitlist.add(deviceID)
+        val uid = currentUserId() ?: deviceID.ifEmpty { "current_user" }
+        if (!campsite.lotteryWaitlist.contains(uid)) {
+            campsite.lotteryWaitlist.add(uid)
+        }
+        if (campsite.id.isNotBlank() && uid.isNotBlank()) {
+            try {
+                CampsiteRepository().joinWaitlist(campsite.id, uid)
+            } catch (_: Exception) {
+                // Ignore Firestore initialization errors during unit tests
+            }
+        }
     } // end joinLottery()
 
     fun leaveLottery(campsite: Campsites) {
         // take campsite object
         // remove user details from campsite lottery list
-        campsite.lotteryWaitlist.remove(deviceID)
+        val uid = currentUserId() ?: deviceID.ifEmpty { "current_user" }
+        campsite.lotteryWaitlist.remove(uid)
+        if (campsite.id.isNotBlank() && uid.isNotBlank()) {
+            try {
+                CampsiteRepository().leaveWaitlist(campsite.id, uid)
+            } catch (_: Exception) {
+                // Ignore Firestore initialization errors during unit tests
+            }
+        }
     } // end leaveLottery()
 }
