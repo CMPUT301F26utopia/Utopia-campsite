@@ -438,5 +438,51 @@ class CampsiteRepository{
         }
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
-    }
+    }//end addRating
+    /**
+     * Removes one user's rating from a campsite in the firebase firestore (admin)
+     * Runs in a transaction, like addRating, so it reads the current ratings and writes them back
+     * without that user's entry, without overwriting a rating someone else adds at the same time
+     *
+     * @param campsiteId: the Firestore document ID of the campsite
+     * @param userId: the uid of the user whose rating is removed (the key in the ratings map)
+     * @param onSuccess: called once the rating is removed
+     * @param onFailure: called if the campsite or rating doesn't exist, or the rating could not be removed
+     */
+    fun removeRating(
+        campsiteId: String,
+        userId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val campsiteReference = db.collection("campsites").document(campsiteId)
+        db.runTransaction { transaction ->
+            val campsite = transaction.get(campsiteReference)
+
+            if (!campsite.exists()) {
+                throw Exception("Campsite not found")
+            }
+
+            // Retrieve existing ratings and handling edge cases for retrieval
+            val ratings = (campsite.get("ratings") as? Map<*, *>)
+                ?.mapNotNull { (key, value) ->
+                    if (key is String && value is Number) {
+                        key to value.toInt()
+                    } else null
+                }
+                ?.toMap()
+                ?.toMutableMap()
+                ?: mutableMapOf()
+
+            if (ratings.remove(userId) == null) {
+                throw Exception("Rating not found")
+            }
+
+            transaction.update(campsiteReference, "ratings", ratings)
+
+            null
+        }
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    } //end removeRating
 }//end campsite controller

@@ -31,7 +31,7 @@ class AdminCampsiteReviewsScreenTest {
         address = "",
         latitude = 0.0,
         longitude = 0.0,
-        ratings = emptyList(),
+        ratings = mapOf("uid-john" to 5, "uid-jane" to 2),
         tags = emptyList(),
         lotteryWinners = 0,
         lotteryWaitlist = mutableListOf(),
