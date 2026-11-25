@@ -78,7 +78,8 @@ class CampsiteRepository{
                         availableStartDate = document.getString("availableStartDate") ?: "",
                         availableEndDate = document.getString("availableEndDate") ?: "",
                         usersBooked = getUserIdsFromDocument(document, "usersBooked"),
-                        reviews = (document.get("reviews") as? List<*>)?.filterIsInstance<String>() ?: emptyList() //this casts firebase's List<Any?> to a List<String>
+                        reviews = (document.get("reviews") as? List<*>)?.filterIsInstance<String>() ?: emptyList(), //this casts firebase's List<Any?> to a List<String>
+                        ownerId = document.getString("ownerId") ?: ""
                     )
                     campsites.add(campsite)
                 }//end for
@@ -124,6 +125,8 @@ class CampsiteRepository{
      * Firestore makes the document ID, so campsite.id is not saved
      * The field names match the ones getCampsites reads
      *
+     * The owner is campsite.ownerId, or the signed in user's uid when that is blank
+     *
      * @param campsite: the campsite to save
      */
     fun addCampsite(
@@ -131,6 +134,7 @@ class CampsiteRepository{
         onSuccess: () -> Unit = {},
         onFailure: (Exception) -> Unit = {}
     ){
+        val ownerId = campsite.ownerId.ifBlank { FirebaseAuth.getInstance().currentUser?.uid ?: "" }
         val data = hashMapOf(
             "name" to campsite.name,
             "photoUrl" to campsite.photoUrl,
@@ -148,7 +152,8 @@ class CampsiteRepository{
             "availableStartDate" to campsite.availableStartDate,
             "availableEndDate" to campsite.availableEndDate,
             "usersBooked" to campsite.usersBooked.map{db.collection("users").document(it)},
-            "reviews" to campsite.reviews
+            "reviews" to campsite.reviews,
+            "ownerId" to ownerId
         )
         db.collection("campsites").add(data)
             .addOnSuccessListener { onSuccess() }
@@ -270,7 +275,7 @@ class CampsiteRepository{
         getCampsites(
             onSuccess = { allCampsites ->
                 val ownerCampsites = allCampsites.filter { campsite ->
-                    campsite.id in owner.postedCampsitesId
+                    campsite.id in owner.postedCampsitesId || campsite.ownerId == owner.deviceID
                 }
 
                 onSuccess(ownerCampsites)

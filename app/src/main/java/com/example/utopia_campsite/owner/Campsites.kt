@@ -35,6 +35,7 @@ import com.example.utopia_campsite.user.User
  * @property availableEndDate: the ending date of which the campsite is available to be booked
  * @property usersBooked: contains a list of user IDs of the users who are currently booked in the campsite
  * @property reviews: a list of reviews posted by entrants, each stored as "Name: review text"
+ * @property ownerId: the Firebase Auth uid of the campsite's owner (blank for campsites created before this field existed)
  */
 data class Campsites(
     val id: String = "",
@@ -54,5 +55,6 @@ data class Campsites(
     val availableStartDate: String = "", // Added on, this is the starting date of which the campsite is available
     val availableEndDate: String = "",   // Added on, this is the ending date of which the campsite is available
     val usersBooked : MutableList<String> = mutableListOf(),
-    val reviews: List<String> = emptyList()
+    val reviews: List<String> = emptyList(),
+    val ownerId: String = ""
 )
