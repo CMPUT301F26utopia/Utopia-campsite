@@ -37,7 +37,7 @@ data class User (
     val phone: String = "",
     val currentReservations: MutableList<Reservation> = mutableListOf(),
     var pastReservations : MutableList<Reservation> = mutableListOf(),
-    val role: String = "user"
+    val role: String = ""
 ) {
 
 

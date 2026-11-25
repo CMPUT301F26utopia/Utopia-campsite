@@ -51,8 +51,8 @@ import com.google.firebase.firestore.pipeline.Expression.Companion.type
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(false) }
-    var showOwnerNavigation by remember { mutableStateOf(true) }
+    var showUserNavigation by remember { mutableStateOf(true) }
+    var showOwnerNavigation by remember { mutableStateOf(false) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
     // Tracks the authenticated user's role for admin switching
