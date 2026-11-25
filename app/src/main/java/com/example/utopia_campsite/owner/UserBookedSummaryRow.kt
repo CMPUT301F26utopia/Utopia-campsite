@@ -19,9 +19,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -42,7 +45,16 @@ import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserRepository
 
 @Composable
-fun UserBookedSummaryRow(userId: String, campsite: Campsites) {
+fun UserBookedSummaryRow(
+    userId: String,
+    campsite: Campsites,
+    onDeleteClick: () -> Unit,
+    onMessageClick: () -> Unit
+) {
+
+    //state to show dialog of cancelling a user reservation
+    var showCancelDialog by remember { mutableStateOf(false) }
+
     var loadedUser by remember(userId) { mutableStateOf<User?>(null)}
     LaunchedEffect(userId) {
         UserRepository().getUser(
@@ -123,7 +135,7 @@ fun UserBookedSummaryRow(userId: String, campsite: Campsites) {
                 tint = Color.Gray,
                 modifier = Modifier
                     .size(20.dp)
-                    .clickable(onClick = {})
+                    .clickable(onClick = { onMessageClick() })
             )
 
             // Delete Icon (Bottom)
@@ -132,8 +144,32 @@ fun UserBookedSummaryRow(userId: String, campsite: Campsites) {
                 contentDescription = "Delete",
                 modifier = Modifier
                     .size(20.dp)
-                    .clickable(onClick = {})
+                    .clickable(
+                        onClick = { onDeleteClick() }
+                    )
             )
         } //end column for message/delete icons
     } //end row
+
+    // Ask for confirmation for cancelling a users reservation
+    if (showCancelDialog) {
+        AlertDialog(
+            onDismissRequest = { showCancelDialog = false }, // tapping outside cancels
+            title = { Text("Delete Reserved User?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCancelDialog = false
+                    },
+                    modifier = Modifier.testTag("confirmDeleteButton")
+                ) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showCancelDialog = false },
+                    modifier = Modifier.testTag("cancelDeleteButton")
+                ) { Text("Cancel") }
+            }
+        )
+    } //end if showCancelDialog
 } //end UserBookedSummaryRow

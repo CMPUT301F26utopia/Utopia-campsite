@@ -1,6 +1,7 @@
 package com.example.utopia_campsite.owner
 
 
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class OwnerRepository {
@@ -33,4 +34,18 @@ class OwnerRepository {
                 onFailure(exception)
             }//end onFailureListener
     }//end getOwner
+
+
+    /**
+     * fetches one owner from firebase
+     * @param userId: the firebase document ID of the user (their deviceID)
+     * @param campsite: the campsite where the user is booked to
+     */
+
+    fun cancelUserReservation(userId: String, campsite: Campsites) {
+        db.collection("campsites")
+            .document(campsite.id)
+            .update("usersBooked", FieldValue.arrayRemove(userId))
+    }
+
 }
