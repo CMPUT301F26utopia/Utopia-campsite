@@ -131,7 +131,7 @@ fun OwnerCampsiteListScreen(
     onCampsiteClick: (Campsites) -> Unit,
     onFilterClick: () -> Unit,
     onWaitListClick: (Campsites) -> Unit, // TODO: Implement when section is ready
-    onBookedSpotsClick: (Campsites) -> Unit, // TODO: Implement when section is ready
+    onBookedSpotsClick: (Campsites) -> Unit
 ) {
     var campsites by remember { mutableStateOf<List<Campsites>>(emptyList()) }
     val repository = remember { CampsiteRepository() }
