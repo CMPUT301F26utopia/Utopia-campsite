@@ -40,6 +40,7 @@ import com.example.utopia_campsite.user.UserFilterResultScreen
 import com.example.utopia_campsite.user.UserProfileScreen
 import com.example.utopia_campsite.user.UserRepository
 import com.example.utopia_campsite.user.util.BottomNavigationBar
+import com.example.utopia_campsite.owner.CampsiteScreens
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.pipeline.Expression.Companion.type
 
@@ -156,7 +157,7 @@ fun UtopiaNavApp() {
                     owner = loaded,
 
                     onCampsiteClick = { campsite ->
-                        navController.navigate("user/campsite/${campsite.id}")
+                        navController.navigate("owner/campsite/${campsite.id}")
                     },
 
                     onFilterClick = {
@@ -180,22 +181,67 @@ fun UtopiaNavApp() {
 
 
 
-//        //composable routers for campsite list and campsite details screen
-//        composable("user/campsites"){ UserCampsiteListScreen(filterViewModel = filterViewModel, onFilterClick = { navController.navigate("user/filter") }, navController = navController) }
-//        composable("user/campsite/{campsiteId}") { backStackEntry ->
-//            val campsiteId = backStackEntry.arguments?.getString("campsiteId")
-//            var campsite by remember { mutableStateOf<Campsites?>(null) }
-//            var loadFailed by remember { mutableStateOf(false) }
-//            // loads fresh from the database each time this screen opens
-//            LaunchedEffect(campsiteId) {
-//                CampsiteRepository().getCampsites(
-//                    onSuccess = { campsites ->
-//                        val found = campsites.find { it.id == campsiteId }
-//                        if (found != null) campsite = found else loadFailed = true
-//                    },
-//                    onFailure = { loadFailed = true }
-//                )
-//            }
+            // display the selected campsite's owner details.
+            composable("owner/campsite/{campsiteId}") { entry ->
+                val campsiteId = entry.arguments?.getString("campsiteId")
+                val repository = remember { CampsiteRepository() }
+
+                var campsite by remember(campsiteId) {
+                    mutableStateOf<Campsites?>(null)
+                }
+
+                var error by remember(campsiteId) {
+                    mutableStateOf<String?>(null)
+                }
+
+                // Load the selected campsite when this route opens.
+                LaunchedEffect(campsiteId) {
+                    if (campsiteId.isNullOrBlank()) {
+                        error = "Campsite not found."
+                    } else {
+                        repository.getCampsites(
+                            onSuccess = { campsites ->
+                                campsite = campsites.find { it.id == campsiteId }
+
+                                if (campsite == null) {
+                                    error = "Campsite not found."
+                                }
+                            },
+                            onFailure = {
+                                error = it.message ?: "Couldn't load campsite."
+                            }
+                        )
+                    }
+                }
+
+                when {
+                    campsite != null -> CampsiteScreens(
+                        campsite = campsite!!,
+
+                        onBack = {
+                            navController.popBackStack()
+                        },
+
+                        // Connect the screen's edit form to Firestore.
+                        onSave = { updated, finished ->
+                            repository.updateCampsiteDetails(
+                                campsite = updated,
+                                onSuccess = {
+                                    campsite = updated
+                                    finished(null)
+                                },
+                                onFailure = {
+                                    finished(it.message ?: "Couldn't save campsite.")
+                                }
+                            )
+                        }
+                    )
+
+                    error != null -> Text(error!!)
+
+                    else -> CircularProgressIndicator()
+                }
+            }
 
             composable("sign_up") {
                 SignUpScreen(
@@ -243,9 +289,12 @@ fun UtopiaNavApp() {
                                 campsiteId = campsite!!.id,
                                 rating = rating,
                                 onSuccess = {
-                                    // Update the displayed average after Firebase succeeds
-                                    campsite = campsite?.let {
-                                        it.copy(ratings = it.ratings + rating)
+                                    // Update the displayed average after Firebase succeeds and put the user as a map, and the rating they gave as the value
+                                    val uid = FirebaseAuth.getInstance().currentUser?.uid
+                                    if (uid != null) {
+                                        campsite = campsite?.let {
+                                            it.copy(ratings = it.ratings + (uid to rating))
+                                        }
                                     }
                                     onSuccess()
                                 },

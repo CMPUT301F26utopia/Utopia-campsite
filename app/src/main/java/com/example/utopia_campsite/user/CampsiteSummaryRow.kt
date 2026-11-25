@@ -28,7 +28,7 @@ import com.example.utopia_campsite.owner.Campsites
 
 @Composable
 fun CampsiteSummaryRow(campsite: Campsites){
-    val rating = if (campsite.ratings.isEmpty()) "No ratings yet" else "%.2f".format(campsite.ratings.average()) //format rounds the rating, returns a string
+    val rating = if (campsite.ratings.isEmpty()) "No ratings yet" else "%.2f".format(campsite.ratings.values.average()) //format rounds the rating, returns a string
     // Show the average of all ratings, or a message if the campsite has none yet
     // (average() of an empty list gives NaN)
 

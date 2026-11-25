@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.utopia_campsite.user.UserCampsiteRating
+import com.google.firebase.auth.FirebaseAuth
 
 /**
  * Shows every detail of one campsite, followed by its reviews
@@ -66,7 +67,7 @@ fun CampsiteDetailsContent(
 ) {
     // Show the average of all ratings, or a message if the campsite has none yet
     // (average() of an empty list gives NaN)
-    val rating = if (campsite.ratings.isEmpty()) "No ratings yet" else "%.2f".format(campsite.ratings.average())
+    val rating = if (campsite.ratings.isEmpty()) "No ratings yet" else "%.2f".format(campsite.ratings.values.average())
     var checkedState by remember { mutableStateOf(false) }
     var reviewText by remember { mutableStateOf("") }
     var isPosting by remember { mutableStateOf(false) }
@@ -75,6 +76,9 @@ fun CampsiteDetailsContent(
     var isSubmittingRating by remember { mutableStateOf(false) }
     var ratingError by remember { mutableStateOf<String?>(null) }
 
+    val uid = FirebaseAuth.getInstance().currentUser?.uid
+    val previousRating = uid?.let { campsite.ratings[it] } ?: 0
+    val hasRated = previousRating > 0
     val currentUserId = try {
         Firebase.auth.currentUser?.uid ?: "current_user"
     } catch (_: Exception) {
@@ -144,7 +148,7 @@ fun CampsiteDetailsContent(
                                 )
                             ) {
                                 Text(
-                                    text = "Add Rating",
+                                    text = if (hasRated) "Edit Rating" else "Add Rating",
                                     fontSize = 12.sp
                                 )
                             }
@@ -267,6 +271,7 @@ fun CampsiteDetailsContent(
     if (showRatingDialog && onSubmitRating != null) {
         UserCampsiteRating(
             modifier = Modifier,
+            initialRating = previousRating,
             onDismiss = {
                 if (!isSubmittingRating) {
                     showRatingDialog = false

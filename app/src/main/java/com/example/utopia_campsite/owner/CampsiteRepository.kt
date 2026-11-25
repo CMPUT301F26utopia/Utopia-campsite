@@ -67,7 +67,13 @@ class CampsiteRepository{
                         address = document.getString("address") ?: "", //the ? sets a default value if the value is null
                         latitude = document.getDouble("latitude") ?: 0.0,
                         longitude = document.getDouble("longitude") ?: 0.0,
-                        ratings = (document.get("ratings") as? List<*>)?.map { (it as Number).toInt() }?: mutableListOf(), //this casts firebase's List<Any?> to a List<Int>
+                        ratings = (document.get("ratings") as? Map<*, *>) ?.mapNotNull { (key, value) ->
+                                if (key is String && value is Number) {
+                                    key to value.toInt()
+                                } else null
+                            }
+                            ?.toMap()
+                            ?: emptyMap(), //this casts firebase's List<Any?> to a List<Int>
                         tags = (document.get("tags") as? List<*>)?.filterIsInstance<String>()?: mutableListOf(), //this casts firebase's List<Any?> to a List<String>
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
                         lotteryWaitlist = getUserIdsFromDocument(document, "lotteryWaitlist"),
@@ -363,6 +369,32 @@ class CampsiteRepository{
             onFailure = onFailure
         )
     } //end addReview
+    /**
+     * Saves the fields edited on the owner campsite details screen.
+     *
+     * Other fields, such as the lottery waitlist and reviews, are preserved.
+     */
+    fun updateCampsiteDetails(
+        campsite: Campsites,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("campsites")
+            .document(campsite.id)
+            .update(
+                mapOf(
+                    "name" to campsite.name,
+                    "address" to campsite.address,
+                    "description" to campsite.description,
+                    "maxOccupancy" to campsite.maximumOccupants,
+                    "tags" to campsite.tags,
+                    "latitude" to campsite.latitude,
+                    "longitude" to campsite.longitude
+                )
+            )
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 
     /**
      * Adds the user specified rating on the specific campsite, in its current implementation, there isnt any specification on which user gave which ratings
@@ -374,6 +406,13 @@ class CampsiteRepository{
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (uid == null) {
+            onFailure(Exception("No user signed in"))
+            return
+        }
+
         if (rating !in 1..5) {
             onFailure(IllegalArgumentException("Rating must be between 1 and 5"))
             return
@@ -382,13 +421,22 @@ class CampsiteRepository{
         db.runTransaction { transaction ->
             val campsite = transaction.get(campsiteReference)
 
-            // Retrieve existing ratings and handling edge cases for retrieval
-            val ratings = (campsite.get("ratings") as? List<*>)
-                ?.mapNotNull { (it as? Number)?.toInt() }
-                ?.toMutableList()
-                ?: mutableListOf()
+            if (!campsite.exists()) {
+                throw Exception("Campsite not found")
+            }
 
-            ratings.add(rating)
+            // Retrieve existing ratings and handling edge cases for retrieval
+            val ratings = (campsite.get("ratings") as? Map<*, *>)
+                ?.mapNotNull { (key, value) ->
+                    if (key is String && value is Number) {
+                        key to value.toInt()
+                    } else null
+                }
+                ?.toMap()
+                ?.toMutableMap()
+                ?: mutableMapOf()
+
+            ratings[uid] = rating
             transaction.update(campsiteReference, "ratings", ratings)
 
             null
