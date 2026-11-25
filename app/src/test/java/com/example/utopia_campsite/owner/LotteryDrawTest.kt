@@ -6,7 +6,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Tests picking lottery winners and checking when the registration period is over (US 02.05.01)
+ * Tests picking lottery winners and losers and checking when the registration period is over
+ * (US 02.05.01, 01.03.01, 01.03.02)
  */
 class LotteryDrawTest {
 
@@ -28,6 +29,31 @@ class LotteryDrawTest {
     fun pickWinners_emptyWaitlist_noWinners(){
         assertTrue(pickWinners(emptyList(), 3).isEmpty())
     } //end pickWinners_emptyWaitlist_noWinners
+
+    @Test
+    fun pickLosers_someWinners_returnsEveryoneElse(){
+        assertEquals(listOf("a", "c"), pickLosers(listOf("a", "b", "c", "d"), listOf("b", "d")))
+    } //end pickLosers_someWinners_returnsEveryoneElse
+
+    @Test
+    fun pickLosers_everyoneWins_returnsEmpty(){
+        assertTrue(pickLosers(listOf("a", "b"), listOf("a", "b")).isEmpty())
+    } //end pickLosers_everyoneWins_returnsEmpty
+
+    @Test
+    fun pickLosers_noWinners_everyoneLoses(){
+        assertEquals(listOf("a", "b"), pickLosers(listOf("a", "b"), emptyList()))
+    } //end pickLosers_noWinners_everyoneLoses
+
+    @Test
+    fun pickLosers_afterPickWinners_everyEntrantGetsOneResult(){
+        val waitlist = listOf("a", "b", "c", "d", "e")
+        val winners = pickWinners(waitlist, 2)
+        val losers = pickLosers(waitlist, winners)
+        assertEquals(3, losers.size) // 5 entrants - 2 winners = 3 losers
+        assertTrue(losers.none { it in winners }) // nobody is told they won and lost
+        assertEquals(waitlist.toSet(), (winners + losers).toSet()) // everyone on the waitlist is told something
+    } //end pickLosers_afterPickWinners_everyEntrantGetsOneResult
 
     @Test
     fun isRegistrationOver_dayAfterLastDay_returnsTrue(){
