@@ -76,6 +76,7 @@ class CampsiteRepository{
                             ?: emptyMap(), //this casts firebase's List<Any?> to a List<Int>
                         tags = (document.get("tags") as? List<*>)?.filterIsInstance<String>()?: mutableListOf(), //this casts firebase's List<Any?> to a List<String>
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
+                        waitlistCapacity = document.getLong("waitlistCapacity")?.toInt(),
                         lotteryWaitlist = getUserIdsFromDocument(document, "lotteryWaitlist"),
                         description = document.getString("description") ?: "",
                         registrationDate = document.getString("registrationDate") ?: "",
@@ -150,6 +151,7 @@ class CampsiteRepository{
             "ratings" to campsite.ratings,
             "tags" to campsite.tags,
             "lotteryWinners" to campsite.lotteryWinners,
+            "waitlistCapacity" to campsite.waitlistCapacity,
             "lotteryWaitlist" to campsite.lotteryWaitlist.map { db.collection("users").document(it) },
             "description" to campsite.description,
             "registrationDate" to campsite.registrationDate,
@@ -162,8 +164,25 @@ class CampsiteRepository{
             "ownerId" to ownerId
         )
         db.collection("campsites").add(data)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { onFailure(it) }
+            .addOnSuccessListener { campsiteDocument ->
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+                if (uid == null) {
+                    onFailure(Exception("No owner signed in"))
+                    return@addOnSuccessListener
+                }
+                db.collection("owners")
+                    .document(uid)
+                    .update(
+                        "postedCampsitesId",
+                        FieldValue.arrayUnion(campsiteDocument.id)
+                    )
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener {
+                onFailure(it)
+            }
     } //end addCampsite
 
     /**
@@ -397,8 +416,10 @@ class CampsiteRepository{
     }//end removeReview
     /**
      * Saves the fields edited on the owner campsite details screen.
-     *
      * Other fields, such as the lottery waitlist and reviews, are preserved.
+     * @param campsite: instance of the specific campsite object
+     * @param onSuccess: callback to show that a success occurred
+     * @param onFailure: callback to show that a failure occurred
      */
     fun updateCampsiteDetails(
         campsite: Campsites,
@@ -423,8 +444,11 @@ class CampsiteRepository{
     }
 
     /**
-     * Adds the user specified rating on the specific campsite, in its current implementation, there isnt any specification on which user gave which ratings
-     *
+     * Adds the user specified rating on the specific campsite, in its current implementation
+     * @param campsiteId: the reference point of the specific campsite itself
+     * @param rating: integer value from 1 to 5, indicating the rating
+     * @param onSuccess: callback to insinuate a successfully rating has been applied
+     * @param onFailure: callback to insinuate a failed rating attempt
      * */
     fun addRating(
         campsiteId: String,
@@ -516,4 +540,30 @@ class CampsiteRepository{
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     } //end removeRating
+
+    /**
+     * method to update the lottery listing and update it on the backend side
+     *
+     * @param campsite: instance of the specific campsite that's being updated
+     * @param onSuccess: success callback for a successful update
+     * @param onFailure: failed callback for an invalid update attempt
+     */
+    fun updateLotteryListing(
+        campsite: Campsites,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("campsites")
+            .document(campsite.id)
+            .update(
+                mapOf(
+                    "lotteryWinners" to campsite.lotteryWinners,
+                    "waitlistCapacity" to campsite.waitlistCapacity,
+                    "registrationDate" to campsite.registrationDate,
+                    "bookingDate" to campsite.bookingDate
+                )
+            )
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 }//end campsite controller

@@ -132,6 +132,7 @@ fun OwnerCampsiteListScreen(
     onFilterClick: () -> Unit,
     onWaitListClick: (Campsites) -> Unit, // TODO: Implement when section is ready
     onBookedSpotsClick: (Campsites) -> Unit, // TODO: Implement when section is ready
+    onRegisterClick: () -> Unit
 ) {
     var campsites by remember { mutableStateOf<List<Campsites>>(emptyList()) }
     val repository = remember { CampsiteRepository() }
@@ -196,12 +197,25 @@ fun OwnerCampsiteListScreen(
         )
 
         Spacer(modifier = modifier.padding(16.dp))
-        Text(
-            text = "Your Listings",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = modifier.padding(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Your Listings",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Button(
+                onClick = onRegisterClick
+            ) {
+                Text("Register Campsite")
+            }
+        }
+
+        Spacer(modifier = Modifier.padding(16.dp))
 
         // Active, Past, Cancelled Reservations
 
@@ -384,6 +398,7 @@ fun OwnerCampsiteListScreenPreview() {
         onCampsiteClick = {},
         onFilterClick = {},
         onWaitListClick = {},
-        onBookedSpotsClick = {}
+        onBookedSpotsClick = {},
+        onRegisterClick = {}
     )
 }

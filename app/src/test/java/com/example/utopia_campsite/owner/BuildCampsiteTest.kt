@@ -16,7 +16,8 @@ class BuildCampsiteTest {
         maxOccupancy: String = "6",
         tags: String = "lake, hiking",
         registrationEnd: String = "20/10/2026",
-        bookingStart: String = "01/11/2026"
+        bookingStart: String = "01/11/2026",
+        waitlistCapacity: Int? = null
     ): Campsites?{
         return buildCampsite(
             name = name,
@@ -28,6 +29,7 @@ class BuildCampsiteTest {
             photoUrl = "",
             tags = tags,
             lotteryWinners = "2",
+            waitlistCapacity = waitlistCapacity,
             registrationStart = "10/10/2026",
             registrationEnd = registrationEnd,
             bookingStart = bookingStart,
@@ -72,4 +74,23 @@ class BuildCampsiteTest {
         assertNull(mockBuild(bookingStart = "31/02/2026")) // February has no 31st
     } //end buildCampsite_bookingDateDoesNotExist_returnsNull
 
+    @Test
+    fun buildCampsite_noWaitlistCapacity_allowsUnlimited() {
+        val campsite = mockBuild()
+        assertNotNull(campsite)
+        assertNull(campsite!!.waitlistCapacity)
+    }
+
+    @Test
+    fun buildCampsite_validWaitlistCapacity_savesCapacity() {
+        val campsite = mockBuild(waitlistCapacity = 10)
+        assertNotNull(campsite)
+        assertEquals(10, campsite!!.waitlistCapacity)
+    }
+
+    @Test
+    fun buildCampsite_capacityBelowWinners_returnsNull() {
+        // This campsite has 2 lottery winners.
+        assertNull(mockBuild(waitlistCapacity = 1))
+    }
 }

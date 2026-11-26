@@ -45,7 +45,10 @@ import com.example.utopia_campsite.messaging.Conversation
 import com.example.utopia_campsite.messaging.ChatRoute
 import com.example.utopia_campsite.user.util.BottomNavigationBar
 import com.example.utopia_campsite.owner.CampsiteScreens
+import com.example.utopia_campsite.owner.RegisterCampsiteScreen
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.pipeline.Expression.Companion.type
 
 /**
  * Defines the navigation routes between the application's screens
@@ -164,16 +167,17 @@ fun UtopiaNavApp() {
                     onCampsiteClick = { campsite ->
                         navController.navigate("owner/campsite/${campsite.id}")
                     },
-
                     onFilterClick = {
                         navController.navigate("user/filter")
                     },
-
-                    // TODO: Connect to owner waitlist screen
                     onWaitListClick = {},
 
                     onBookedSpotsClick = { campsite ->
                         navController.navigate("owner/bookedSlots/${campsite.id}")
+                    },
+
+                    onRegisterClick = {
+                        navController.navigate("owner/register")
                     }
                 )
                 loadFailed -> Text("Couldn't load campsites")
@@ -181,7 +185,13 @@ fun UtopiaNavApp() {
                 else -> CircularProgressIndicator()
             }
         }
-
+            composable("owner/register") {
+                RegisterCampsiteScreen(
+                    onRegistered = {
+                        navController.popBackStack()
+                    }
+                )
+            }
 
 
 
@@ -236,6 +246,18 @@ fun UtopiaNavApp() {
                                 },
                                 onFailure = {
                                     finished(it.message ?: "Couldn't save campsite.")
+                                }
+                            )
+                        },
+                        onSaveLottery = { updated, finished ->
+                            repository.updateLotteryListing(
+                                campsite = updated,
+                                onSuccess = {
+                                    campsite = updated
+                                    finished(null)
+                                },
+                                onFailure = {
+                                    finished(it.message ?: "Couldn't update lottery.")
                                 }
                             )
                         }

@@ -84,6 +84,13 @@ fun UpdateLotteryListingScreen(
         mutableStateOf(campsite.lotteryWinners.toString())
     }
 
+    var waitlistCapacity by remember(
+        campsite.id,
+        campsite.waitlistCapacity
+    ) {
+        mutableStateOf(campsite.waitlistCapacity?.toString() ?: "")
+    }
+
     var regStart by remember(registrationDates) {
         mutableStateOf(registrationDates.first)
     }
@@ -103,6 +110,9 @@ fun UpdateLotteryListingScreen(
     // Validate fields.
     val winners = lotteryWinners.toIntOrNull()
     val validWinners = winners != null && winners > 0
+    val capacity = waitlistCapacity.toIntOrNull()
+
+    val validCapacity = waitlistCapacity.isBlank() || (capacity != null && capacity > 0 && (winners == null || capacity >= winners) && capacity >= campsite.lotteryWaitlist.size)
 
     val registrationStartDate = parseDate(regStart)
     val registrationEndDate = parseDate(regEnd)
@@ -122,6 +132,7 @@ fun UpdateLotteryListingScreen(
 
     val canSave =
         validWinners &&
+                validCapacity &&
                 validRegistrationPeriod &&
                 validBookingPeriod
 
@@ -154,6 +165,19 @@ fun UpdateLotteryListingScreen(
                 keyboardType = KeyboardType.Number
             ),
             isError = lotteryWinners.isNotEmpty() && !validWinners,
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = waitlistCapacity,
+            onValueChange = { waitlistCapacity = it },
+            label = { Text("Waitlist Capacity (Optional)") },
+            placeholder = { Text("Leave empty for unlimited") },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ),
+            isError = !validCapacity,
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -245,6 +269,7 @@ fun UpdateLotteryListingScreen(
             onClick = {
                 val updatedCampsite = campsite.copy(
                     lotteryWinners = winners!!,
+                    waitlistCapacity = capacity,
                     registrationDate = "$regStart-$regEnd",
                     bookingDate = "$bookStart-$bookEnd"
                 )
