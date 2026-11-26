@@ -166,14 +166,13 @@ fun UtopiaNavApp() {
                         navController.navigate("user/filter")
                     },
                     onWaitListClick = {},
-                    onBookedSpotsClick = {},
-                    onRegisterClick = {
-                        navController.navigate("owner/register")
-                    }
-                )
 
                     onBookedSpotsClick = { campsite ->
                         navController.navigate("owner/bookedSlots/${campsite.id}")
+                    },
+
+                    onRegisterClick = {
+                        navController.navigate("owner/register")
                     }
                 )
                 loadFailed -> Text("Couldn't load campsites")
