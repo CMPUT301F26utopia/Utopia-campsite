@@ -14,3 +14,20 @@ data class Message (
     val text: String = "",
     val sentAt: Date? = null
 )
+
+object MessageValidation {
+
+    /** the longest message that can be sent, in characters */
+    const val MAX_LENGTH = 1000
+
+    /**
+     * Cleans up the text of a message before it is sent
+     *
+     * @param text: the text the person typed
+     * @return the text with surrounding whitespace removed, or null if it is empty or longer than MAX_LENGTH
+     */
+    fun clean(text: String): String? {
+        val trimmed = text.trim()
+        return if (trimmed.isEmpty() || trimmed.length > MAX_LENGTH) null else trimmed
+    } //end clean
+}

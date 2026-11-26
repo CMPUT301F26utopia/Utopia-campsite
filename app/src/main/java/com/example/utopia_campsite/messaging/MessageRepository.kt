@@ -7,7 +7,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-
+/**
+ * Reads and writes conversations and messages in the firebase firestore
+ */
 class MessageRepository(private val db: FirebaseFirestore = FirebaseFirestore.getInstance()) {
     /**
      * Converts a message document into a Message
@@ -75,7 +77,15 @@ class MessageRepository(private val db: FirebaseFirestore = FirebaseFirestore.ge
             }
         awaitClose { registration.remove() }
     } //end observeConversations
-
+    /**
+     * Sends a message, creating the conversation if this is the first one
+     *
+     * @param conversation: the conversation to send in
+     * @param senderId: the uid of the person sending, must be the owner or the entrant
+     * @param text: the text the person typed
+     * @param onSuccess: called once the message is saved
+     * @param onFailure: called if the sender is not in the conversation or saving fails
+     */
     fun sendMessage(
         conversation: Conversation,
         senderId: String,
