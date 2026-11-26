@@ -2,6 +2,7 @@ package com.example.utopia_campsite.user.util
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Icon
@@ -20,6 +21,7 @@ fun BottomNavigationBar(
     navController: NavController,
     homeScreenRoute: String,
     profileScreenRoute: String,
+    notificationsScreenRoute: String = "user/notifications",
     onSwitchRole: ((String) -> Unit)? = null) { // null hides the switch (non-admins)
 
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -40,6 +42,21 @@ fun BottomNavigationBar(
                 )
             },
             label = { Text("Home") }
+        )
+
+        // Navigation button for notifications screen
+        NavigationBarItem(
+            selected = currentRoute == notificationsScreenRoute,
+            onClick = {
+                navController.navigate(notificationsScreenRoute)
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Notifications,
+                    contentDescription = "Notifications"
+                )
+            },
+            label = { Text("Notifications") }
         )
 
         // Navigation button for profile screen

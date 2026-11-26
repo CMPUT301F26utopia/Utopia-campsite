@@ -93,6 +93,7 @@ fun determineCampsiteStatus(campsite: Campsites): String {
     val registrationEnd = dateFormat.parse(registrationDates[1].trim())
     val bookingStart = dateFormat.parse(bookingDates[0].trim())
     val bookingEnd = dateFormat.parse(bookingDates[1].trim())
+    val availableEndDate = dateFormat.parse(campsite.availableEndDate)
 
     if (registrationStart == null || registrationEnd == null ||
         bookingStart == null || bookingEnd == null) {
@@ -107,7 +108,11 @@ fun determineCampsiteStatus(campsite: Campsites): String {
     else if (!today.before(bookingStart) &&
         !today.after(bookingEnd)) {
         return "Booking Period"
-    } else {
+    }
+    else if (today.after(availableEndDate)) {
+        return "Not Active(Last active at: ${campsite.availableStartDate} to ${campsite.availableEndDate})"  //a campsite is in past reservations
+    }
+    else {
         return "" // Returning nothing as this campsite is not applicable to have a status string
     }
 }
@@ -122,6 +127,7 @@ fun determineCampsiteStatus(campsite: Campsites): String {
  * @param onCampsiteClick: callback function called when a campsite is selected
  * @param onFilterClick: callback function called when the filter button is clicked
  * @param onWaitListClick: callback function called when the view waitlist button is clicked
+ * @param onViewUsersBookedClick : callback function called when the view users booked is clicked in past reservation tab campsites
  * @param onBookedSpotsClick: callback function called when the view booked spots button is clicked
  */
 @Composable
@@ -131,7 +137,9 @@ fun OwnerCampsiteListScreen(
     onCampsiteClick: (Campsites) -> Unit,
     onFilterClick: () -> Unit,
     onWaitListClick: (Campsites) -> Unit, // TODO: Implement when section is ready
-    onBookedSpotsClick: (Campsites) -> Unit
+    onBookedSpotsClick: (Campsites) -> Unit,
+    onViewUsersBookedClick: (Campsites) -> Unit,
+    onRegisterClick: () -> Unit
 ) {
     var campsites by remember { mutableStateOf<List<Campsites>>(emptyList()) }
     val repository = remember { CampsiteRepository() }
@@ -196,12 +204,25 @@ fun OwnerCampsiteListScreen(
         )
 
         Spacer(modifier = modifier.padding(16.dp))
-        Text(
-            text = "Your Listings",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(modifier = modifier.padding(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Your Listings",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Button(
+                onClick = onRegisterClick
+            ) {
+                Text("Register Campsite")
+            }
+        }
+
+        Spacer(modifier = Modifier.padding(16.dp))
 
         // Active, Past, Cancelled Reservations
 
@@ -248,12 +269,14 @@ fun OwnerCampsiteListScreen(
                         buttonText = when (status) {
                             "Registration Period" -> "View Waitlist"
                             "Booking Period" -> "View Booked Slots"
+                            "Not Active(Last active at: ${campsite.availableStartDate} to ${campsite.availableEndDate})" -> "View Users Booked"
                             else -> "View Details"
                         },
                         onActionClick = {
                             when (status) {
                                 "Registration Period" -> onWaitListClick(campsite)
                                 "Booking Period" -> onBookedSpotsClick(campsite)
+                                "Not Active(Last active at: ${campsite.availableStartDate} to ${campsite.availableEndDate})" -> onViewUsersBookedClick(campsite)
                                 else -> onCampsiteClick(campsite)
                             }
                         },
@@ -384,6 +407,8 @@ fun OwnerCampsiteListScreenPreview() {
         onCampsiteClick = {},
         onFilterClick = {},
         onWaitListClick = {},
-        onBookedSpotsClick = {}
+        onBookedSpotsClick = {},
+        onRegisterClick = {},
+        onViewUsersBookedClick = {}
     )
 }

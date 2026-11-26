@@ -76,6 +76,7 @@ class CampsiteRepository{
                             ?: emptyMap(), //this casts firebase's List<Any?> to a List<Int>
                         tags = (document.get("tags") as? List<*>)?.filterIsInstance<String>()?: mutableListOf(), //this casts firebase's List<Any?> to a List<String>
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
+                        waitlistCapacity = document.getLong("waitlistCapacity")?.toInt(),
                         lotteryWaitlist = getUserIdsFromDocument(document, "lotteryWaitlist"),
                         description = document.getString("description") ?: "",
                         registrationDate = document.getString("registrationDate") ?: "",
@@ -84,7 +85,8 @@ class CampsiteRepository{
                         availableStartDate = document.getString("availableStartDate") ?: "",
                         availableEndDate = document.getString("availableEndDate") ?: "",
                         usersBooked = getUserIdsFromDocument(document, "usersBooked"),
-                        reviews = (document.get("reviews") as? List<*>)?.filterIsInstance<String>() ?: emptyList() //this casts firebase's List<Any?> to a List<String>
+                        reviews = (document.get("reviews") as? List<*>)?.filterIsInstance<String>() ?: emptyList(), //this casts firebase's List<Any?> to a List<String>
+                        ownerId = document.getString("ownerId") ?: ""
                     )
                     campsites.add(campsite)
                 }//end for
@@ -130,6 +132,8 @@ class CampsiteRepository{
      * Firestore makes the document ID, so campsite.id is not saved
      * The field names match the ones getCampsites reads
      *
+     * The owner is campsite.ownerId, or the signed in user's uid when that is blank
+     *
      * @param campsite: the campsite to save
      */
     fun addCampsite(
@@ -137,6 +141,7 @@ class CampsiteRepository{
         onSuccess: () -> Unit = {},
         onFailure: (Exception) -> Unit = {}
     ){
+        val ownerId = campsite.ownerId.ifBlank { FirebaseAuth.getInstance().currentUser?.uid ?: "" }
         val data = hashMapOf(
             "name" to campsite.name,
             "photoUrl" to campsite.photoUrl,
@@ -146,6 +151,7 @@ class CampsiteRepository{
             "ratings" to campsite.ratings,
             "tags" to campsite.tags,
             "lotteryWinners" to campsite.lotteryWinners,
+            "waitlistCapacity" to campsite.waitlistCapacity,
             "lotteryWaitlist" to campsite.lotteryWaitlist.map { db.collection("users").document(it) },
             "description" to campsite.description,
             "registrationDate" to campsite.registrationDate,
@@ -154,11 +160,29 @@ class CampsiteRepository{
             "availableStartDate" to campsite.availableStartDate,
             "availableEndDate" to campsite.availableEndDate,
             "usersBooked" to campsite.usersBooked.map{db.collection("users").document(it)},
-            "reviews" to campsite.reviews
+            "reviews" to campsite.reviews,
+            "ownerId" to ownerId
         )
         db.collection("campsites").add(data)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { onFailure(it) }
+            .addOnSuccessListener { campsiteDocument ->
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+                if (uid == null) {
+                    onFailure(Exception("No owner signed in"))
+                    return@addOnSuccessListener
+                }
+                db.collection("owners")
+                    .document(uid)
+                    .update(
+                        "postedCampsitesId",
+                        FieldValue.arrayUnion(campsiteDocument.id)
+                    )
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener {
+                onFailure(it)
+            }
     } //end addCampsite
 
     /**
@@ -326,7 +350,7 @@ class CampsiteRepository{
         getCampsites(
             onSuccess = { allCampsites ->
                 val ownerCampsites = allCampsites.filter { campsite ->
-                    campsite.id in owner.postedCampsitesId
+                    campsite.id in owner.postedCampsitesId || campsite.ownerId == owner.deviceID
                 }
 
                 onSuccess(ownerCampsites)
@@ -370,9 +394,32 @@ class CampsiteRepository{
         )
     } //end addReview
     /**
-     * Saves the fields edited on the owner campsite details screen.
+     * Removes one review from a campsite in the firebase firestore (admin)
+     * arrayRemove deletes every array entry equal to the given string, so the review must match exactly
+     * what is stored, e.g. "John Doe: Great spot!"
      *
+     * @param campsiteId: the Firestore document ID of the campsite
+     * @param review: the full review string to remove, name included
+     * @param onSuccess: called once the review is removed
+     * @param onFailure: called if the review could not be removed
+     */
+    fun removeReview(
+        campsiteId: String,
+        review: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit
+    ){
+        db.collection("campsites").document(campsiteId)
+            .update("reviews", FieldValue.arrayRemove(review))
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }//end removeReview
+    /**
+     * Saves the fields edited on the owner campsite details screen.
      * Other fields, such as the lottery waitlist and reviews, are preserved.
+     * @param campsite: instance of the specific campsite object
+     * @param onSuccess: callback to show that a success occurred
+     * @param onFailure: callback to show that a failure occurred
      */
     fun updateCampsiteDetails(
         campsite: Campsites,
@@ -397,8 +444,11 @@ class CampsiteRepository{
     }
 
     /**
-     * Adds the user specified rating on the specific campsite, in its current implementation, there isnt any specification on which user gave which ratings
-     *
+     * Adds the user specified rating on the specific campsite, in its current implementation
+     * @param campsiteId: the reference point of the specific campsite itself
+     * @param rating: integer value from 1 to 5, indicating the rating
+     * @param onSuccess: callback to insinuate a successfully rating has been applied
+     * @param onFailure: callback to insinuate a failed rating attempt
      * */
     fun addRating(
         campsiteId: String,
@@ -441,6 +491,78 @@ class CampsiteRepository{
 
             null
         }
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }//end addRating
+    /**
+     * Removes one user's rating from a campsite in the firebase firestore (admin)
+     * Runs in a transaction, like addRating, so it reads the current ratings and writes them back
+     * without that user's entry, without overwriting a rating someone else adds at the same time
+     *
+     * @param campsiteId: the Firestore document ID of the campsite
+     * @param userId: the uid of the user whose rating is removed (the key in the ratings map)
+     * @param onSuccess: called once the rating is removed
+     * @param onFailure: called if the campsite or rating doesn't exist, or the rating could not be removed
+     */
+    fun removeRating(
+        campsiteId: String,
+        userId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val campsiteReference = db.collection("campsites").document(campsiteId)
+        db.runTransaction { transaction ->
+            val campsite = transaction.get(campsiteReference)
+
+            if (!campsite.exists()) {
+                throw Exception("Campsite not found")
+            }
+
+            // Retrieve existing ratings and handling edge cases for retrieval
+            val ratings = (campsite.get("ratings") as? Map<*, *>)
+                ?.mapNotNull { (key, value) ->
+                    if (key is String && value is Number) {
+                        key to value.toInt()
+                    } else null
+                }
+                ?.toMap()
+                ?.toMutableMap()
+                ?: mutableMapOf()
+
+            if (ratings.remove(userId) == null) {
+                throw Exception("Rating not found")
+            }
+
+            transaction.update(campsiteReference, "ratings", ratings)
+
+            null
+        }
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    } //end removeRating
+
+    /**
+     * method to update the lottery listing and update it on the backend side
+     *
+     * @param campsite: instance of the specific campsite that's being updated
+     * @param onSuccess: success callback for a successful update
+     * @param onFailure: failed callback for an invalid update attempt
+     */
+    fun updateLotteryListing(
+        campsite: Campsites,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("campsites")
+            .document(campsite.id)
+            .update(
+                mapOf(
+                    "lotteryWinners" to campsite.lotteryWinners,
+                    "waitlistCapacity" to campsite.waitlistCapacity,
+                    "registrationDate" to campsite.registrationDate,
+                    "bookingDate" to campsite.bookingDate
+                )
+            )
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }

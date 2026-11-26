@@ -3,6 +3,7 @@ package com.example.utopia_campsite.user
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Updater
+import com.example.utopia_campsite.owner.NotificationRepository
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.runtime.toMutableStateList
@@ -72,19 +73,33 @@ class UserRepository {
 
     /**
      * Adds a reservation to a user's currentReservations in the firebase
+     * and sends the user a confirmation notification once it is saved
      * @param userId: the firebase document ID of the user (their deviceID)
      * @param reservation: the reservation to add
+     * @param user: the user to notify, no notification is sent if null
      */
-    fun addCurrentReservation(userId: String, reservation: Reservation){
+    fun addCurrentReservation(userId: String, reservation: Reservation, user: User? = null){
         db.collection("users")
             .document(userId)
             .update("currentReservations", FieldValue.arrayUnion(reservation))
+            .addOnSuccessListener {
+                if (user != null) {
+                    NotificationRepository().send(
+                        ownerId = "", // the app sends the confirmation, not an owner
+                        campsiteId = reservation.campsiteId,
+                        title = "Reservation confirmed",
+                        body = "Your reservation from ${reservation.startReservedDate} to ${reservation.endReservedDate} is confirmed.",
+                        recipients = listOf(user)
+                    )
+                }
+            }
 
     }//end add current reservation
 
 
     /**
      * Deletes a user's  current reservation in the firebase
+     * and moves it to their cancelledReservations
      * @param userId: the firebase document ID of the user (their deviceID)
      * @param reservationId: the reservation id of the reservation
      * @param onSuccess: callback function that is called if the reservation is successfully deleted
@@ -115,8 +130,11 @@ class UserRepository {
                     onFailure(NoSuchElementException("Reservation $reservationId not found"))
                     return@addOnSuccessListener
                 }
-                //remove the map which is the reservation in firebase
-                userDoc.update("currentReservations", FieldValue.arrayRemove(target))
+                //remove the reservation and keep a record of it in cancelledReservations in one write
+                userDoc.update(
+                    "currentReservations", FieldValue.arrayRemove(target),
+                    "cancelledReservations", FieldValue.arrayUnion(target)
+                )
                     .addOnSuccessListener { onSuccess() }
                     .addOnFailureListener { onFailure(it) }
             }
@@ -178,7 +196,13 @@ class UserRepository {
                 return "Reserved Date: ${reservation.startReservedDate} to ${reservation.endReservedDate}"
             }
         }
-        return ""
+
+        for (reservation in user.pastReservations ) { //if it's not in the current reservations, then it may be in the past reservation
+            if (reservation.campsiteId == campsiteId) {
+                return "Reserved Date: ${reservation.startReservedDate} to ${reservation.endReservedDate}"
+            }
+        }
+        return "No reservation found"
     }
 
 

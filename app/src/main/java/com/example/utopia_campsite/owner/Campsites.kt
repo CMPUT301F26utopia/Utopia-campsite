@@ -26,6 +26,7 @@ import com.example.utopia_campsite.user.User
  * @property ratings: A map of string user_id's to match their respective ratings of this specific campsite
  * @property tags: a list of tags for the campsite
  * @property lotteryWinners: the number of lottery winners for the campsite
+ * @property waitlistCapacity: optional parameter for an owner to add for total amount of entrants allowed in waitlist
  * @property lotteryWaitlist: a list of user ids of users in a waitlist for the campsite lottery
  * @property description: a description of the campsite
  * @property registrationDate: the days where a user can sign up for the lottery
@@ -35,6 +36,7 @@ import com.example.utopia_campsite.user.User
  * @property availableEndDate: the ending date of which the campsite is available to be booked
  * @property usersBooked: contains a list of user IDs of the users who are currently booked in the campsite
  * @property reviews: a list of reviews posted by entrants, each stored as "Name: review text"
+ * @property ownerId: the Firebase Auth uid of the campsite's owner (blank for campsites created before this field existed)
  */
 data class Campsites(
     val id: String = "",
@@ -46,6 +48,7 @@ data class Campsites(
     val ratings: Map<String, Int> = emptyMap(),
     val tags: List<String> = emptyList(),
     val lotteryWinners: Int = 0,
+    val waitlistCapacity: Int? = null,
     val lotteryWaitlist: MutableList<String> = mutableListOf(),
     val description: String = "",
     val registrationDate: String = "",   // (start date-end date) -> eg. 10/10/2026-20/10/2026
@@ -54,5 +57,6 @@ data class Campsites(
     val availableStartDate: String = "", // Added on, this is the starting date of which the campsite is available
     val availableEndDate: String = "",   // Added on, this is the ending date of which the campsite is available
     val usersBooked : MutableList<String> = mutableListOf(),
-    val reviews: List<String> = emptyList()
+    val reviews: List<String> = emptyList(),
+    val ownerId: String = ""
 )

@@ -50,7 +50,8 @@ fun UserProfileScreen(
     user: User,
     saveUser: (User, onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit =
         { _, onSuccess, _ -> onSuccess() },
-    deleteUser: (onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit = { onSuccess, _ -> onSuccess() }
+    deleteUser: (onSuccess: () -> Unit, onFailure: (Exception) -> Unit) -> Unit = { onSuccess, _ -> onSuccess() },
+    onMessageClick: ((campsiteId: String) -> Unit)? = null // opens the chat with a campsite's owner
 ) {
     var currentScreen by remember { mutableStateOf("Me") } //display user profile as the starting view
     var currentUser by remember(user) { mutableStateOf(user) }
@@ -150,11 +151,28 @@ fun UserProfileScreen(
                     )
                 }
             }
+            item {
+                Button(
+                    modifier = Modifier.testTag("recordsButton"),
+                    onClick = {currentScreen = "Records"},
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (currentScreen == "Records") selectedContainer else unselectedContainer,
+                        contentColor = if (currentScreen == "Records") selectedContent else unselectedContent
+                    )
+                ) {
+                    Text(
+                        text = "Records",
+                        fontSize = 16.sp,
+                        maxLines = 1
+                    )
+                }
+            }
         } //end lazyColumn
 
         when (currentScreen) { //toggles partial ui composition depending on button selected
-            "Current Reservations" -> UserProfileCurrentReservationScreen(currentUser)
+            "Current Reservations" -> UserProfileCurrentReservationScreen(currentUser, onMessageClick)
             "Past Reservations" -> UserProfilePastReservationScreen(currentUser)
+            "Records" -> UserProfileRecordsScreen(currentUser)
             "Me" -> UserProfileMeScreen(user = currentUser, onEditProfileClick = {currentScreen = "Update Profile"})
             "Update Profile" -> {
                 UserUpdateProfileScreen(

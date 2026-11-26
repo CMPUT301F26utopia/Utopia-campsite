@@ -22,9 +22,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.utopia_campsite.auth.onCreateAccount
+import com.example.utopia_campsite.owner.NotificationRepository
 
 @Composable
-fun UserProfileCurrentReservationScreen(user: User) {
+fun UserProfileCurrentReservationScreen(
+user: User,
+onMessageClick: ((campsiteId: String) -> Unit)? = null
+) {
     val currentReservations = remember { mutableStateListOf(*user.currentReservations.toTypedArray()) }
     var selectedReservation by remember { mutableStateOf<Reservation?>(null) }  //track state for switching screens
 
@@ -34,18 +38,31 @@ fun UserProfileCurrentReservationScreen(user: User) {
             reservation = selectedReservation!!,
             onBackClick = { selectedReservation = null }, //go back to currentReservation screen
             onButtonClick = {
-                currentReservations.remove(selectedReservation) //removes the reservation and updates screen
-                user.currentReservations.remove(selectedReservation) //remove the reservation locally
+                val cancelled = selectedReservation!! //kept because selectedReservation is cleared before firebase answers
+                currentReservations.remove(cancelled) //removes the reservation and updates screen
+                user.currentReservations.remove(cancelled) //remove the reservation locally
+                user.cancelledReservations.add(cancelled) //show it in the records tab without reloading
 
-                //function below deletes the reservation in firebase
+                //function below deletes the reservation in firebase, then confirms the cancellation
                 UserRepository().deleteCurrentReservation(
                     userId = user.deviceID,
-                    reservationId = selectedReservation!!.reservationId,
-                    onSuccess = {},
+                    reservationId = cancelled.reservationId,
+                    onSuccess = {
+                        NotificationRepository().send(
+                            ownerId = "", // the app sends the confirmation, not an owner
+                            campsiteId = cancelled.campsiteId,
+                            title = "Reservation cancelled",
+                            body = "Your reservation from ${cancelled.startReservedDate} to ${cancelled.endReservedDate} has been cancelled.",
+                            recipients = listOf(user)
+                        )
+                    },
                     onFailure = {}
                 )
                 selectedReservation = null
-            }
+            },
+            onMessageClick = if (onMessageClick != null) {
+                { onMessageClick(selectedReservation!!.campsiteId) }
+            } else null
         )
         return //makes sure the reservationDetailsScreen and UserProfileCurrentReservationScreen don't overlap
     } //end if statement

@@ -292,7 +292,7 @@ fun SignUpScreen(
         Button(
             modifier = modifier.fillMaxWidth(),
             onClick = {
-                if (userFirstName.isBlank() || userLastName.isBlank() || userEmail.isBlank() || userPhoneNumber.isBlank()) {
+                if (userFirstName.isBlank() || userLastName.isBlank() || userEmail.isBlank() || userPhoneNumber.isBlank() || selectedRole.isBlank()) {
                     showError = true
                 } else {
                     showError = false
@@ -302,15 +302,8 @@ fun SignUpScreen(
                         userFirstName,
                         userLastName,
                         userEmail,
-                        userPhoneNumber
-                    )
-
-                    onCreateAccount(
-                        userFirstName,
-                        userLastName,
-                        userEmail,
                         userPhoneNumber,
-                        role = selectedRole,
+                        role = selectedRole.lowercase(), // dropdown shows "User"/"Owner"; Firestore and createUser expect "user"/"owner"
                         onSuccess = {
                             loadingState = false
                             navController.navigate("user/campsites")

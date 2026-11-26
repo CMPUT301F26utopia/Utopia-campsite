@@ -86,4 +86,25 @@ class NotificationRepository {
             onFailure(e)
         }
     }
+
+    /**
+     * Fetches every notification sent to one user, newest first
+     * Sorted on the device so Firestore doesn't need a composite index
+     * @param userId: the firebase document ID of the user (their deviceID)
+     */
+    fun getForUser(
+        userId: String,
+        onSuccess: (List<Notification>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("notifications")
+            .whereEqualTo("recipientId", userId)
+            .get()
+            .addOnSuccessListener { result ->
+                // "yyyy-MM-dd" + "HH:mm:ss" strings sort in time order
+                onSuccess(result.documents.mapNotNull { it.toObject(Notification::class.java) }
+                    .sortedByDescending { it.date + it.time })
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
 }

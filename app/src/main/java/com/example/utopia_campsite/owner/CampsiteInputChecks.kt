@@ -49,7 +49,8 @@ fun buildCampsite(
     registrationStart: String,
     registrationEnd: String,
     bookingStart: String,
-    bookingEnd: String
+    bookingEnd: String,
+    waitlistCapacity: Int? = null
 ): Campsites?{
     // Turn the typed text into numbers
     // toIntOrNull / toDoubleOrNull give null instead of crashing when the text is not a number
@@ -57,6 +58,8 @@ fun buildCampsite(
     val latitudeNumber = latitude.toDoubleOrNull()
     val longitudeNumber = longitude.toDoubleOrNull()
     val winnersNumber = lotteryWinners.toIntOrNull()
+
+    val capacityInvalid = waitlistCapacity != null && (waitlistCapacity <= 0 || (winnersNumber != null && waitlistCapacity < winnersNumber))
 
     // Split the tags at each comma, remove the spaces around each tag, and drop empty pieces
     // e.g. " lake, , hiking " becomes ["lake", "hiking"]
@@ -72,7 +75,7 @@ fun buildCampsite(
     val numberInvalid = (occupancyNumber == null || occupancyNumber <=0) || latitudeNumber == null || longitudeNumber == null ||  (winnersNumber == null || winnersNumber <=0)
     // true if either period is missing a date, has a date that does not exist, or starts after it ends
     val periodInvalid = registrationPeriod == null || bookingPeriod == null
-    if (textMissing || numberInvalid || periodInvalid) {
+    if (textMissing || numberInvalid || periodInvalid || capacityInvalid) {
         return null
     }
     // After this check Kotlin knows the numbers and periods are not null, so they can be used directly below
@@ -87,6 +90,7 @@ fun buildCampsite(
         ratings = emptyMap(), // a new campsite has no ratings
         tags = tagList.toMutableList(), // Campsites stores tags as a MutableList
         lotteryWinners = winnersNumber,
+        waitlistCapacity = waitlistCapacity,
         lotteryWaitlist = mutableListOf(), // nobody has joined yet
         description = description,
         registrationDate = registrationPeriod,
