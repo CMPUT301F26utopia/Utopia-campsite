@@ -157,8 +157,25 @@ class CampsiteRepository{
             "reviews" to campsite.reviews
         )
         db.collection("campsites").add(data)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { onFailure(it) }
+            .addOnSuccessListener { campsiteDocument ->
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+                if (uid == null) {
+                    onFailure(Exception("No owner signed in"))
+                    return@addOnSuccessListener
+                }
+                db.collection("owners")
+                    .document(uid)
+                    .update(
+                        "postedCampsitesId",
+                        FieldValue.arrayUnion(campsiteDocument.id)
+                    )
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener {
+                onFailure(it)
+            }
     } //end addCampsite
 
     /**

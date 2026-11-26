@@ -82,6 +82,7 @@ fun RegisterCampsiteScreen(
     val tags = remember {mutableStateListOf<String>()}
     var showTags by remember {mutableStateOf(false)}
     var lotteryWinners by remember { mutableStateOf("") }
+    var waitlistCapasity by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var maxOccupants by remember { mutableStateOf("") }
     var regStart by remember { mutableStateOf("") }

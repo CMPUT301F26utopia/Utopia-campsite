@@ -39,6 +39,7 @@ import com.example.utopia_campsite.user.util.BottomNavigationBar
 import com.example.utopia_campsite.owner.CampsiteScreens
 import com.example.utopia_campsite.owner.RegisterCampsiteScreen
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 /**
  * Defines the navigation routes between the application's screens
@@ -48,8 +49,8 @@ import com.google.firebase.auth.FirebaseAuth
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(true) }
-    var showOwnerNavigation by remember { mutableStateOf(false) }
+    var showUserNavigation by remember { mutableStateOf(false) }
+    var showOwnerNavigation by remember { mutableStateOf(true) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
     // Tracks the authenticated user's role for admin switching
@@ -105,45 +106,72 @@ fun UtopiaNavApp() {
         // TODO: Retrieve the owner object from Firestore when we have owner profiles
         // Constructing a temporary "owner" to allow for navigation
         composable("owner/campsites") {
-            if (currentUser != null) {
 
-                val tempOwner = Owner(
-                    postedCampsitesId = mutableListOf(),
-                    deviceID = currentUser.uid,
-                    photoUrl = currentUser.photoUrl?.toString(),
-                    email = currentUser.email ?: "",
-                    firstName = currentUser.displayName ?: "",
-                    lastName = "",
-                    notificationsEnabled = false,
-                    phone = currentUser.phoneNumber ?: "",
-                    policyViolated = false
-                )
+            val uid = currentUser?.uid
 
-                OwnerCampsiteListScreen(
+            var owner by remember(uid) { mutableStateOf<Owner?>(null) }
+            var loading by remember(uid) { mutableStateOf(true) }
+
+            var error by remember(uid) { mutableStateOf<String?>(null) }
+
+            LaunchedEffect(uid) {
+                if (uid == null) {
+                    error = "No user is signed in."
+                    loading = false
+                } else {
+                    FirebaseFirestore.getInstance()
+                        .collection("owners")
+                        .document(uid)
+                        .get()
+                        .addOnSuccessListener { document ->
+
+                            if (!document.exists()) {
+                                error = "Owner profile not found."
+                            } else {
+                                owner = Owner(
+                                    deviceID = document.id,
+
+                                    postedCampsitesId =
+                                        (document.get("postedCampsitesId") as? List<*>)
+                                            ?.filterIsInstance<String>()
+                                            ?.toMutableList()
+                                            ?: mutableListOf(),
+
+                                    firstName = document.getString("firstName") ?: "",
+                                    lastName = document.getString("lastName") ?: "",
+                                    email = document.getString("email") ?: "",
+                                    phone = document.getString("phone") ?: "",
+                                    photoUrl = document.getString("photoUrl"),
+                                    notificationsEnabled = document.getBoolean("notificationsEnabled") ?: false,
+                                    policyViolated = document.getBoolean("policyViolated") ?: false
+                                )
+                            }
+                            loading = false
+                        }
+                        .addOnFailureListener { exception ->
+                            error = exception.message ?: "Failed to load owner."
+                            loading = false
+                        }
+                }
+            }
+            when {
+                loading -> CircularProgressIndicator()
+                error != null -> Text(error!!)
+                owner != null -> OwnerCampsiteListScreen(
                     modifier = Modifier,
-                    owner = tempOwner,
-
+                    owner = owner!!,
                     onCampsiteClick = { campsite ->
                         navController.navigate("owner/campsite/${campsite.id}")
                     },
-
                     onFilterClick = {
                         navController.navigate("user/filter")
                     },
-
-                    // TODO: Connect to owner waitlist screen
                     onWaitListClick = {},
-
-                    // TODO: Connect to owner booked spots screen
                     onBookedSpotsClick = {},
-
                     onRegisterClick = {
                         navController.navigate("owner/register")
                     }
                 )
-
-            } else {
-                Text("Error Occured")
             }
         }
             composable("owner/register") {
