@@ -54,7 +54,7 @@ import com.google.firebase.firestore.pipeline.Expression.Companion.type
 @Composable
 fun UtopiaNavApp() {
     var showUserNavigation by remember { mutableStateOf(false) }
-    var showOwnerNavigation by remember { mutableStateOf(true) }
+    var showOwnerNavigation by remember { mutableStateOf(false) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
     // Tracks the authenticated user's role for admin switching
@@ -83,7 +83,16 @@ fun UtopiaNavApp() {
     val startPage = if (currentUser != null) homeScreenRoute else "welcome"
 
     LaunchedEffect(currentUser?.uid) {
-        currentUser?.uid?.let { uid -> userRepository.getUser(uid, onSuccess = { userRole = it.role }, onFailure = {}) }
+        currentUser?.uid?.let { uid ->
+            userRepository.getUser(uid, onSuccess = { userRole = it.role }, onFailure = {
+                // owners live in the "owners" collection, not "users"
+                ownerRepository.getOwner(uid, onSuccess = {
+                    userRole = "owner"
+                    showOwnerNavigation = true
+                    navController.navigate("owner/campsites") { popUpTo(navController.graph.id) { inclusive = true } }
+                }, onFailure = {})
+            })
+        }
     }
 
     Scaffold(
