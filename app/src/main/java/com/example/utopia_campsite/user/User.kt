@@ -25,6 +25,7 @@ import com.google.firebase.auth.auth
  * @property phone: phone number
  * @property currentReservations: stores a list of current reservations
  * @property pastReservations: stores a list of past reservations
+ * @property cancelledReservations: stores a list of reservations the user cancelled
  * @property role: "user" or "admin" (admin is set by hand in Firestore, never through the app)
  */
 data class User (
@@ -37,6 +38,7 @@ data class User (
     val phone: String = "",
     val currentReservations: MutableList<Reservation> = mutableListOf(),
     var pastReservations : MutableList<Reservation> = mutableListOf(),
+    val cancelledReservations: MutableList<Reservation> = mutableListOf(),
     val role: String = "user"
 ) {
 

@@ -39,6 +39,7 @@ import com.example.utopia_campsite.user.UserCampsiteListScreen
 import com.example.utopia_campsite.user.UserFilterScreen
 import com.example.utopia_campsite.user.UserFilterResultScreen
 import com.example.utopia_campsite.user.UserProfileScreen
+import com.example.utopia_campsite.user.UserNotificationsScreen
 import com.example.utopia_campsite.user.UserRepository
 import com.example.utopia_campsite.user.util.BottomNavigationBar
 import com.example.utopia_campsite.owner.CampsiteScreens
@@ -73,7 +74,8 @@ fun UtopiaNavApp() {
     // Observing the current Screen
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val showBottomNavigationBar = currentRoute == homeScreenRoute || currentRoute == profileScreenRoute
+    val notificationsScreenRoute = "user/notifications"
+    val showBottomNavigationBar = currentRoute == homeScreenRoute || currentRoute == profileScreenRoute || currentRoute == notificationsScreenRoute
 
 
     val filterViewModel: UserCampsiteFilterViewModel = viewModel() // Shared instance of filter-view-model for filter screens
@@ -102,6 +104,7 @@ fun UtopiaNavApp() {
                     navController = navController,
                     homeScreenRoute = homeScreenRoute,
                     profileScreenRoute = profileScreenRoute,
+                    notificationsScreenRoute = notificationsScreenRoute,
                     onSwitchRole = if (userRole == "admin") { newRole ->
                         showUserNavigation = newRole == "user"
                         showOwnerNavigation = newRole == "owner"
@@ -354,6 +357,12 @@ fun UtopiaNavApp() {
                     loadFailed -> Text("Couldn't load your profile")
                     else -> CircularProgressIndicator()
                 }
+            }
+
+            // Composable route for the user's notifications
+            composable("user/notifications") {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+                if (uid != null) UserNotificationsScreen(userId = uid) else Text("Couldn't load your notifications")
             }
 
             // Composable routes for user filter
