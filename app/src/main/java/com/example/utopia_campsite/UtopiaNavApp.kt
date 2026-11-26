@@ -27,6 +27,7 @@ import com.example.utopia_campsite.owner.Campsites
 import com.example.utopia_campsite.owner.Owner
 import com.example.utopia_campsite.owner.OwnerCampsiteListScreen
 import com.example.utopia_campsite.user.CampsiteDetailsScreen
+import com.example.utopia_campsite.owner.CampsiteReservedUsersScreen
 import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
 import com.example.utopia_campsite.user.UserCampsiteListScreen
@@ -135,7 +136,9 @@ fun UtopiaNavApp() {
                     onWaitListClick = {},
 
                     // TODO: Connect to owner booked spots screen
-                    onBookedSpotsClick = {}
+                    onBookedSpotsClick = { campsite ->
+                        navController.navigate("owner/campsite/${campsite.id}/booked")
+                    }
                 )
 
             } else {
@@ -262,7 +265,32 @@ fun UtopiaNavApp() {
                     else -> CircularProgressIndicator()
                 }
             }
-
+            // Composable route for the users booked at an owner's campsite, the owner can message each of them
+            composable("owner/campsite/{campsiteId}/booked") { backStackEntry ->
+                val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+                var campsite by remember { mutableStateOf<Campsites?>(null) }
+                var loadFailed by remember { mutableStateOf(false) }
+                // loads fresh from the database each time this screen opens
+                LaunchedEffect(campsiteId) {
+                    CampsiteRepository().getCampsites(
+                        onSuccess = { campsites ->
+                            val found = campsites.find { it.id == campsiteId }
+                            if (found != null) campsite = found else loadFailed = true
+                        },
+                        onFailure = { loadFailed = true }
+                    )
+                }//end launchedeffect
+                when {
+                    campsite != null -> CampsiteReservedUsersScreen(
+                        campsite = campsite!!,
+                        onBack = { navController.popBackStack() },
+                        // the owner opens the chat with the booked user, userId is that user's uid
+                        onMessageClick = { userId -> navController.navigate("chat/${campsite!!.id}/$userId") }
+                    )
+                    loadFailed -> Text("Couldn't load campsite")
+                    else -> CircularProgressIndicator()
+                }
+            }
             // Composable route for a conversation between a campsite's owner and an entrant who reserved it
             // chat/{campsiteId}/{userId}: userId is the entrant, both people open the same route
             composable("chat/{campsiteId}/{userId}") { backStackEntry ->

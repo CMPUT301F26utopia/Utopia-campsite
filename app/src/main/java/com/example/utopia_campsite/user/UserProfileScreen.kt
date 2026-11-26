@@ -152,7 +152,8 @@ fun UserProfileScreen(
         } //end lazyColumn
 
         when (currentScreen) { //toggles partial ui composition depending on button selected
-            "Current Reservations" -> UserProfileCurrentReservationScreen(currentUser, onMessageClick)            "Past Reservations" -> UserProfilePastReservationScreen(currentUser)
+            "Current Reservations" -> UserProfileCurrentReservationScreen(currentUser, onMessageClick)
+            "Past Reservations" -> UserProfilePastReservationScreen(currentUser)
             "Me" -> UserProfileMeScreen(user = currentUser, onEditProfileClick = {currentScreen = "Update Profile"})
             "Update Profile" -> {
                 UserUpdateProfileScreen(

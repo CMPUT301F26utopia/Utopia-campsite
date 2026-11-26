@@ -6,7 +6,6 @@
  * Utopia 02.07.01
  * Outstanding Issues:
  * Reserved date text not implemented(should come from user)
- * Message not implemented
  * Delete not implemented
  */
 
@@ -43,7 +42,11 @@ import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserRepository
 
 @Composable
-fun UserBookedSummaryRow(userId: String, campsite: Campsites) {
+fun UserBookedSummaryRow(
+userId: String,
+campsite: Campsites,
+onMessageClick: (() -> Unit)? = null // opens the chat with this user
+) {
     var loadedUser by remember(userId) { mutableStateOf<User?>(null)}
     LaunchedEffect(userId) {
         UserRepository().getUser(
@@ -124,7 +127,7 @@ fun UserBookedSummaryRow(userId: String, campsite: Campsites) {
                 tint = Color.Gray,
                 modifier = Modifier
                     .size(20.dp)
-                    .clickable(onClick = {})
+                    .clickable(onClick = {onMessageClick?.invoke() })
             )
 
             // Delete Icon (Bottom)

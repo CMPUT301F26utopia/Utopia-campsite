@@ -56,7 +56,11 @@ import coil3.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CampsiteReservedUsersScreen(campsite: Campsites) {
+fun CampsiteReservedUsersScreen(
+campsite: Campsites,
+onBack: () -> Unit = {},
+onMessageClick: ((userId: String) -> Unit)? = null // opens the chat with a booked user
+) {
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -209,8 +213,13 @@ fun CampsiteReservedUsersScreen(campsite: Campsites) {
             } //end item
 
             items(campsite.usersBooked) { userId ->
-                UserBookedSummaryRow(userId = userId, campsite = campsite)
-            }
+                UserBookedSummaryRow(
+                    userId = userId,
+                    campsite = campsite,
+                    onMessageClick = if (onMessageClick != null) {
+                        { onMessageClick(userId) }
+                    } else null
+                )            }
         } //end LazyColumn
     } //end Scaffold
 } //end CampsiteReservedUSersScreen
