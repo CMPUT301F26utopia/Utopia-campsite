@@ -34,6 +34,9 @@ import com.example.utopia_campsite.user.UserFilterScreen
 import com.example.utopia_campsite.user.UserFilterResultScreen
 import com.example.utopia_campsite.user.UserProfileScreen
 import com.example.utopia_campsite.user.UserRepository
+
+import com.example.utopia_campsite.messaging.Conversation
+import com.example.utopia_campsite.messaging.ChatRoute
 import com.example.utopia_campsite.user.util.BottomNavigationBar
 import com.google.firebase.auth.FirebaseAuth
 
@@ -258,6 +261,46 @@ fun UtopiaNavApp() {
                     else -> CircularProgressIndicator()
                 }
             }
+
+            // Composable route for a conversation between a campsite's owner and an entrant who reserved it
+            // chat/{campsiteId}/{userId}: userId is the entrant, both people open the same route
+            composable("chat/{campsiteId}/{userId}") { backStackEntry ->
+                val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+                val userId = backStackEntry.arguments?.getString("userId")
+                val myId = FirebaseAuth.getInstance().currentUser?.uid
+                var campsite by remember { mutableStateOf<Campsites?>(null) }
+                var loadFailed by remember { mutableStateOf(false) }
+                // loads fresh from the database each time this screen opens
+                LaunchedEffect(campsiteId) {
+                    CampsiteRepository().getCampsites(
+                        onSuccess = { campsites ->
+                            val found = campsites.find { it.id == campsiteId }
+                            if (found != null) campsite = found else loadFailed = true
+                        },
+                        onFailure = { loadFailed = true }
+                    )
+                }//end launchedeffect
+                val loaded = campsite
+                when {
+                    myId == null || userId == null -> Text("Couldn't open the conversation")
+                    loaded != null -> {
+                        val conversation = Conversation.forCampsite(loaded, userId)
+                        // only the owner and the entrant can open it
+                        if (myId != conversation.ownerId && myId != userId) {
+                            Text("You can't view this conversation")
+                        } else {
+                            ChatRoute(
+                                conversation = conversation,
+                                myId = myId,
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+                    loadFailed -> Text("Campsite not found")
+                    else -> CircularProgressIndicator()
+                }
+            }
+
 
             // Composable routes for user filter
             composable("user/filter") { UserFilterScreen(modifier = Modifier, filterViewModel = filterViewModel, navController = navController) }
