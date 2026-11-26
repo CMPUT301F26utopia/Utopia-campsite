@@ -19,6 +19,7 @@ class UserRepository {
     @RequiresApi(Build.VERSION_CODES.O)
     private val reservationDateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
+
     /**
      * fetches all users from firebase
      *
