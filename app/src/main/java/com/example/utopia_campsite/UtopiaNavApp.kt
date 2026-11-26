@@ -255,7 +255,8 @@ fun UtopiaNavApp() {
                                 },
                                 onFailure =  onFailure
                             )
-                        }
+                        },
+                        onMessageClick = { campsiteId -> navController.navigate("chat/$campsiteId/${loaded.deviceID}") }
                     )
                     loadFailed -> Text("Couldn't load your profile")
                     else -> CircularProgressIndicator()

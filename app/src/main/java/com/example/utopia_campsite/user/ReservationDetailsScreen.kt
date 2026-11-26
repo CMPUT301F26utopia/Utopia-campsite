@@ -68,8 +68,12 @@ import com.google.apps.card.v1.Divider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReservationDetailsScreen(reservation: Reservation, onBackClick: () -> Unit, onButtonClick : () -> Unit) {
-    var loadedCampsite by remember(reservation.campsiteId) { mutableStateOf<Campsites?>(null)}
+fun ReservationDetailsScreen(
+    reservation: Reservation,
+    onBackClick: () -> Unit,
+    onButtonClick : () -> Unit,
+    onMessageClick: (() -> Unit)? = null
+) {   var loadedCampsite by remember(reservation.campsiteId) { mutableStateOf<Campsites?>(null)}
     LaunchedEffect(reservation.campsiteId) {
         CampsiteRepository().getCampsite(
             campsiteId = reservation.campsiteId,
@@ -204,23 +208,25 @@ fun ReservationDetailsScreen(reservation: Reservation, onBackClick: () -> Unit, 
                     Spacer(modifier = Modifier.height(4.dp))
 
                     //button to message owner
-                    Button(
-                        onClick = { /* to be implemented */},
-                        modifier = Modifier.height(36.dp), // Slightly smaller to fit nicely in the column
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF007AFF), // Blue color
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ChatBubble,
-                            contentDescription = "Message",
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Message", fontSize = 12.sp)
+                    if (onMessageClick != null) {
+                        Button(
+                            onClick = onMessageClick,
+                            modifier = Modifier.height(36.dp), // Slightly smaller to fit nicely in the column
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF007AFF), // Blue color
+                                contentColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ChatBubble,
+                                contentDescription = "Message",
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Message", fontSize = 12.sp)
+                        }
                     }
                 } //end campsite details column
             } //end campsite header row
