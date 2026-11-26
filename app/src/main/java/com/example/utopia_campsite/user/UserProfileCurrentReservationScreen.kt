@@ -25,7 +25,10 @@ import com.example.utopia_campsite.auth.onCreateAccount
 import com.example.utopia_campsite.owner.NotificationRepository
 
 @Composable
-fun UserProfileCurrentReservationScreen(user: User) {
+fun UserProfileCurrentReservationScreen(
+user: User,
+onMessageClick: ((campsiteId: String) -> Unit)? = null
+) {
     val currentReservations = remember { mutableStateListOf(*user.currentReservations.toTypedArray()) }
     var selectedReservation by remember { mutableStateOf<Reservation?>(null) }  //track state for switching screens
 
@@ -56,7 +59,10 @@ fun UserProfileCurrentReservationScreen(user: User) {
                     onFailure = {}
                 )
                 selectedReservation = null
-            }
+            },
+            onMessageClick = if (onMessageClick != null) {
+                { onMessageClick(selectedReservation!!.campsiteId) }
+            } else null
         )
         return //makes sure the reservationDetailsScreen and UserProfileCurrentReservationScreen don't overlap
     } //end if statement

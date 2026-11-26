@@ -6,7 +6,6 @@
  * Utopia 02.07.01
  * Utopia 02.08.01
  * Outstanding Issues:
- * Message not implemented
  */
 
 package com.example.utopia_campsite.owner
@@ -49,7 +48,7 @@ fun UserBookedSummaryRow(
     userId: String,
     campsite: Campsites,
     onDeleteClick: () -> Unit,
-    onMessageClick: () -> Unit
+    onMessageClick: (() -> Unit)? = null // opens the chat with this user
 ) {
 
     var loadedUser by remember(userId) { mutableStateOf<User?>(null)}
@@ -132,7 +131,7 @@ fun UserBookedSummaryRow(
                 tint = Color.Gray,
                 modifier = Modifier
                     .size(20.dp)
-                    .clickable(onClick = { onMessageClick() })
+                    .clickable(onClick = {onMessageClick?.invoke() })
             )
 
             // Delete Icon (Bottom)
