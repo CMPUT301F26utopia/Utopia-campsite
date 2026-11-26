@@ -30,7 +30,7 @@ import com.google.firebase.auth.auth
  */
 data class User (
     val deviceID: String = "",
-    val photoUrl: String? = "",
+    var photoUrl: String? = "",
     val email: String = "",
     val firstName: String = "",
     val lastName: String = "",

@@ -220,7 +220,7 @@ fun UserUpdateProfileScreen(
                             // blank field = keep the existing value
                             firstName = firstName.ifBlank { user.firstName },
                             lastName = lastName.ifBlank { user.lastName },
-                            photoUrl = photoUrl.ifBlank { user.photoUrl },
+                            photoUrl = photoUrl,
                             email = email.ifBlank { user.email },
                             phone = phone.ifBlank { user.phone },
                             notificationsEnabled = notificationsEnabled
@@ -235,12 +235,23 @@ fun UserUpdateProfileScreen(
                 modifier = Modifier.testTag("cancelButton")
             ) { Text("Cancel") }
         }//end row
-        Button(
-            onClick = { showDeleteDialog = true },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-            modifier = Modifier.testTag("deleteProfileButton")
-        ) { Text("Delete Profile") } //end button
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                onClick = { user.photoUrl = "" },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier.testTag("clearProfilePictureButton")
+            ) { Text("Clear Profile Picture") } // end button
+
+            Button(
+                onClick = { showDeleteDialog = true },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier.testTag("deleteProfileButton")
+            ) { Text("Delete Profile") } //end button
+        }
     }//end column
+
+
 
     // Ask for confirmation first, since deleting a profile can't be undone
     if (showDeleteDialog) {
