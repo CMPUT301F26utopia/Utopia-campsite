@@ -61,8 +61,11 @@ import coil3.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CampsiteReservedUsersScreen(campsite: Campsites, onBack : () -> Unit) {
-
+fun CampsiteReservedUsersScreen(
+campsite: Campsites,
+onBack: () -> Unit = {},
+onMessageClick: ((userId: String) -> Unit)? = null // opens the chat with a booked user
+) {
     // state tracker to recompose the column when owner cancel a user's reservation
     val usersBooked = remember { mutableStateListOf(*campsite.usersBooked.toTypedArray()) }
 
@@ -241,7 +244,9 @@ fun CampsiteReservedUsersScreen(campsite: Campsites, onBack : () -> Unit) {
                         userToDelete = userId
 
                     },
-                    onMessageClick = {}
+                    onMessageClick = if (onMessageClick != null) {
+                        { onMessageClick(userId) }
+                    } else null
                 )
             }
         } //end LazyColumn
