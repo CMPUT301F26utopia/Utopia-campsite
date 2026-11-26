@@ -79,10 +79,10 @@ fun RegisterCampsiteScreen(
     var name by remember { mutableStateOf("") }
     var photoUrl by remember {mutableStateOf("")}
     var address by remember { mutableStateOf("") }
-    val tags = remember {mutableStateListOf<String>()}
-    var showTags by remember {mutableStateOf(false)}
+    val tags = remember { mutableStateListOf<String>() }
+    var showTags by remember { mutableStateOf(false) }
     var lotteryWinners by remember { mutableStateOf("") }
-    var waitlistCapasity by remember { mutableStateOf("") }
+    var waitlistCapacity by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var maxOccupants by remember { mutableStateOf("") }
     var regStart by remember { mutableStateOf("") }
@@ -106,6 +106,22 @@ fun RegisterCampsiteScreen(
     fun submit() {
         submitting = true
         statusMessage = null
+        val capacity = waitlistCapacity.toIntOrNull()
+        val winners = lotteryWinners.toIntOrNull()
+
+        if (waitlistCapacity.isNotBlank() &&
+            (capacity == null || capacity <= 0)
+        ) {
+            submitting = false
+            statusMessage = "Waitlist capacity must be a positive number."
+            return
+        }
+        if (capacity != null && winners != null && capacity < winners) {
+            submitting = false
+            statusMessage = "Waitlist capacity cannot be less than the number of winners."
+            return
+        }
+
         scope.launch {
             // buildCampsite needs latitude/longitude,
             val coords = if (address.isBlank()) null else withContext(Dispatchers.IO) {
@@ -149,7 +165,6 @@ fun RegisterCampsiteScreen(
                 onFailure = { submitting = false; statusMessage = "Registration failed: ${it.message}" }
 
             )
-
         }
     }
 
@@ -289,6 +304,13 @@ fun RegisterCampsiteScreen(
             keyboard = KeyboardType.Number
             )
 
+        Label("Waitlist Capacity (Optional)")
+        InputField(
+            value = waitlistCapacity,
+            onChange = { waitlistCapacity = it },
+            placeholder = "Leave empty for unlimited",
+            keyboard = KeyboardType.Number
+        )
 
         Label("Description")
         InputField(

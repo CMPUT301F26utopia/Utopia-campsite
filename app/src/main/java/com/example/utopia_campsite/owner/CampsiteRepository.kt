@@ -76,6 +76,7 @@ class CampsiteRepository{
                             ?: emptyMap(), //this casts firebase's List<Any?> to a List<Int>
                         tags = (document.get("tags") as? List<*>)?.filterIsInstance<String>()?: mutableListOf(), //this casts firebase's List<Any?> to a List<String>
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
+                        waitlistCapacity = document.getLong("waitlistCapacity")?.toInt(),
                         lotteryWaitlist = getUserIdsFromDocument(document, "lotteryWaitlist"),
                         description = document.getString("description") ?: "",
                         registrationDate = document.getString("registrationDate") ?: "",
@@ -146,6 +147,7 @@ class CampsiteRepository{
             "ratings" to campsite.ratings,
             "tags" to campsite.tags,
             "lotteryWinners" to campsite.lotteryWinners,
+            "waitlistCapacity" to campsite.waitlistCapacity,
             "lotteryWaitlist" to campsite.lotteryWaitlist.map { db.collection("users").document(it) },
             "description" to campsite.description,
             "registrationDate" to campsite.registrationDate,
