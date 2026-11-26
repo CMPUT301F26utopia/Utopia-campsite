@@ -39,10 +39,11 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun UserCampsiteRating(
     modifier: Modifier,
+    initialRating: Int = 0,
     onDismiss: () -> Unit,
     onSubmit: (Int) -> Unit
 ) {
-    var selectedRating by remember { mutableIntStateOf(0) }
+    var selectedRating by remember { mutableIntStateOf(initialRating) }
 
     BasicAlertDialog(
         onDismissRequest = onDismiss
@@ -106,5 +107,5 @@ fun UserCampsiteRating(
 @Preview(showBackground = true)
 @Composable
 fun CampsiteRatingPreview() {
-    UserCampsiteRating(modifier = Modifier, {}, {0})
+    UserCampsiteRating(modifier = Modifier, 0, {}, {})
 }

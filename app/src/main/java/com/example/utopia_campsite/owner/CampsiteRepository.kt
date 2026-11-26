@@ -67,7 +67,13 @@ class CampsiteRepository{
                         address = document.getString("address") ?: "", //the ? sets a default value if the value is null
                         latitude = document.getDouble("latitude") ?: 0.0,
                         longitude = document.getDouble("longitude") ?: 0.0,
-                        ratings = (document.get("ratings") as? List<*>)?.map { (it as Number).toInt() }?: mutableListOf(), //this casts firebase's List<Any?> to a List<Int>
+                        ratings = (document.get("ratings") as? Map<*, *>) ?.mapNotNull { (key, value) ->
+                                if (key is String && value is Number) {
+                                    key to value.toInt()
+                                } else null
+                            }
+                            ?.toMap()
+                            ?: emptyMap(), //this casts firebase's List<Any?> to a List<Int>
                         tags = (document.get("tags") as? List<*>)?.filterIsInstance<String>()?: mutableListOf(), //this casts firebase's List<Any?> to a List<String>
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
                         lotteryWaitlist = getUserIdsFromDocument(document, "lotteryWaitlist"),
@@ -159,6 +165,56 @@ class CampsiteRepository{
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     } //end addCampsite
+
+    /**
+     * Adds a user to a campsite's lottery waitlist in Firebase Firestore
+     * @param campsiteId: campsite firestore id
+     * @param userId: user firestore id
+     * @param onSuccess: callback function called when updated
+     * @param onFailure: callback function called on error
+     */
+    fun joinWaitlist(
+        campsiteId: String,
+        userId: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        if (campsiteId.isBlank() || userId.isBlank()) return
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.collection("campsites").document(campsiteId)
+                .update("lotteryWaitlist", FieldValue.arrayUnion(userRef))
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { onFailure(it) }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
+
+    /**
+     * Removes a user from a campsite's lottery waitlist in Firebase Firestore
+     * @param campsiteId: campsite firestore id
+     * @param userId: user firestore id
+     * @param onSuccess: callback function called when updated
+     * @param onFailure: callback function called on error
+     */
+    fun leaveWaitlist(
+        campsiteId: String,
+        userId: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit = {}
+    ) {
+        if (campsiteId.isBlank() || userId.isBlank()) return
+        try {
+            val userRef = db.collection("users").document(userId)
+            db.collection("campsites").document(campsiteId)
+                .update("lotteryWaitlist", FieldValue.arrayRemove(userRef))
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { onFailure(it) }
+        } catch (e: Exception) {
+            onFailure(e)
+        }
+    }
 
     /**
      * Saves a campsite's lottery registration period to the firebase firestore (US 02.04.01, 02.04.03)
@@ -318,6 +374,53 @@ class CampsiteRepository{
             onFailure = onFailure
         )
     } //end addReview
+    /**
+     * Removes one review from a campsite in the firebase firestore (admin)
+     * arrayRemove deletes every array entry equal to the given string, so the review must match exactly
+     * what is stored, e.g. "John Doe: Great spot!"
+     *
+     * @param campsiteId: the Firestore document ID of the campsite
+     * @param review: the full review string to remove, name included
+     * @param onSuccess: called once the review is removed
+     * @param onFailure: called if the review could not be removed
+     */
+    fun removeReview(
+        campsiteId: String,
+        review: String,
+        onSuccess: () -> Unit = {},
+        onFailure: (Exception) -> Unit
+    ){
+        db.collection("campsites").document(campsiteId)
+            .update("reviews", FieldValue.arrayRemove(review))
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }//end removeReview
+    /**
+     * Saves the fields edited on the owner campsite details screen.
+     *
+     * Other fields, such as the lottery waitlist and reviews, are preserved.
+     */
+    fun updateCampsiteDetails(
+        campsite: Campsites,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("campsites")
+            .document(campsite.id)
+            .update(
+                mapOf(
+                    "name" to campsite.name,
+                    "address" to campsite.address,
+                    "description" to campsite.description,
+                    "maxOccupancy" to campsite.maximumOccupants,
+                    "tags" to campsite.tags,
+                    "latitude" to campsite.latitude,
+                    "longitude" to campsite.longitude
+                )
+            )
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 
     /**
      * Adds the user specified rating on the specific campsite, in its current implementation, there isnt any specification on which user gave which ratings
@@ -329,6 +432,13 @@ class CampsiteRepository{
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (uid == null) {
+            onFailure(Exception("No user signed in"))
+            return
+        }
+
         if (rating !in 1..5) {
             onFailure(IllegalArgumentException("Rating must be between 1 and 5"))
             return
@@ -337,18 +447,73 @@ class CampsiteRepository{
         db.runTransaction { transaction ->
             val campsite = transaction.get(campsiteReference)
 
-            // Retrieve existing ratings and handling edge cases for retrieval
-            val ratings = (campsite.get("ratings") as? List<*>)
-                ?.mapNotNull { (it as? Number)?.toInt() }
-                ?.toMutableList()
-                ?: mutableListOf()
+            if (!campsite.exists()) {
+                throw Exception("Campsite not found")
+            }
 
-            ratings.add(rating)
+            // Retrieve existing ratings and handling edge cases for retrieval
+            val ratings = (campsite.get("ratings") as? Map<*, *>)
+                ?.mapNotNull { (key, value) ->
+                    if (key is String && value is Number) {
+                        key to value.toInt()
+                    } else null
+                }
+                ?.toMap()
+                ?.toMutableMap()
+                ?: mutableMapOf()
+
+            ratings[uid] = rating
             transaction.update(campsiteReference, "ratings", ratings)
 
             null
         }
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
-    }
+    }//end addRating
+    /**
+     * Removes one user's rating from a campsite in the firebase firestore (admin)
+     * Runs in a transaction, like addRating, so it reads the current ratings and writes them back
+     * without that user's entry, without overwriting a rating someone else adds at the same time
+     *
+     * @param campsiteId: the Firestore document ID of the campsite
+     * @param userId: the uid of the user whose rating is removed (the key in the ratings map)
+     * @param onSuccess: called once the rating is removed
+     * @param onFailure: called if the campsite or rating doesn't exist, or the rating could not be removed
+     */
+    fun removeRating(
+        campsiteId: String,
+        userId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val campsiteReference = db.collection("campsites").document(campsiteId)
+        db.runTransaction { transaction ->
+            val campsite = transaction.get(campsiteReference)
+
+            if (!campsite.exists()) {
+                throw Exception("Campsite not found")
+            }
+
+            // Retrieve existing ratings and handling edge cases for retrieval
+            val ratings = (campsite.get("ratings") as? Map<*, *>)
+                ?.mapNotNull { (key, value) ->
+                    if (key is String && value is Number) {
+                        key to value.toInt()
+                    } else null
+                }
+                ?.toMap()
+                ?.toMutableMap()
+                ?: mutableMapOf()
+
+            if (ratings.remove(userId) == null) {
+                throw Exception("Rating not found")
+            }
+
+            transaction.update(campsiteReference, "ratings", ratings)
+
+            null
+        }
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    } //end removeRating
 }//end campsite controller

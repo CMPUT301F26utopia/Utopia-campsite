@@ -1,15 +1,16 @@
 /**
- * Utopia 02.05.01
- * Draws a campsite's lottery winners at random once its registration period is over
- * and saves them to the firebase firestore
+ * Utopia 02.05.01, 01.03.01, 01.03.02
+ * Draws a campsite's lottery winners at random once its registration period is over,
+ * saves them to the firebase firestore, and notifies everyone on the waitlist whether they won or lost
  *
  * Outstanding Issues:
- * There is no server, so the draw happens the first time the app runs after the registration period ends
- * Winners are not notified yet (US 01.03.01, 01.03.02)
+ * There is no server, so the draw and its notifications happen the first time the app runs after the registration period ends
+ * A notification that fails to send is not tried again, since the lottery is already marked as drawn
  */
 
 package com.example.utopia_campsite.owner
 
+import com.example.utopia_campsite.user.UserRepository
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.ParseException
@@ -48,6 +49,17 @@ fun pickWinners(waitlist: List<String>, winnerCount: Int): List<String>{
 } //end pickWinners
 
 /**
+ * Finds the entrants on the waitlist who did not win (US 01.03.02)
+ *
+ * @param waitlist: the user IDs of the entrants on the waitlist
+ * @param winners: the user IDs that pickWinners picked
+ * @return the user IDs that lost, in waitlist order
+ */
+fun pickLosers(waitlist: List<String>, winners: List<String>): List<String>{
+    return waitlist.filter { it !in winners } // everyone on the waitlist except the winners
+} //end pickLosers
+
+/**
  * Gives today's date in the phone's time zone
  *
  * @return today's date as DD/MM/YYYY, e.g. "04/11/2026"
@@ -76,8 +88,22 @@ fun drawEndedLotteries(){
 } //end drawEndedLotteries
 
 /**
+ * What one draw picked, kept so the notifications can be sent after the draw is saved
+ *
+ * @property campsiteName: the campsite's name, shown in the notifications
+ * @property winners: the user IDs that won
+ * @property losers: the user IDs on the waitlist that did not win
+ */
+private data class DrawResult(
+    val campsiteName: String,
+    val winners: List<String>,
+    val losers: List<String>
+)
+
+/**
  * Draws one campsite's winners from its waitlist and saves them to the firebase firestore
  * Runs in a transaction, so if two phones try at the same time the winners are only drawn once
+ * Only the phone whose transaction did the draw sends the notifications, so nobody is told twice
  *
  * @param campsiteId: the Firestore document ID of the campsite
  * @param today: today's date as DD/MM/YYYY
@@ -99,9 +125,58 @@ private fun drawWinners(campsiteId: String, today: String){
                 "lotteryWinnerList" to winners.map { db.collection("users").document(it) }, // user references, like lotteryWaitlist
                 "lotteryDrawn" to true // so the winners are never drawn again
             ))
+            DrawResult(document.getString("name") ?: "", winners, pickLosers(waitlist, winners))
+        } else {
+            null // another phone already drew, so that phone sends the notifications
+        } //end if
+    }.addOnSuccessListener { result ->
+        // result is only there if this phone's transaction did the draw
+        if (result != null) {
+            sendLotteryResults(campsiteId, result)
         } //end if
     }
 } //end drawWinners
+
+/**
+ * Tells everyone on the waitlist whether they won (US 01.03.01) or lost (US 01.03.02)
+ *
+ * @param campsiteId: the Firestore document ID of the campsite
+ * @param result: the winners and losers this phone just drew
+ */
+private fun sendLotteryResults(campsiteId: String, result: DrawResult){
+    for (userId in result.winners) {
+        notifyEntrant(userId, campsiteId, "You won the lottery!", "You won the lottery for ${result.campsiteName}.")
+    } //end for
+    for (userId in result.losers) {
+        notifyEntrant(userId, campsiteId, "You did not win the lottery", "You did not win the lottery for ${result.campsiteName}.")
+    } //end for
+} //end sendLotteryResults
+
+/**
+ * Sends one entrant a notification through NotificationRepository
+ * Loads the user first, since NotificationRepository needs the whole user
+ * to skip anyone who turned notifications off
+ *
+ * @param userId: the Firestore document ID of the entrant
+ * @param campsiteId: the Firestore document ID of the campsite
+ * @param title: the notification's title
+ * @param body: the notification's message
+ */
+private fun notifyEntrant(userId: String, campsiteId: String, title: String, body: String){
+    UserRepository().getUser(
+        userId,
+        onSuccess = { user ->
+            NotificationRepository().send(
+                ownerId = "", // the app sends lottery results, not an owner
+                campsiteId = campsiteId,
+                title = title,
+                body = body,
+                recipients = listOf(user)
+            )
+        },
+        onFailure = { } // the entrant's profile was deleted, so there is nobody to notify
+    )
+} //end notifyEntrant
 
 /**
  * Reads a DD/MM/YYYY date, a copy of parseDate in CampsiteInputChecks

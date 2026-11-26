@@ -54,7 +54,7 @@ fun UserProfilePastReservationScreen(user: User) {
                 selectedReservation = null
             }
         )
-        return //makes sure the reservationDetailsScreen and UserProfileCurrentReservationScreen don't overlap
+        return //makes sure the reservationDetailsScreen and UserProfilePastReservationScreen don't overlap
     } //end if statement
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {

@@ -23,14 +23,15 @@ import com.example.utopia_campsite.user.Reservation
  * @property policyViolated: shows if the owner violated the app policy
  */
 data class Owner (
-     val postedCampsitesId: MutableList<String>,
-     val deviceID: String,
-     val photoUrl: String?,
-     val email: String,
-     val firstName: String,
-     val lastName: String,
-     val notificationsEnabled: Boolean,
-     val phone: String,
-     val policyViolated: Boolean
+     val postedCampsitesId: MutableList<String> = mutableListOf(),
+     val deviceID: String = "",
+     val photoUrl: String? = "",
+     val email: String = "",
+     val firstName: String = "",
+     val lastName: String = "",
+     val notificationsEnabled: Boolean = true,
+     val phone: String = "",
+     val policyViolated: Boolean = false,
+     val role: String = "owner"
 ) {
 }

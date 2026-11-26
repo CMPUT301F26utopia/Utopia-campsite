@@ -9,6 +9,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
+import android.os.Build
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiSelector
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -67,18 +71,38 @@ class UserProfileMeScreenTest {
     }//end testAllTextFieldsDisplayProperly
 
     @Test
-    fun testUpdateProfile(){
+    fun  testUpdateProfile(){
         composeTestRule.onNodeWithTag("editProfileButton").performClick()
         composeTestRule.onNodeWithTag("firstNameTextField").performTextInput("Jim")
         composeTestRule.onNodeWithTag("lastNameTextField").performTextInput("Lindsay")
         composeTestRule.onNodeWithTag("emailTextField").performTextInput("ironLake@gmail.com")
         composeTestRule.onNodeWithTag("phoneTextField").performTextInput("987654321")
         composeTestRule.onNodeWithTag("notificationsSwitch").performClick()
+
+        // Handle the android notification box
+        var notiPermissionGranted = false
+        if (Build.VERSION.SDK_INT >= 33) {
+            val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+            val denyButton = device.findObject(UiSelector().textMatches("(?i)don't allow|deny|disallow"))
+            val allowButton = device.findObject(UiSelector().textMatches("(?i)allow"))
+
+            if (denyButton.waitForExists(3000)) {
+                denyButton.click()
+            } else if (allowButton.waitForExists(1000)) {
+                allowButton.click()
+                notiPermissionGranted = true
+            }
+        }
+
         composeTestRule.onNodeWithTag("applyChangesButton").performClick()
         composeTestRule.onNodeWithText("Name: Jim Lindsay").assertIsDisplayed()
         composeTestRule.onNodeWithText("Email: ironLake@gmail.com").assertIsDisplayed()
         composeTestRule.onNodeWithText("Phone number: 987654321").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Notifications: Disabled").assertIsDisplayed()
+        if (notiPermissionGranted) {
+            composeTestRule.onNodeWithText("Notifications: Enabled").assertIsDisplayed()
+        } else {
+            composeTestRule.onNodeWithText("Notifications: Disabled").assertIsDisplayed()
+        }
     }//end testUpdateProfile
 
 

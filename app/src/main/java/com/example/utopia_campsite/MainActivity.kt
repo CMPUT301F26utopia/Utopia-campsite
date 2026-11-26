@@ -6,6 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
+import com.example.utopia_campsite.admin.AdminImageScreen
+import com.example.utopia_campsite.owner.RegisterCampsiteScreen
 import com.example.utopia_campsite.owner.drawEndedLotteries
 import com.example.utopia_campsite.ui.theme.UtopiacampsiteTheme
 import com.example.utopia_campsite.user.User

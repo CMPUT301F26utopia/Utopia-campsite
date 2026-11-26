@@ -75,7 +75,9 @@ fun UserProfileScreen(
             .onFailure { errorFilterReservations = it.message }
         loadingFilterReservations = false
     }
-
+    if (loadingFilterReservations) {
+        CircularProgressIndicator()
+    }
     Column(
         modifier = Modifier.fillMaxSize()
             .statusBarsPadding()
