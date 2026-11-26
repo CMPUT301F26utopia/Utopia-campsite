@@ -41,15 +41,39 @@ import androidx.compose.ui.unit.dp
 fun CampsiteScreens(
     campsite: Campsites,
     onBack: () -> Unit,
-    onSave: (Campsites, (String?) -> Unit) -> Unit
+    onSave: (Campsites, (String?) -> Unit) -> Unit,
+    onSaveLottery: (Campsites, (String?) -> Unit) -> Unit
 ) {
     // Switch between the details screen and the editing form.
     var editing by rememberSaveable(campsite.id) { mutableStateOf(false) }
+    var editingLottery by rememberSaveable(campsite.id) { mutableStateOf(false) }
+    var lotteryError by remember { mutableStateOf<String?>(null) }
 
     // Keep the displayed details updated after a successful save.
     var displayedCampsite by remember(campsite) { mutableStateOf(campsite) }
+    if (editingLottery) {
+        Column {
+            TextButton(onClick = { editingLottery = false }) {
+                Text("Back")
+            }
 
-    if (editing) {
+            lotteryError?.let { Text(it) }
+
+            UpdateLotteryListingScreen(
+                campsite = displayedCampsite,
+                onSave = { updated ->
+                    onSaveLottery(updated) { error ->
+                        if (error == null) {
+                            displayedCampsite = updated
+                            editingLottery = false
+                        } else {
+                            lotteryError = error
+                        }
+                    }
+                }
+            )
+        }
+    } else if (editing) {
         EditCampsiteScreen(
             campsite = displayedCampsite,
             onCancel = { editing = false },
@@ -92,6 +116,12 @@ fun CampsiteScreens(
             )
 
             Button(onClick = { editing = true }) { Text("Edit campsite")}
+            Button(onClick = { lotteryError = null
+                    editingLottery = true
+                }
+            ) {
+                Text("Edit Lottery")
+            }
         }
     }
 }

@@ -235,6 +235,18 @@ fun UtopiaNavApp() {
                                     finished(it.message ?: "Couldn't save campsite.")
                                 }
                             )
+                        },
+                        onSaveLottery = { updated, finished ->
+                            repository.updateLotteryListing(
+                                campsite = updated,
+                                onSuccess = {
+                                    campsite = updated
+                                    finished(null)
+                                },
+                                onFailure = {
+                                    finished(it.message ?: "Couldn't update lottery.")
+                                }
+                            )
                         }
                     )
 
