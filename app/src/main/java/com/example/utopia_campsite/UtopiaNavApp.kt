@@ -37,6 +37,7 @@ import com.example.utopia_campsite.user.UserProfileScreen
 import com.example.utopia_campsite.user.UserRepository
 import com.example.utopia_campsite.user.util.BottomNavigationBar
 import com.example.utopia_campsite.owner.CampsiteScreens
+import com.example.utopia_campsite.owner.RegisterCampsiteScreen
 import com.google.firebase.auth.FirebaseAuth
 
 /**
@@ -47,7 +48,7 @@ import com.google.firebase.auth.FirebaseAuth
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UtopiaNavApp() {
-    var showUserNavigation by remember { mutableStateOf(false) }
+    var showUserNavigation by remember { mutableStateOf(true) }
     var showOwnerNavigation by remember { mutableStateOf(false) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
@@ -134,14 +135,24 @@ fun UtopiaNavApp() {
                     onWaitListClick = {},
 
                     // TODO: Connect to owner booked spots screen
-                    onBookedSpotsClick = {}
+                    onBookedSpotsClick = {},
+
+                    onRegisterClick = {
+                        navController.navigate("owner/register")
+                    }
                 )
 
             } else {
                 Text("Error Occured")
             }
         }
-
+            composable("owner/register") {
+                RegisterCampsiteScreen(
+                    onRegistered = {
+                        navController.popBackStack()
+                    }
+                )
+            }
 
             // display the selected campsite's owner details.
             composable("owner/campsite/{campsiteId}") { entry ->
