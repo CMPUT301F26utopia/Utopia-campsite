@@ -151,11 +151,28 @@ fun UserProfileScreen(
                     )
                 }
             }
+            item {
+                Button(
+                    modifier = Modifier.testTag("recordsButton"),
+                    onClick = {currentScreen = "Records"},
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (currentScreen == "Records") selectedContainer else unselectedContainer,
+                        contentColor = if (currentScreen == "Records") selectedContent else unselectedContent
+                    )
+                ) {
+                    Text(
+                        text = "Records",
+                        fontSize = 16.sp,
+                        maxLines = 1
+                    )
+                }
+            }
         } //end lazyColumn
 
         when (currentScreen) { //toggles partial ui composition depending on button selected
             "Current Reservations" -> UserProfileCurrentReservationScreen(currentUser, onMessageClick)
             "Past Reservations" -> UserProfilePastReservationScreen(currentUser)
+            "Records" -> UserProfileRecordsScreen(currentUser)
             "Me" -> UserProfileMeScreen(user = currentUser, onEditProfileClick = {currentScreen = "Update Profile"})
             "Update Profile" -> {
                 UserUpdateProfileScreen(

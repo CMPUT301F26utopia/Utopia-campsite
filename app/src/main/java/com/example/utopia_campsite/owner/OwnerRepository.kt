@@ -1,6 +1,8 @@
 package com.example.utopia_campsite.owner
 
 
+import com.example.utopia_campsite.user.UserRepository
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -37,7 +39,8 @@ class OwnerRepository {
 
 
     /**
-     * fetches one owner from firebase
+     * cancels a user's booking at a campsite in firebase
+     * and sends the user a cancellation notification once it is saved
      * @param userId: the firebase document ID of the user (their deviceID)
      * @param campsite: the campsite where the user is booked to
      */
@@ -46,6 +49,22 @@ class OwnerRepository {
         db.collection("campsites")
             .document(campsite.id)
             .update("usersBooked", FieldValue.arrayRemove(userId))
+            .addOnSuccessListener {
+                // send() needs the whole user to skip anyone who turned notifications off
+                UserRepository().getUser(
+                    userId,
+                    onSuccess = { user ->
+                        NotificationRepository().send(
+                            ownerId = FirebaseAuth.getInstance().currentUser?.uid ?: "", // the signed in owner
+                            campsiteId = campsite.id,
+                            title = "Reservation cancelled",
+                            body = "The owner cancelled your reservation at ${campsite.name}.",
+                            recipients = listOf(user)
+                        )
+                    },
+                    onFailure = { } // the user's profile was deleted, so there is nobody to notify
+                )
+            }
     }
 
 }

@@ -39,6 +39,7 @@ import com.example.utopia_campsite.user.UserCampsiteListScreen
 import com.example.utopia_campsite.user.UserFilterScreen
 import com.example.utopia_campsite.user.UserFilterResultScreen
 import com.example.utopia_campsite.user.UserProfileScreen
+import com.example.utopia_campsite.user.UserNotificationsScreen
 import com.example.utopia_campsite.user.UserRepository
 
 import com.example.utopia_campsite.messaging.Conversation
@@ -59,7 +60,7 @@ import com.google.firebase.firestore.pipeline.Expression.Companion.type
 @Composable
 fun UtopiaNavApp() {
     var showUserNavigation by remember { mutableStateOf(false) }
-    var showOwnerNavigation by remember { mutableStateOf(true) }
+    var showOwnerNavigation by remember { mutableStateOf(false) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
     // Tracks the authenticated user's role for admin switching
@@ -78,7 +79,8 @@ fun UtopiaNavApp() {
     // Observing the current Screen
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val showBottomNavigationBar = currentRoute == homeScreenRoute || currentRoute == profileScreenRoute
+    val notificationsScreenRoute = "user/notifications"
+    val showBottomNavigationBar = currentRoute == homeScreenRoute || currentRoute == profileScreenRoute || currentRoute == notificationsScreenRoute
 
 
     val filterViewModel: UserCampsiteFilterViewModel = viewModel() // Shared instance of filter-view-model for filter screens
@@ -88,7 +90,16 @@ fun UtopiaNavApp() {
     val startPage = if (currentUser != null) homeScreenRoute else "welcome"
 
     LaunchedEffect(currentUser?.uid) {
-        currentUser?.uid?.let { uid -> userRepository.getUser(uid, onSuccess = { userRole = it.role }, onFailure = {}) }
+        currentUser?.uid?.let { uid ->
+            userRepository.getUser(uid, onSuccess = { userRole = it.role }, onFailure = {
+                // owners live in the "owners" collection, not "users"
+                ownerRepository.getOwner(uid, onSuccess = {
+                    userRole = "owner"
+                    showOwnerNavigation = true
+                    navController.navigate("owner/campsites") { popUpTo(navController.graph.id) { inclusive = true } }
+                }, onFailure = {})
+            })
+        }
     }
 
     Scaffold(
@@ -98,6 +109,7 @@ fun UtopiaNavApp() {
                     navController = navController,
                     homeScreenRoute = homeScreenRoute,
                     profileScreenRoute = profileScreenRoute,
+                    notificationsScreenRoute = notificationsScreenRoute,
                     onSwitchRole = if (userRole == "admin") { newRole ->
                         showUserNavigation = newRole == "user"
                         showOwnerNavigation = newRole == "owner"
@@ -372,6 +384,12 @@ fun UtopiaNavApp() {
                     loadFailed -> Text("Couldn't load your profile")
                     else -> CircularProgressIndicator()
                 }
+            }
+
+            // Composable route for the user's notifications
+            composable("user/notifications") {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+                if (uid != null) UserNotificationsScreen(userId = uid) else Text("Couldn't load your notifications")
             }
 
             // Composable route for a conversation between a campsite's owner and an entrant who reserved it
