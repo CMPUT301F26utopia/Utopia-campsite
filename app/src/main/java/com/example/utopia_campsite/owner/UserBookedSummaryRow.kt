@@ -35,11 +35,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.ConfigurationCompat
 import coil3.compose.AsyncImage
 import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserRepository
@@ -65,7 +67,8 @@ fun UserBookedSummaryRow(
     }
 
     val user = loadedUser ?: return
-    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    val locale = ConfigurationCompat.getLocales(LocalConfiguration.current)[0]
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", locale)
     dateFormat.isLenient = false
     val today = dateFormat.parse(dateFormat.format(Date()))!!
     val campsiteEndDate = dateFormat.parse(campsite.availableEndDate)
