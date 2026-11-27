@@ -132,7 +132,8 @@ fun OwnerCampsiteListScreen(
     onFilterClick: () -> Unit,
     onWaitListClick: (Campsites) -> Unit, // TODO: Implement when section is ready
     onBookedSpotsClick: (Campsites) -> Unit, // TODO: Implement when section is ready
-    onRegisterClick: () -> Unit
+    onRegisterClick: () -> Unit,
+    onMultipleLotteryScreen: () -> Unit = {}
 ) {
     var campsites by remember { mutableStateOf<List<Campsites>>(emptyList()) }
     val repository = remember { CampsiteRepository() }
@@ -216,6 +217,10 @@ fun OwnerCampsiteListScreen(
         }
 
         Spacer(modifier = Modifier.padding(16.dp))
+
+        Button(onClick = onMultipleLotteryScreen) {
+            Text("Create shared lottery")
+        }
 
         // Active, Past, Cancelled Reservations
 

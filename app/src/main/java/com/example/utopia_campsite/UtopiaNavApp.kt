@@ -51,6 +51,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.pipeline.Expression.Companion.type
 import com.example.utopia_campsite.user.LotteryWinnerScreen
+import com.example.utopia_campsite.owner.MultipleLotteryScreen
 
 /**
  * Defines the navigation routes between the application's screens
@@ -177,6 +178,10 @@ fun UtopiaNavApp() {
                     modifier = Modifier,
                     owner = loaded,
 
+                    onMultipleLotteryScreen = {
+                        navController.navigate("owner/combined-lottery/create")
+                    },
+
                     onCampsiteClick = { campsite ->
                         navController.navigate("owner/campsite/${campsite.id}")
                     },
@@ -201,6 +206,14 @@ fun UtopiaNavApp() {
             composable("owner/register") {
                 RegisterCampsiteScreen(
                     onRegistered = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable("owner/combined-lottery/create") {
+                MultipleLotteryScreen (
+                    onBack = {
                         navController.popBackStack()
                     }
                 )
