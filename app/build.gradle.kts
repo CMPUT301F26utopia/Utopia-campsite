@@ -36,6 +36,13 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("androidx.test.espresso:espresso-core:3.7.0")
+        force("androidx.test.ext:junit:1.3.0")
+    }
+}
+
 dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
