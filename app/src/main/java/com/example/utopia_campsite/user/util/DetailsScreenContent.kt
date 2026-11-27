@@ -10,6 +10,7 @@
 package com.example.utopia_campsite.user.util
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,6 +39,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +51,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.utopia_campsite.owner.qrGenerator
 import com.example.utopia_campsite.user.UserCampsiteRating
 import com.google.firebase.auth.FirebaseAuth
 
@@ -88,6 +93,7 @@ fun CampsiteDetailsContent(
     var isJoined by remember(campsite, currentUserId) {
         mutableStateOf(campsite.lotteryWaitlist.contains(currentUserId) || (user.deviceID.isNotEmpty() && campsite.lotteryWaitlist.contains(user.deviceID)))
     }
+    var showQrCode by remember { mutableStateOf(false) }
 
     // Stack the campsite's details from top to bottom
     Column(modifier = Modifier.fillMaxSize()) {
@@ -163,6 +169,54 @@ fun CampsiteDetailsContent(
                     }
 
                     Text(text = "Available: ${campsite.availableStartDate} - ${campsite.availableEndDate}") // dates the campsite can be booked
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Button(
+                            onClick = {
+                                showQrCode = true
+                            }
+                        ) {
+                            Text("Generate QR Code")
+                        }
+                    }
+
+                    if (showQrCode) {
+                        Dialog(
+                            onDismissRequest = { showQrCode = false },
+                            properties = DialogProperties(usePlatformDefaultWidth = false)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(350.dp)
+                                ) {
+                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                        qrGenerator(campsite.id)
+                                    }
+                                }
+                                IconButton(
+                                    onClick = { showQrCode = false },
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .padding(16.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Close QR Code"
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
