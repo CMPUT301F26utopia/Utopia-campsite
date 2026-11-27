@@ -8,14 +8,17 @@
 
 package com.example.utopia_campsite.user
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.utopia_campsite.owner.Campsites
@@ -32,7 +35,7 @@ fun CampsiteSummaryRow(campsite: Campsites){
     // Show the average of all ratings, or a message if the campsite has none yet
     // (average() of an empty list gives NaN)
 
-    // Stack the four pieces of summary information from top to bottom
+    // Stack the photo and the summary information from top to bottom
     Column {
         if(!campsite.photoUrl.isNullOrBlank()){
             AsyncImage(
@@ -42,9 +45,20 @@ fun CampsiteSummaryRow(campsite: Campsites){
                 contentScale = ContentScale.Crop
             )
         }
-        Text(text = campsite.name, modifier=Modifier.padding(start = 12.dp))
-        Text(text = campsite.address, modifier=Modifier.padding(start = 12.dp))
-        Text(text = "Max occupancy: ${campsite.maximumOccupants}", modifier=Modifier.padding(start = 12.dp))
-        Text(text = "Rating: $rating", modifier=Modifier.padding(start = 12.dp))
+        // Stack the four pieces of summary information from top to bottom,
+        // with 16dp around them so they don't touch the card's edges, and 4dp between the lines
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = campsite.name,
+                style = MaterialTheme.typography.titleLarge, // bigger than the other lines
+                fontWeight = FontWeight.Bold // so the name reads as the card's title
+            )
+            Text(text = campsite.address)
+            Text(text = "Max occupancy: ${campsite.maximumOccupants}")
+            Text(text = "Rating: $rating")
+        } //end Column
     }
 } //end CampsiteSummaryRow
