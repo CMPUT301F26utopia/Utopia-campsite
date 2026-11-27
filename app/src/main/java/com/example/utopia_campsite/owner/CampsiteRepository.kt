@@ -15,6 +15,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlin.collections.toMutableList
 import com.example.utopia_campsite.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.tasks.await
 
 /**
  *
@@ -565,5 +566,44 @@ class CampsiteRepository{
             )
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
+    }
+
+    /**
+     * Removes the signed-in user from a campsite's lottery winner list.
+     *
+     * @param campsiteId The campsite whose offer is being declined.
+     * @return null on success, or an error message if the decline fails.
+     */
+    suspend fun declineLotteryOffer(campsiteId: String): String? {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+            ?: return "Please sign in again."
+
+        if (campsiteId.isBlank()) { return "Campsite not found." }
+
+        return try {
+            val campsiteRef = db.collection("campsites").document(campsiteId)
+            val userRef = db.collection("users").document(uid)
+
+            db.runTransaction { transaction ->
+                val snapshot = transaction.get(campsiteRef)
+                val winners = snapshot.get("lotteryWinnerList") as? List<*>
+
+                if (winners?.contains(userRef) != true) {
+                    throw IllegalStateException("You no longer have this offer.")
+                }
+
+                transaction.update(
+                    campsiteRef,
+                    "lotteryWinnerList",
+                    FieldValue.arrayRemove(userRef)
+                )
+            }.await()
+
+            null
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            e.message ?: "Couldn't decline the offer."
+        }
     }
 }//end campsite controller
