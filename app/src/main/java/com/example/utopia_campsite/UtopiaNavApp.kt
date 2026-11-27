@@ -50,6 +50,7 @@ import com.example.utopia_campsite.owner.RegisterCampsiteScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.pipeline.Expression.Companion.type
+import com.example.utopia_campsite.user.LotteryWinnerScreen
 
 /**
  * Defines the navigation routes between the application's screens
@@ -393,7 +394,100 @@ fun UtopiaNavApp() {
             // Composable route for the user's notifications
             composable("user/notifications") {
                 val uid = FirebaseAuth.getInstance().currentUser?.uid
-                if (uid != null) UserNotificationsScreen(userId = uid) else Text("Couldn't load your notifications")
+
+                if (uid != null) {
+                    UserNotificationsScreen(
+                        userId = uid,
+                        onWinnerClick = { campsiteId ->
+                            navController.navigate("user/lottery-winner/${android.net.Uri.encode(campsiteId)}"
+                            )
+                        }
+                    )
+                } else { Text("Couldn't load your notifications") }
+            }
+
+            composable("user/lottery-winner/{campsiteId}") { backStackEntry ->
+                val campsiteId = backStackEntry.arguments?.getString("campsiteId")
+                var campsite by remember(campsiteId) { mutableStateOf<Campsites?>(null) }
+                var loadError by remember(campsiteId) { mutableStateOf<String?>(null) }
+                var isLotteryWinner by remember(campsiteId) { mutableStateOf<Boolean?>(null) }
+
+                LaunchedEffect(campsiteId) {
+                    if (campsiteId.isNullOrBlank()) {
+                        loadError = "Campsite not found"
+                    } else {
+                        CampsiteRepository().getCampsites(
+                            onSuccess = { campsites ->
+                                val found = campsites.find { it.id == campsiteId }
+
+                                if (found != null) {
+                                    campsite = found
+                                } else {
+                                    loadError = "Campsite not found"
+                                }
+                            },
+                            onFailure = {
+                                loadError = "Couldn't load the campsite"
+                            }
+                        )
+                    }
+                }
+
+                when {
+                    loadError != null -> {
+                        Text(loadError!!)
+                    }
+
+                    campsite == null || isLotteryWinner == null -> {
+                        CircularProgressIndicator()
+                    }
+
+                    isLotteryWinner == true -> {
+                        LotteryWinnerScreen(
+                            campsite = campsite!!,
+                            opportunityId = "test-${campsite!!.id}",
+                            isWinner = true,
+                            availableDates = if (campsite!!.bookingDate.isNotBlank()) {
+                                listOf(campsite!!.bookingDate)
+                            } else {
+                                emptyList()
+                            },
+                            onBack = { navController.popBackStack() },
+                            onDecline = {
+                                CampsiteRepository().declineLotteryOffer(campsite!!.id)
+                            }
+                        )
+                    }
+
+                    else -> {
+                        Text("You are not a winner for this campsite")
+                    }
+                }
+
+
+                LaunchedEffect(campsiteId) {
+                    val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+                    if (campsiteId.isNullOrBlank() || uid == null) {
+                        loadError = "Couldn't check lottery result"
+                    } else {
+                        FirebaseFirestore.getInstance()
+                            .collection("campsites")
+                            .document(campsiteId)
+                            .get()
+                            .addOnSuccessListener { document ->
+                                val winners = document.get("lotteryWinnerList") as? List<*>
+
+                                isLotteryWinner = winners
+                                    ?.filterIsInstance<com.google.firebase.firestore.DocumentReference>()
+                                    ?.any { it.path == "users/$uid" }
+                                    ?: false
+                            }
+                            .addOnFailureListener {
+                                loadError = "Couldn't check lottery result"
+                            }
+                    }
+                }
             }
 
             // Composable route for a conversation between a campsite's owner and an entrant who reserved it

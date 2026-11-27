@@ -36,7 +36,7 @@ import com.example.utopia_campsite.owner.NotificationRepository
  * @param userId: the firebase document ID of the user (their deviceID)
  */
 @Composable
-fun UserNotificationsScreen(userId: String) {
+fun UserNotificationsScreen(userId: String, onWinnerClick: (String)-> Unit) {
     var notifications by remember { mutableStateOf<List<Notification>?>(null) } //null while loading
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -63,7 +63,17 @@ fun UserNotificationsScreen(userId: String) {
             loaded.isEmpty() -> Text("No notifications")
             else -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(loaded) { notification ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        onClick = {
+                            if (
+                                notification.title == "You won the lottery!" &&
+                                notification.campsiteId.isNotBlank()
+                            ) {
+                                onWinnerClick(notification.campsiteId)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()// Opens the lottery winner page when a winning notification is clicked.
+                    ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(notification.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             Text(notification.body, fontSize = 14.sp)
