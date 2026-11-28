@@ -271,7 +271,10 @@ fun UpdateLotteryListingScreen(
                     lotteryWinners = winners!!,
                     waitlistCapacity = capacity,
                     registrationDate = "$regStart-$regEnd",
-                    bookingDate = "$bookStart-$bookEnd"
+                    bookingDate = "$bookStart-$bookEnd",
+                    // Keep the available dates in step with the booking period (same rule as buildCampsite)
+                    availableStartDate = bookStart,
+                    availableEndDate = bookEnd
                 )
 
                 onSave(updatedCampsite)

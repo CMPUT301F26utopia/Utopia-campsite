@@ -50,6 +50,14 @@ class BuildCampsiteTest {
     } //end buildCampsite_validInput_returnsCampsite
 
     @Test
+    fun buildCampsite_validInput_availableDatesAreBookingPeriod(){
+        val campsite = mockBuild()
+        assertNotNull(campsite)
+        assertEquals("01/11/2026", campsite!!.availableStartDate) // first day of the booking period
+        assertEquals("10/11/2026", campsite.availableEndDate) // last day of the booking period
+    } //end buildCampsite_validInput_availableDatesAreBookingPeriod
+
+    @Test
     fun buildCampsite_missingName_returnsNull(){
         assertNull(mockBuild(name = ""))
     } //end buildCampsite_missingName_returnsNull

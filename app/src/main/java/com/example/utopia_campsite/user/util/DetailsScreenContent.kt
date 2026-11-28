@@ -116,8 +116,10 @@ fun CampsiteDetailsContent(
                     AsyncImage(
                         model = campsite.photoUrl, // loads the image from its URL
                         contentDescription = "Image of ${campsite.name}", // read out by screen readers
-                        modifier = Modifier.fillMaxWidth(), // as wide as the screen
-                        contentScale = ContentScale.FillWidth // keeps the image's own shape, nothing cut off
+                        modifier = Modifier
+                            .fillMaxWidth() // as wide as the screen
+                            .height(240.dp), // every photo the same height, so a tall photo doesn't push the details down
+                        contentScale = ContentScale.Crop // fills the box and cuts off the edges that don't fit
                     )
                 }
             } //end if

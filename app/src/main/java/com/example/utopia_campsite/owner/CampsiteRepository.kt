@@ -561,7 +561,9 @@ class CampsiteRepository{
                     "lotteryWinners" to campsite.lotteryWinners,
                     "waitlistCapacity" to campsite.waitlistCapacity,
                     "registrationDate" to campsite.registrationDate,
-                    "bookingDate" to campsite.bookingDate
+                    "bookingDate" to campsite.bookingDate,
+                    "availableStartDate" to campsite.availableStartDate,
+                    "availableEndDate" to campsite.availableEndDate
                 )
             )
             .addOnSuccessListener { onSuccess() }
