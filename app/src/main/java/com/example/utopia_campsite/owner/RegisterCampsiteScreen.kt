@@ -219,7 +219,7 @@ fun RegisterCampsiteScreen(
                 InputField(
                     value = address,
                     onChange = {address=it},
-                    placeholder = "e.g 74 St. NW"
+                    placeholder = "e.g. 116 St & 85 Ave, Edmonton, AB"
                 )
                 //Tags button.
                 BlackButton(

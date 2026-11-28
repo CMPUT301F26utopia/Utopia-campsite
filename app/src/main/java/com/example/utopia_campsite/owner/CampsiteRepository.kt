@@ -43,14 +43,12 @@ class CampsiteRepository{
     private fun getUserIdsFromDocument(campsiteDocument: DocumentSnapshot, fieldName: String): MutableList<String> {
         return getReferencesFromDocument(campsiteDocument, fieldName).map { it.id }.toMutableList<String>()
     }//end getUserIdsFromDocument
-
     /**
-     * Retrieves all campsites from the firebase firestore
-     * Each document is converted into a Campsite object and added to a list
-     * The list is then passed to the onSuccess callback
+     * Finds one campsite by its Firebase document ID.
      *
-     * @param onSuccess: a callback function that is called when the campsites are retrieved
-     * @param onFailure: a callback function that is called when there is an error retrieving the campsites
+     * @param campsiteId The campsite's document ID.
+     * @param onSuccess Called with the campsite when found.
+     * @param onFailure Called if loading fails or the campsite is not found.
      */
     fun getCampsites(
         onSuccess: (List<Campsites>) -> Unit,
@@ -59,23 +57,27 @@ class CampsiteRepository{
         db.collection("campsites")
             .get()
             .addOnSuccessListener { result ->
-                val campsites = mutableStateListOf<Campsites>()
+                val campsites = mutableListOf<Campsites>()
+
                 for (document in result.documents) {
                     val campsite = Campsites(
                         id = document.id,
                         name = document.getString("name") ?: "",
                         photoUrl = document.getString("photoUrl"),
-                        address = document.getString("address") ?: "", //the ? sets a default value if the value is null
+                        address = document.getString("address") ?: "",
                         latitude = document.getDouble("latitude") ?: 0.0,
                         longitude = document.getDouble("longitude") ?: 0.0,
-                        ratings = (document.get("ratings") as? Map<*, *>) ?.mapNotNull { (key, value) ->
+                        ratings = (document.get("ratings") as? Map<*, *>)
+                            ?.mapNotNull { (key, value) ->
                                 if (key is String && value is Number) {
                                     key to value.toInt()
-                                } else null
+                                } else {
+                                    null
+                                }
                             }
-                            ?.toMap()
-                            ?: emptyMap(), //this casts firebase's List<Any?> to a List<Int>
-                        tags = (document.get("tags") as? List<*>)?.filterIsInstance<String>()?: mutableListOf(), //this casts firebase's List<Any?> to a List<String>
+                            ?.toMap() ?: emptyMap(),
+                        tags = (document.get("tags") as? List<*>)
+                            ?.filterIsInstance<String>() ?: emptyList(),
                         lotteryWinners = document.getLong("lotteryWinners")?.toInt() ?: 0,
                         waitlistCapacity = document.getLong("waitlistCapacity")?.toInt(),
                         lotteryWaitlist = getUserIdsFromDocument(document, "lotteryWaitlist"),
@@ -86,47 +88,49 @@ class CampsiteRepository{
                         availableStartDate = document.getString("availableStartDate") ?: "",
                         availableEndDate = document.getString("availableEndDate") ?: "",
                         usersBooked = getUserIdsFromDocument(document, "usersBooked"),
-                        reviews = (document.get("reviews") as? List<*>)?.filterIsInstance<String>() ?: emptyList(), //this casts firebase's List<Any?> to a List<String>
+                        reviews = (document.get("reviews") as? List<*>)
+                            ?.filterIsInstance<String>() ?: emptyList(),
                         ownerId = document.getString("ownerId") ?: ""
                     )
-                    campsites.add(campsite)
-                }//end for
-                onSuccess(campsites)
 
-            }//end addOnSuccessListener
+                    campsites.add(campsite)
+                }
+
+                onSuccess(campsites)
+            }
             .addOnFailureListener { exception ->
                 onFailure(exception)
-            }//end addOnFailureListener
-
-    }//end getCampsites
+            }
+    }
 
 
     /**
-     * fetches one campsite from firebase
-     * @param campsiteId: the firebase document ID of the campsite (campsite id)
-     * @param onSuccess: a callback function that is called when the user is retrieved
-     * @param onFailure: a callback function that is called when there is an error retrieving the user
+     * Finds one campsite by its Firebase document ID.
+     *
+     * @param campsiteId The campsite's document ID.
+     * @param onSuccess Called with the campsite when found.
+     * @param onFailure Called if loading fails or the campsite is not found.
      */
     fun getCampsite(
         campsiteId: String,
         onSuccess: (Campsites) -> Unit,
         onFailure: (Exception) -> Unit
-    ){
+    ) {
+        getCampsites(
+            onSuccess = { campsites ->
+                val campsite = campsites.find { it.id == campsiteId }
 
-        db.collection("campsites")
-            .document(campsiteId)
-            .get()
-            .addOnSuccessListener { document ->
-                val campsite = document.toObject(Campsites::class.java)?.copy(id = document.id)
                 if (campsite != null) {
                     onSuccess(campsite)
                 } else {
-                    onFailure(Exception("Campsite identifier $campsiteId does not exist"))
+                    onFailure(Exception("Campsite $campsiteId does not exist"))
                 }
-            }.addOnFailureListener { exception ->
+            },
+            onFailure = { exception ->
                 onFailure(exception)
-            }//end onFailureListener
-    }//end getCampsite
+            }
+        )
+    }
 
     /**
      * Saves a new campsite to the firebase firestore (US 02.01.02)
@@ -561,7 +565,9 @@ class CampsiteRepository{
                     "lotteryWinners" to campsite.lotteryWinners,
                     "waitlistCapacity" to campsite.waitlistCapacity,
                     "registrationDate" to campsite.registrationDate,
-                    "bookingDate" to campsite.bookingDate
+                    "bookingDate" to campsite.bookingDate,
+                    "availableStartDate" to campsite.availableStartDate,
+                    "availableEndDate" to campsite.availableEndDate
                 )
             )
             .addOnSuccessListener { onSuccess() }
