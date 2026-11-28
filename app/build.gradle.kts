@@ -36,6 +36,13 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        force("androidx.test.espresso:espresso-core:3.7.0")
+        force("androidx.test.ext:junit:1.3.0")
+    }
+}
+
 dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation(platform("com.google.firebase:firebase-bom:35.1.0"))
@@ -54,6 +61,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.firestore)
+    implementation("network.chaintech:qr-kit:3.1.3")
     implementation("io.coil-kt.coil3:coil-compose:3.4.0")
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.4.0")
     implementation(libs.play.services.base)

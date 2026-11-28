@@ -14,13 +14,17 @@
 package com.example.utopia_campsite.user.util
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -32,15 +36,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.testTag
+import androidx.navigation.compose.rememberNavController
 import com.example.utopia_campsite.owner.CampsiteRepository
 import com.example.utopia_campsite.user.CampsiteSummaryRow
 import com.example.utopia_campsite.user.UserCampsiteFilterViewModel
 import com.example.utopia_campsite.owner.Campsites
+import com.example.utopia_campsite.owner.qrScanner
 
 
 /**
@@ -62,6 +74,8 @@ fun CampsiteListContent(
     var allCampsites by remember { mutableStateOf<List<Campsites>>(emptyList()) }
     val campsiteRepository = remember { CampsiteRepository() }
     var loadStatus by remember { mutableStateOf("loading") }
+    var showQrScanner by remember { mutableStateOf(false) }
+    var showQrFailedAlert by remember { mutableStateOf(false) }
 
     // runs each time this screen appears, including when coming back from a detail screen
     LaunchedEffect(Unit) {
@@ -82,6 +96,52 @@ fun CampsiteListContent(
 
 
 
+    if (showQrScanner) {
+        Dialog(
+            onDismissRequest = { showQrScanner = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                qrScanner(
+                    onScanResult = { scannedText ->
+                        showQrScanner = false
+                        val matched = allCampsites.find { it.id == scannedText }
+                        if (matched != null) {
+                            onCampsiteClick(matched)
+                        } else {
+                            showQrFailedAlert = true
+                        }
+                    }
+                )
+                IconButton(
+                    onClick = { showQrScanner = false },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(16.dp)
+                        .testTag("closeQrScanner")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close Scanner",
+                        tint = Color.White
+                    )
+                }
+            }
+        }
+    }
+
+    if (showQrFailedAlert) {
+        AlertDialog(
+            onDismissRequest = { showQrFailedAlert = false },
+            title = { Text(text = "Error") },
+            text = { Text("Campsite not found.") },
+            confirmButton = {
+                TextButton(onClick = { showQrFailedAlert = false }) {
+                    Text("Dismiss")
+                }
+            }
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)){
 
@@ -104,13 +164,20 @@ fun CampsiteListContent(
                 }//end iconButton
             },//end leading icon
             trailingIcon = {
-                IconButton(onClick = onFilterClick) {
-
-                    Icon(
-                        imageVector = Icons.Default.FilterAlt,
-                        contentDescription = "Filter Icon"
-                    )
-                }//end iconButton
+                Row {
+                    IconButton(onClick = { showQrScanner = true }) {
+                        Icon(
+                            imageVector = Icons.Default.QrCodeScanner,
+                            contentDescription = "Scan QR Code"
+                        )
+                    }
+                    IconButton(onClick = onFilterClick) {
+                        Icon(
+                            imageVector = Icons.Default.FilterAlt,
+                            contentDescription = "Filter Icon"
+                        )
+                    }
+                }
             },//end trailing icon
             singleLine = true
 
