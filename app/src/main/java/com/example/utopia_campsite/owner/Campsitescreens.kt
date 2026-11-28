@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -22,8 +23,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.utopia_campsite.user.UserRepository
+import com.google.firebase.auth.FirebaseAuth
 
 /**
  * Displays the selected campsite's details and switches to the editing form
@@ -50,6 +54,7 @@ fun CampsiteScreens(
     var editing by rememberSaveable(campsite.id) { mutableStateOf(false) }
     var editingLottery by rememberSaveable(campsite.id) { mutableStateOf(false) }
     var lotteryError by remember { mutableStateOf<String?>(null) }
+    var showNotificationDialog by remember { mutableStateOf(false)}
 
     // Keep the displayed details updated after a successful save.
     var displayedCampsite by remember(campsite) { mutableStateOf(campsite) }
@@ -131,6 +136,108 @@ fun CampsiteScreens(
                 }
             ) {
                 Text("Edit Lottery")
+            }
+
+            Button(
+                onClick = {
+                    showNotificationDialog = true
+                }
+            ) { Text("Send Notification") }
+
+            if (showNotificationDialog) {
+                var title by remember { mutableStateOf("") }
+                var body by remember { mutableStateOf("") }
+                var sending by remember { mutableStateOf(false) }
+                var error by remember { mutableStateOf<String?>(null) }
+                var successMessage by remember { mutableStateOf<String?>(null) }
+
+                AlertDialog(
+                    onDismissRequest = { showNotificationDialog = false },
+                    title = { Text("Send Notification to Waitlist") },
+                    text = {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = title,
+                                onValueChange = { title = it },
+                                label = { Text("Title") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            OutlinedTextField(
+                                value = body,
+                                onValueChange = { body = it },
+                                label = { Text("Message Body") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            error?.let { Text(it, color = Color.Red) }
+                            successMessage?.let { Text(it, color = Color.Green) }
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            enabled = !sending,
+                            onClick = {
+                                if (title.isBlank() || body.isBlank()) {
+                                    error = "Title and body cannot be blank."
+                                    return@Button
+                                }
+                                sending = true
+                                error = null
+
+                                CampsiteRepository().getCampsite(
+                                    campsiteId = displayedCampsite.id,
+                                    onSuccess = { freshCampsite ->
+                                        if (freshCampsite.lotteryWaitlist.isEmpty()) {
+                                            sending = false
+                                            error = "The lottery waitlist is empty."
+                                            return@getCampsite
+                                        }
+                                        UserRepository().getUsers(
+                                            onSuccess = { allUsers ->
+                                                val recipients = allUsers.filter { it.deviceID in freshCampsite.lotteryWaitlist }
+                                                NotificationRepository().send(
+                                                    ownerId = FirebaseAuth.getInstance().currentUser?.uid ?: "",
+                                                    campsiteId = freshCampsite.id,
+                                                    title = title.trim(),
+                                                    body = body.trim(),
+                                                    recipients = recipients,
+                                                    onSuccess = {
+                                                        sending = false
+                                                        successMessage = "Notification sent successfully!"
+                                                    },
+                                                    onFailure = { err ->
+                                                        sending = false
+                                                        error = "Failed to send: ${err.message}"
+                                                    }
+                                                )
+                                            },
+                                            onFailure = { e ->
+                                                sending = false
+                                                error = "Failed to load waitlist users: ${e.message}"
+                                            }
+                                        )
+                                    },
+                                    onFailure = { e ->
+                                        sending = false
+                                        error = "Failed to load campsite details: ${e.message}"
+                                    }
+                                )
+                            }
+                        ) {
+                            Text(if (sending) "Sending..." else "Send")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            enabled = !sending,
+                            onClick = { showNotificationDialog = false }
+                        ) {
+                            Text("Close")
+                        }
+                    }
+                )
             }
         }
     }

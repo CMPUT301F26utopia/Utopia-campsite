@@ -41,7 +41,19 @@ class CampsiteRepository{
      * @param fieldName: the name of the array field (eg lotteryWaitlist)
      */
     private fun getUserIdsFromDocument(campsiteDocument: DocumentSnapshot, fieldName: String): MutableList<String> {
-        return getReferencesFromDocument(campsiteDocument, fieldName).map { it.id }.toMutableList<String>()
+        val raw = campsiteDocument.get(fieldName)
+        return when (raw) {
+            is List<*> -> {
+                raw.mapNotNull { item ->
+                    when (item) {
+                        is DocumentReference -> item.id
+                        is String -> item
+                        else -> item?.toString()
+                    }
+                }.toMutableList()
+            }
+            else -> mutableListOf()
+        }
     }//end getUserIdsFromDocument
 
     /**
@@ -117,11 +129,66 @@ class CampsiteRepository{
             .document(campsiteId)
             .get()
             .addOnSuccessListener { document ->
-                val campsite = document.toObject(Campsites::class.java)?.copy(id = document.id)
-                if (campsite != null) {
-                    onSuccess(campsite)
-                } else {
+                if (!document.exists()) {
                     onFailure(Exception("Campsite identifier $campsiteId does not exist"))
+                    return@addOnSuccessListener
+                }
+                try {
+                    val lat = when (val l = document.get("latitude")) {
+                        is Number -> l.toDouble()
+                        is String -> l.toDoubleOrNull() ?: 0.0
+                        else -> 0.0
+                    }
+                    val lon = when (val l = document.get("longitude")) {
+                        is Number -> l.toDouble()
+                        is String -> l.toDoubleOrNull() ?: 0.0
+                        else -> 0.0
+                    }
+                    val maxOcc = when (val m = document.get("maxOccupancy") ?: document.get("maximumOccupants")) {
+                        is Number -> m.toInt()
+                        is String -> m.toIntOrNull() ?: 0
+                        else -> 0
+                    }
+                    val lotWinners = when (val w = document.get("lotteryWinners")) {
+                        is Number -> w.toInt()
+                        is String -> w.toIntOrNull() ?: 0
+                        else -> 0
+                    }
+                    val waitCap = when (val c = document.get("waitlistCapacity")) {
+                        is Number -> c.toInt()
+                        is String -> c.toIntOrNull()
+                        else -> null
+                    }
+
+                    val campsite = Campsites(
+                        id = document.id,
+                        name = document.getString("name") ?: "",
+                        photoUrl = document.getString("photoUrl"),
+                        address = document.getString("address") ?: "",
+                        latitude = lat,
+                        longitude = lon,
+                        ratings = (document.get("ratings") as? Map<*, *>)?.mapNotNull { (key, value) ->
+                            if (key is String && value is Number) {
+                                key to value.toInt()
+                            } else null
+                        }?.toMap() ?: emptyMap(),
+                        tags = (document.get("tags") as? List<*>)?.filterIsInstance<String>() ?: mutableListOf(),
+                        lotteryWinners = lotWinners,
+                        waitlistCapacity = waitCap,
+                        lotteryWaitlist = getUserIdsFromDocument(document, "lotteryWaitlist"),
+                        description = document.getString("description") ?: "",
+                        registrationDate = document.getString("registrationDate") ?: "",
+                        bookingDate = document.getString("bookingDate") ?: "",
+                        maximumOccupants = maxOcc,
+                        availableStartDate = document.getString("availableStartDate") ?: "",
+                        availableEndDate = document.getString("availableEndDate") ?: "",
+                        usersBooked = getUserIdsFromDocument(document, "usersBooked"),
+                        reviews = (document.get("reviews") as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+                        ownerId = document.getString("ownerId") ?: ""
+                    )
+                    onSuccess(campsite)
+                } catch (e: Exception) {
+                    onFailure(e)
                 }
             }.addOnFailureListener { exception ->
                 onFailure(exception)

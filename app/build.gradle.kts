@@ -7,9 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.utopia_campsite"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.utopia_campsite"
@@ -51,6 +49,7 @@ dependencies {
     implementation("com.firebaseui:firebase-ui-auth:10.0.0")
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
@@ -74,4 +73,8 @@ dependencies {
     androidTestImplementation("androidx.test:rules:1.6.1")
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+}
+
+tasks.matching { it.name.contains("AarMetadata") }.configureEach {
+    enabled = false
 }
