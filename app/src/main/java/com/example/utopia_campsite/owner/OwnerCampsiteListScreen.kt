@@ -1,6 +1,7 @@
 package com.example.utopia_campsite.owner
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,7 +40,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.style.TextOverflow
 import java.text.SimpleDateFormat
@@ -167,7 +167,7 @@ fun OwnerCampsiteListScreen(
 
         // Search Bar
         TextField(
-            modifier = modifier.fillMaxWidth().padding(top = 50.dp),
+            modifier = modifier.fillMaxWidth().padding(top = 16.dp),
             value = searchQuery,
             onValueChange = { searchQuery = it },
             placeholder = { Text("Search") },
@@ -310,17 +310,17 @@ fun OwnerCampsiteCard(
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        TextButton(
-            onClick = onCampsiteClick,
-            contentPadding = PaddingValues(0.dp)
-        ) {
-            Text(
-                text = campsite.name,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
+        // Clickable Text instead of a TextButton, so short names line up on the left;
+        // the vertical padding keeps the 40dp height the TextButton had
+        Text(
+            text = campsite.name,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .clickable(onClick = onCampsiteClick)
+                .padding(vertical = 8.dp)
+        )
 
         Text(
             text = "Status: $status",

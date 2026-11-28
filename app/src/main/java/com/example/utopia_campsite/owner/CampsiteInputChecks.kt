@@ -2,10 +2,10 @@
  * Utopia 02.01.02, 02.04.03, 02.04.04, 02.04.05
  * Checks what a campsite owner typed into the register campsite form (RegisterCampsiteScreen)
  * and turns it into a new campsite with its registration and booking periods
+ * The campsite's available dates are its booking period, since that is when winners can book it
  *
  * Outstanding Issues:
- * The saved campsite is not linked to its owner yet (Campsites has no owner ID)
- * The lottery waitlist capacity (US 02.04.07) is not saved, Campsites has no field for it
+ * The owner cannot set available dates separately from the booking period
  */
 
 package com.example.utopia_campsite.owner
@@ -20,6 +20,7 @@ import java.util.TimeZone
  * Turns what the owner typed into a new campsite
  * Only the image is optional, so every other field must be filled in,
  * the number fields must hold valid numbers and both periods must be valid
+ * The available dates are copied from the booking period
  *
  * @param name: the campsite's name
  * @param address: the campsite's location
@@ -96,8 +97,9 @@ fun buildCampsite(
         registrationDate = registrationPeriod,
         bookingDate = bookingPeriod,
         maximumOccupants = occupancyNumber,
-        availableStartDate = "", // not part of this story
-        availableEndDate = "", // not part of this story
+        // available while winners can book, so these are the booking period's first and last day
+        availableStartDate = bookingPeriod.substringBefore("-"),
+        availableEndDate = bookingPeriod.substringAfter("-"),
         usersBooked = mutableListOf() // not part of this story
     )
 } //end buildCampsite
