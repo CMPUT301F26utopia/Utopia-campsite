@@ -196,7 +196,13 @@ class UserRepository {
                 return "Reserved Date: ${reservation.startReservedDate} to ${reservation.endReservedDate}"
             }
         }
-        return ""
+
+        for (reservation in user.pastReservations ) { //if it's not in the current reservations, then it may be in the past reservation
+            if (reservation.campsiteId == campsiteId) {
+                return "Reserved Date: ${reservation.startReservedDate} to ${reservation.endReservedDate}"
+            }
+        }
+        return "No reservation found"
     }
 
 

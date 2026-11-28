@@ -61,7 +61,7 @@ import com.example.utopia_campsite.user.LotteryWinnerScreen
 @Composable
 fun UtopiaNavApp() {
     var showUserNavigation by remember { mutableStateOf(false) }
-    var showOwnerNavigation by remember { mutableStateOf(false) }
+    var showOwnerNavigation by remember { mutableStateOf(true) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
     // Tracks the authenticated user's role for admin switching
@@ -125,8 +125,8 @@ fun UtopiaNavApp() {
         NavHost(navController = navController, startDestination = startPage, modifier = Modifier.padding(innerPadding)){
         composable("welcome") { WelcomeScreen(modifier = Modifier, onSignUp = { navController.navigate("sign_up") })}
 
-        //composable route for booked slots
-        composable("owner/bookedSlots/{campsiteId}") { backStackEntry ->
+        //composable route for booked slots and past users booked in a non-active campsites
+        composable("owner/usersBooked/{campsiteId}") { backStackEntry ->
             val campsiteId = backStackEntry.arguments?.getString("campsiteId")
             var campsite by remember { mutableStateOf<Campsites?>(null) }
             var loadFailed by remember { mutableStateOf(false) }
@@ -186,7 +186,11 @@ fun UtopiaNavApp() {
                     onWaitListClick = {},
 
                     onBookedSpotsClick = { campsite ->
-                        navController.navigate("owner/bookedSlots/${campsite.id}")
+                        navController.navigate("owner/usersBooked/${campsite.id}")
+                    },
+
+                    onViewUsersBookedClick = { campsite ->
+                        navController.navigate("owner/usersBooked/${campsite.id}")
                     },
 
                     onRegisterClick = {

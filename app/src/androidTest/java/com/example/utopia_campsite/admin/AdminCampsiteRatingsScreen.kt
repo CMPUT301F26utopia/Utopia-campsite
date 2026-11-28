@@ -1,4 +1,4 @@
-package com.example.utopia_campsite.admin
+ package com.example.utopia_campsite.admin
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule

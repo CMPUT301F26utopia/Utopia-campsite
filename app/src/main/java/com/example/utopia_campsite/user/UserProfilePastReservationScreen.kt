@@ -57,6 +57,9 @@ fun UserProfilePastReservationScreen(user: User) {
         return //makes sure the reservationDetailsScreen and UserProfilePastReservationScreen don't overlap
     } //end if statement
 
+    if (pastReservations.isEmpty()) {
+        Text("No Past Reservations")
+    }
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(pastReservations) { reservation ->
             Card(
