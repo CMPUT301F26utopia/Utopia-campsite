@@ -87,7 +87,14 @@ class CampsiteRepository{
                         availableEndDate = document.getString("availableEndDate") ?: "",
                         usersBooked = getUserIdsFromDocument(document, "usersBooked"),
                         reviews = (document.get("reviews") as? List<*>)?.filterIsInstance<String>() ?: emptyList(), //this casts firebase's List<Any?> to a List<String>
-                        ownerId = document.getString("ownerId") ?: ""
+                        ownerId = document.getString("ownerId") ?: "",
+                        lotteryDrawn = document.getBoolean("lotteryDrawn") ?: false,
+                        campsiteIds = (document.get("campsiteIds") as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+                        invitedOwnerIds = (document.get("invitedOwnerIds") as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+                        memberOwnerIds = (document.get("memberOwnerIds") as? List<*>)?.filterIsInstance<String>() ?: emptyList(),
+                        winnerChoices = (document.get("winnerChoices") as? Map<*, *>)
+                            ?.mapNotNull { (key, value) -> if (key is String && value is String) key to value else null }
+                            ?.toMap() ?: emptyMap()
                     )
                     campsites.add(campsite)
                 }//end for

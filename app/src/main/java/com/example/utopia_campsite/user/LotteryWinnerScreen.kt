@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.example.utopia_campsite.owner.Campsites
 import kotlinx.coroutines.CancellationException
@@ -54,6 +55,12 @@ import kotlinx.coroutines.launch
  * The repository must verify the current user's ownership and eligibility.
  * @param isLoading Whether the caller is loading the opportunity.
  * @param loadError Error from loading the opportunity, or null if none.
+ * @param campsiteOptions For a shared lottery (US 02.04.02), the campsites the
+ * winner can still choose from. Empty for a normal campsite.
+ * @param onChooseCampsite For a shared lottery, saves the winner's choice for the
+ * given campsite ID. Returns null on success or an error message on failure.
+ * When null, no choice is shown.
+ * @param chosenCampsiteName The campsite the winner already chose, or null if none.
  */
 @Composable
 fun LotteryWinnerScreen(
@@ -64,7 +71,10 @@ fun LotteryWinnerScreen(
     onBack: () -> Unit,
     onDecline: suspend (String) -> String?,
     isLoading: Boolean = false,
-    loadError: String? = null
+    loadError: String? = null,
+    campsiteOptions: List<Campsites> = emptyList(),
+    onChooseCampsite: (suspend (String) -> String?)? = null,
+    chosenCampsiteName: String? = null
 ) {
     // Keep state separate for each campsite and lottery invitation.
     // Switching to another invitation resets this part of the UI.
@@ -78,6 +88,11 @@ fun LotteryWinnerScreen(
         var declined by rememberSaveable { mutableStateOf(false) }
         // Stores a decline error so the user can see it and retry.
         var declineError by remember { mutableStateOf<String?>(null) }
+        // Shared lottery choice (US 02.04.02): the campsite the winner booked,
+        // whether a choice is being saved, and any error from saving it.
+        var chosenName by rememberSaveable { mutableStateOf(chosenCampsiteName) }
+        var choosing by remember { mutableStateOf(false) }
+        var chooseError by remember { mutableStateOf<String?>(null) }
         // Runs the suspend callback without blocking the UI.
         // The coroutine is cancelled when this part of the UI is removed.
         val scope = rememberCoroutineScope()
@@ -111,8 +126,59 @@ fun LotteryWinnerScreen(
                     Text(text = loadError, color = MaterialTheme.colorScheme.error)
                 }
 
+                chosenName != null -> {
+                    Text("You won the lottery!")
+                    Text("You booked $chosenName for ${campsite.bookingDate.replace("-", " - ")}.")
+                }
+
                 !isWinner || opportunityId.isBlank() -> {
                     Text("You do not have an active winning opportunity.")
+                }
+
+                onChooseCampsite != null -> {
+                    // US 02.04.02: a shared lottery winner picks which campsite to stay at.
+                    Text("You won the lottery!")
+                    Text("Booking period: ${campsite.bookingDate.replace("-", " - ")}")
+                    Text(
+                        text = "Choose your campsite",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    if (campsiteOptions.isEmpty()) {
+                        Text("All campsites in this lottery have been taken.")
+                    }
+                    campsiteOptions.forEach { option ->
+                        Text("${option.name}\n${option.address}")
+                        Button(
+                            enabled = !choosing && !declining,
+                            modifier = Modifier.testTag("choose_${option.id}"),
+                            onClick = {
+                                choosing = true
+                                chooseError = null
+                                scope.launch {
+                                    try {
+                                        val error = onChooseCampsite(option.id)
+                                        if (error == null) chosenName = option.name else chooseError = error
+                                    } catch (cancelled: CancellationException) {
+                                        throw cancelled
+                                    } catch (_: Exception) {
+                                        chooseError = "Unable to book. Please try again."
+                                    } finally {
+                                        choosing = false
+                                    }
+                                }
+                            }
+                        ) {
+                            Text(if (choosing) "Booking..." else "Stay here")
+                        }
+                    }
+                    chooseError?.let { Text(text = it, color = MaterialTheme.colorScheme.error) }
+                    declineError?.let { Text(text = it, color = MaterialTheme.colorScheme.error) }
+                    Button(
+                        enabled = !declining && !choosing,
+                        onClick = { showConfirmation = true }
+                    ) {
+                        Text(if (declining) "Declining..." else "Decline opportunity")
+                    }
                 }
 
                 else -> {

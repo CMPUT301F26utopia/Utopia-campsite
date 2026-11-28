@@ -52,6 +52,12 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.pipeline.Expression.Companion.type
 import com.example.utopia_campsite.user.LotteryWinnerScreen
 import com.example.utopia_campsite.owner.MultipleLotteryScreen
+import com.example.utopia_campsite.owner.AcceptInviteScreen
+import com.example.utopia_campsite.owner.HostSharedLotteryScreen
+import com.example.utopia_campsite.owner.InviteOwnersScreen
+import com.example.utopia_campsite.owner.SharedLotteryRepository
+import com.example.utopia_campsite.owner.SharedLotteryRules
+import com.example.utopia_campsite.owner.isSharedLottery
 
 /**
  * Defines the navigation routes between the application's screens
@@ -62,7 +68,7 @@ import com.example.utopia_campsite.owner.MultipleLotteryScreen
 @Composable
 fun UtopiaNavApp() {
     var showUserNavigation by remember { mutableStateOf(false) }
-    var showOwnerNavigation by remember { mutableStateOf(true) }
+    var showOwnerNavigation by remember { mutableStateOf(false) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
     // Tracks the authenticated user's role for admin switching
@@ -200,6 +206,14 @@ fun UtopiaNavApp() {
 
                     onRegisterClick = {
                         navController.navigate("owner/register")
+                    },
+
+                    onHostSharedLotteryClick = {
+                        navController.navigate("owner/shared-lottery/create")
+                    },
+
+                    onInviteClick = { lotteryId ->
+                        navController.navigate("owner/shared-lottery/$lotteryId/accept")
                     }
                 )
                 loadFailed -> Text("Couldn't load campsites")
@@ -220,6 +234,34 @@ fun UtopiaNavApp() {
                     onBack = {
                         navController.popBackStack()
                     }
+                )
+            }
+
+            // Shared lotteries with other owners (US 02.04.02)
+            composable("owner/shared-lottery/create") {
+                HostSharedLotteryScreen(
+                    onBack = { navController.popBackStack() },
+                    // go straight to inviting owners; Back from there returns to the listings
+                    onCreated = { lotteryId ->
+                        navController.navigate("owner/shared-lottery/$lotteryId/invite") {
+                            popUpTo("owner/shared-lottery/create") { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable("owner/shared-lottery/{lotteryId}/invite") { entry ->
+                InviteOwnersScreen(
+                    lotteryId = entry.arguments?.getString("lotteryId").orEmpty(),
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable("owner/shared-lottery/{lotteryId}/accept") { entry ->
+                AcceptInviteScreen(
+                    lotteryId = entry.arguments?.getString("lotteryId").orEmpty(),
+                    onBack = { navController.popBackStack() },
+                    onDone = { navController.popBackStack() }
                 )
             }
 
@@ -258,9 +300,17 @@ fun UtopiaNavApp() {
                     }
                 }
 
+                // In a shared lottery only the host can edit or invite (US 02.04.02)
+                val myUid = FirebaseAuth.getInstance().currentUser?.uid
+                val isHost = campsite?.let { !it.isSharedLottery() || it.ownerId == myUid } ?: false
+
                 when {
                     campsite != null -> CampsiteScreens(
                         campsite = campsite!!,
+                        canEdit = isHost,
+                        onInviteOwners = if (campsite!!.isSharedLottery() && isHost) {
+                            { navController.navigate("owner/shared-lottery/${campsite!!.id}/invite") }
+                        } else null,
 
                         onBack = {
                             navController.popBackStack()
@@ -424,6 +474,8 @@ fun UtopiaNavApp() {
                 var campsite by remember(campsiteId) { mutableStateOf<Campsites?>(null) }
                 var loadError by remember(campsiteId) { mutableStateOf<String?>(null) }
                 var isLotteryWinner by remember(campsiteId) { mutableStateOf<Boolean?>(null) }
+                // every campsite, so a shared lottery winner can see the campsites in it (US 02.04.02)
+                var allCampsites by remember(campsiteId) { mutableStateOf<List<Campsites>>(emptyList()) }
 
                 LaunchedEffect(campsiteId) {
                     if (campsiteId.isNullOrBlank()) {
@@ -432,6 +484,7 @@ fun UtopiaNavApp() {
                         CampsiteRepository().getCampsites(
                             onSuccess = { campsites ->
                                 val found = campsites.find { it.id == campsiteId }
+                                allCampsites = campsites
 
                                 if (found != null) {
                                     campsite = found
@@ -468,7 +521,15 @@ fun UtopiaNavApp() {
                             onBack = { navController.popBackStack() },
                             onDecline = {
                                 CampsiteRepository().declineLotteryOffer(campsite!!.id)
-                            }
+                            },
+                            // US 02.04.02: a shared lottery winner chooses which campsite to stay at
+                            campsiteOptions = SharedLotteryRules.availableChoices(campsite!!, allCampsites),
+                            onChooseCampsite = if (campsite!!.isSharedLottery()) {
+                                { chosenId -> SharedLotteryRepository().chooseCampsite(campsite!!.id, chosenId) }
+                            } else null,
+                            chosenCampsiteName = FirebaseAuth.getInstance().currentUser?.uid
+                                ?.let { campsite!!.winnerChoices[it] }
+                                ?.let { chosenId -> allCampsites.find { it.id == chosenId }?.name ?: "your campsite" }
                         )
                     }
 

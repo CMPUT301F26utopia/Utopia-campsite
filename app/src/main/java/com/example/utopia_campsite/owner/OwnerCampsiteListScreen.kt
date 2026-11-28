@@ -129,6 +129,8 @@ fun determineCampsiteStatus(campsite: Campsites): String {
  * @param onWaitListClick: callback function called when the view waitlist button is clicked
  * @param onViewUsersBookedClick : callback function called when the view users booked is clicked in past reservation tab campsites
  * @param onBookedSpotsClick: callback function called when the view booked spots button is clicked
+ * @param onHostSharedLotteryClick: callback function called when the host-with-other-owners button is clicked (US 02.04.02)
+ * @param onInviteClick: callback function called with a shared lottery's ID when one of the owner's invites is clicked (US 02.04.02)
  */
 @Composable
 fun OwnerCampsiteListScreen(
@@ -140,8 +142,23 @@ fun OwnerCampsiteListScreen(
     onBookedSpotsClick: (Campsites) -> Unit,
     onViewUsersBookedClick: (Campsites) -> Unit,
     onRegisterClick: () -> Unit,
-    onMultipleLotteryScreen: () -> Unit = {}
+    onMultipleLotteryScreen: () -> Unit = {},
+    onHostSharedLotteryClick: () -> Unit = {},
+    onInviteClick: (String) -> Unit = {}
 ) {
+    var invites by remember { mutableStateOf<List<Campsites>>(emptyList()) }
+    // shared lotteries other owners invited this owner to (US 02.04.02)
+    LaunchedEffect(owner.deviceID) {
+        if (owner.deviceID.isNotBlank()) {
+            SharedLotteryRepository().getInvitesFor(
+                ownerId = owner.deviceID,
+                onSuccess = { invites = it },
+                onFailure = { exception ->
+                    Log.e("OwnerCampsiteListScreen", "Error Loading Invites", exception)
+                }
+            )
+        }
+    }
     var campsites by remember { mutableStateOf<List<Campsites>>(emptyList()) }
     val repository = remember { CampsiteRepository() }
     var searchQuery by remember { mutableStateOf("") }
@@ -225,8 +242,40 @@ fun OwnerCampsiteListScreen(
 
         Spacer(modifier = Modifier.padding(16.dp))
 
-        Button(onClick = onMultipleLotteryScreen) {
-            Text("Create shared lottery")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onMultipleLotteryScreen) {
+                Text("Create shared lottery")
+            }
+            Button(onClick = onHostSharedLotteryClick) {
+                Text("Host with other owners")
+            }
+        }
+
+        // Invites from other owners to add a campsite to their shared lottery
+        if (invites.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Lottery invitations",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            invites.forEach { invite ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "${invite.name}\nBooking: ${invite.bookingDate.replace("-", " - ")}",
+                        fontSize = 12.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Button(onClick = { onInviteClick(invite.id) }) {
+                        Text("View", fontSize = 11.sp)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         // Active, Past, Cancelled Reservations
