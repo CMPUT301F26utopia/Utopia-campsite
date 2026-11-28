@@ -207,6 +207,14 @@ fun UtopiaNavApp() {
 
                     onRegisterClick = {
                         navController.navigate("owner/register")
+                    },
+
+                    onHostSharedLotteryClick = {
+                        navController.navigate("owner/shared-lottery/create")
+                    },
+
+                    onInviteClick = { lotteryId ->
+                        navController.navigate("owner/shared-lottery/$lotteryId/accept")
                     }
                 )
                 loadFailed -> Text("Couldn't load campsites")
@@ -467,6 +475,9 @@ fun UtopiaNavApp() {
                 var campsite by remember(campsiteId) { mutableStateOf<Campsites?>(null) }
                 var loadError by remember(campsiteId) { mutableStateOf<String?>(null) }
                 var isLotteryWinner by remember(campsiteId) { mutableStateOf<Boolean?>(null) }
+                var isCombinedLottery by remember(campsiteId) { mutableStateOf<Boolean?>(null) }
+                // every campsite, so a shared lottery winner can see the campsites in it (US 02.04.02)
+                var allCampsites by remember(campsiteId) { mutableStateOf<List<Campsites>>(emptyList()) }
 
                 LaunchedEffect(campsiteId) {
                     if (campsiteId.isNullOrBlank()) {
@@ -475,6 +486,7 @@ fun UtopiaNavApp() {
                         CampsiteRepository().getCampsites(
                             onSuccess = { campsites ->
                                 val found = campsites.find { it.id == campsiteId }
+                                allCampsites = campsites
 
                                 if (found != null) {
                                     campsite = found
@@ -494,8 +506,16 @@ fun UtopiaNavApp() {
                         Text(loadError!!)
                     }
 
-                    campsite == null || isLotteryWinner == null -> {
+                    campsite == null || isLotteryWinner == null || isCombinedLottery == null -> {
                         CircularProgressIndicator()
+                    }
+
+                    // shared lotteries are also combined, but use the campsite-choice screen below
+                    isLotteryWinner == true && isCombinedLottery == true && !campsite!!.isSharedLottery() -> {
+                        MultipleLotteryWinnerScreen(
+                            lotteryId = campsiteId!!,
+                            onBack = { navController.popBackStack() }
+                        )
                     }
 
                     isLotteryWinner == true -> {
