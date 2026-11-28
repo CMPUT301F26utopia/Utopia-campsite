@@ -41,7 +41,19 @@ class CampsiteRepository{
      * @param fieldName: the name of the array field (eg lotteryWaitlist)
      */
     private fun getUserIdsFromDocument(campsiteDocument: DocumentSnapshot, fieldName: String): MutableList<String> {
-        return getReferencesFromDocument(campsiteDocument, fieldName).map { it.id }.toMutableList<String>()
+        val raw = campsiteDocument.get(fieldName)
+        return when (raw) {
+            is List<*> -> {
+                raw.mapNotNull { item ->
+                    when (item) {
+                        is DocumentReference -> item.id
+                        is String -> item
+                        else -> item?.toString()
+                    }
+                }.toMutableList()
+            }
+            else -> mutableListOf()
+        }
     }//end getUserIdsFromDocument
     /**
      * Finds one campsite by its Firebase document ID.
@@ -92,7 +104,6 @@ class CampsiteRepository{
                             ?.filterIsInstance<String>() ?: emptyList(),
                         ownerId = document.getString("ownerId") ?: ""
                     )
-
                     campsites.add(campsite)
                 }
 
@@ -119,7 +130,6 @@ class CampsiteRepository{
         getCampsites(
             onSuccess = { campsites ->
                 val campsite = campsites.find { it.id == campsiteId }
-
                 if (campsite != null) {
                     onSuccess(campsite)
                 } else {

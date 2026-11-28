@@ -8,12 +8,14 @@ package com.example.utopia_campsite.user
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -28,8 +30,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.utopia_campsite.owner.AllNotificationsDialog
 import com.example.utopia_campsite.owner.Notification
 import com.example.utopia_campsite.owner.NotificationRepository
+import com.example.utopia_campsite.owner.OwnerRepository
+import com.example.utopia_campsite.owner.allNotificationsScreen
 
 /**
  * Loads the user's notifications from firebase and shows each one in a card
@@ -39,6 +44,7 @@ import com.example.utopia_campsite.owner.NotificationRepository
 fun UserNotificationsScreen(userId: String, onWinnerClick: (String)-> Unit) {
     var notifications by remember { mutableStateOf<List<Notification>?>(null) } //null while loading
     var error by remember { mutableStateOf<String?>(null) }
+    var isOwner by remember { mutableStateOf(false) }
 
     LaunchedEffect(userId) {
         NotificationRepository().getForUser(
@@ -46,7 +52,20 @@ fun UserNotificationsScreen(userId: String, onWinnerClick: (String)-> Unit) {
             onSuccess = { notifications = it },
             onFailure = { error = "Couldn't load notifications" }
         )
+        OwnerRepository().getOwner(
+            ownerId = userId,
+            onSuccess = { isOwner = true },
+            onFailure = {
+                UserRepository().getUser(
+                    userId = userId,
+                    onSuccess = { user -> isOwner = (user.role.lowercase() == "owner") },
+                    onFailure = {}
+                )
+            }
+        )
     }
+
+    AllNotificationsDialog(ownerId = userId)
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -54,8 +73,22 @@ fun UserNotificationsScreen(userId: String, onWinnerClick: (String)-> Unit) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = "Notifications", fontWeight = FontWeight.Bold, fontSize = 24.sp)
 
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+        ) {
+            Text(text = "Notifications", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+
+            if (isOwner) {
+                Button(
+                    onClick = { allNotificationsScreen() },
+                    modifier = Modifier.padding(start = 16.dp)
+                ) {
+                    Text("View all sent notifications")
+                }
+            }
+
+        }
         val loaded = notifications
         when {
             error != null -> Text(error!!)
