@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 /**
@@ -102,13 +104,21 @@ fun CampsiteScreens(
             }
 
             Text("Campsite details")
-            Text("Name: ${displayedCampsite.name}")
+            Text(
+                text = displayedCampsite.name,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
             Text("Address: ${displayedCampsite.address}")
             Text("Description: ${displayedCampsite.description}")
             Text("Maximum occupants: ${displayedCampsite.maximumOccupants}")
+            Text("Lottery winners: ${displayedCampsite.lotteryWinners}")
             Text("Tags: ${displayedCampsite.tags.joinToString(", ")}")
             Text("Latitude: ${displayedCampsite.latitude}")
             Text("Longitude: ${displayedCampsite.longitude}")
+            // Periods are saved as "start-end", e.g. 10/10/2026-20/10/2026.
+            Text("Registration period: ${displayedCampsite.registrationDate.replace("-", " - ")}")
+            Text("Booking period: ${displayedCampsite.bookingDate.replace("-", " - ")}")
 
             Text(
                 "Available: ${displayedCampsite.availableStartDate}" +
