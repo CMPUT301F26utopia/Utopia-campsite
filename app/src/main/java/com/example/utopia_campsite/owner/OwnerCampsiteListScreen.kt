@@ -130,8 +130,9 @@ fun OwnerCampsiteListScreen(
     owner: Owner,
     onCampsiteClick: (Campsites) -> Unit,
     onFilterClick: () -> Unit,
-    onWaitListClick: (Campsites) -> Unit, // TODO: Implement when section is ready
-    onBookedSpotsClick: (Campsites) -> Unit, // TODO: Implement when section is ready
+    onWaitListClick: (Campsites) -> Unit,
+    onBookedSpotsClick: (Campsites) -> Unit,
+    onViewUsersBookedClick: (Campsites) -> Unit,
     onRegisterClick: () -> Unit,
     onMultipleLotteryScreen: () -> Unit = {}
 ) {
@@ -404,6 +405,7 @@ fun OwnerCampsiteListScreenPreview() {
         onFilterClick = {},
         onWaitListClick = {},
         onBookedSpotsClick = {},
+        onViewUsersBookedClick = {},
         onRegisterClick = {}
     )
 }
