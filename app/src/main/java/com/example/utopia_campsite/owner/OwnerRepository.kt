@@ -1,6 +1,8 @@
 package com.example.utopia_campsite.owner
 
 
+import com.example.utopia_campsite.user.Reservation
+import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
@@ -65,6 +67,36 @@ class OwnerRepository {
                     onFailure = { } // the user's profile was deleted, so there is nobody to notify
                 )
             }
+    }
+
+    /**
+     *
+     *
+     * */
+    fun getCancelledReservations(
+        owner: Owner,
+        onSuccess: (List<Pair<User, Reservation>>) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        db.collection("users")
+            .get()
+            .addOnSuccessListener { result ->
+                val cancellations = mutableListOf<Pair<User, Reservation>>()
+
+                for (document in result.documents) {
+                    val user = document.toObject(User::class.java)
+                        ?.copy(deviceID = document.id)
+                        ?: continue
+
+                    for (reservation in user.cancelledReservations) {
+                        if (reservation.campsiteId in owner.postedCampsitesId) {
+                            cancellations.add(user to reservation)
+                        }
+                    }
+                }
+                onSuccess(cancellations)
+            }
+            .addOnFailureListener { onFailure(it) }
     }
 
 }

@@ -255,7 +255,9 @@ fun OwnerCampsiteListScreen(
         }
 
         // Campsite List
-        if (searchedCampsites.isEmpty()) {
+        if (selectedTab == 2) {
+            CampsiteCancelledReservationsScreen(owner = owner)
+        } else if (searchedCampsites.isEmpty()) {
             Box(
                 modifier = modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
