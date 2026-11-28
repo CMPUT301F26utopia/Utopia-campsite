@@ -93,7 +93,12 @@ fun determineCampsiteStatus(campsite: Campsites): String {
     val registrationEnd = dateFormat.parse(registrationDates[1].trim())
     val bookingStart = dateFormat.parse(bookingDates[0].trim())
     val bookingEnd = dateFormat.parse(bookingDates[1].trim())
-    val availableEndDate = dateFormat.parse(campsite.availableEndDate)
+    // Campsites made before available dates were saved have them empty, which can't be parsed
+    val availableEndDate = try {
+        dateFormat.parse(campsite.availableEndDate)
+    } catch (e: Exception) {
+        null
+    }
 
     if (registrationStart == null || registrationEnd == null ||
         bookingStart == null || bookingEnd == null) {
@@ -109,7 +114,7 @@ fun determineCampsiteStatus(campsite: Campsites): String {
         !today.after(bookingEnd)) {
         return "Booking Period"
     }
-    else if (today.after(availableEndDate)) {
+    else if (availableEndDate != null && today.after(availableEndDate)) {
         return "Not Active(Last active at: ${campsite.availableStartDate} to ${campsite.availableEndDate})"  //a campsite is in past reservations
     }
     else {

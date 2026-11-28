@@ -71,7 +71,12 @@ fun UserBookedSummaryRow(
     val dateFormat = SimpleDateFormat("dd/MM/yyyy", locale)
     dateFormat.isLenient = false
     val today = dateFormat.parse(dateFormat.format(Date()))!!
-    val campsiteEndDate = dateFormat.parse(campsite.availableEndDate)
+    // Campsites made before available dates were saved have them empty, which can't be parsed
+    val campsiteEndDate = try {
+        dateFormat.parse(campsite.availableEndDate)
+    } catch (e: Exception) {
+        null
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -147,7 +152,7 @@ fun UserBookedSummaryRow(
 
             // Delete Icon (Bottom)
             //shows no delete icon for campsites not in active registration
-            if (today.before(campsiteEndDate)) {
+            if (campsiteEndDate == null || today.before(campsiteEndDate)) { // unknown end date counts as active
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
