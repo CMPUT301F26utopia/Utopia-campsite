@@ -41,6 +41,10 @@ import com.google.firebase.auth.FirebaseAuth
  * @param onSave called with the edited campsite and a completion callback;
  *               the caller saves the changes and invokes the callback with
  *               null on success or an error message on failure
+ * @param canEdit false hides the edit buttons, e.g. for an owner who joined
+ *                someone else's shared lottery (US 02.04.02)
+ * @param onInviteOwners when not null, shows an "Invite owners" button for the
+ *                       host of a shared lottery (US 02.04.02)
  */
 
 @Composable
@@ -48,7 +52,9 @@ fun CampsiteScreens(
     campsite: Campsites,
     onBack: () -> Unit,
     onSave: (Campsites, (String?) -> Unit) -> Unit,
-    onSaveLottery: (Campsites, (String?) -> Unit) -> Unit
+    onSaveLottery: (Campsites, (String?) -> Unit) -> Unit,
+    canEdit: Boolean = true,
+    onInviteOwners: (() -> Unit)? = null
 ) {
     // Switch between the details screen and the editing form.
     var editing by rememberSaveable(campsite.id) { mutableStateOf(false) }
@@ -130,12 +136,24 @@ fun CampsiteScreens(
                         " - ${displayedCampsite.availableEndDate}"
             )
 
-            Button(onClick = { editing = true }) { Text("Edit campsite")}
-            Button(onClick = { lotteryError = null
-                    editingLottery = true
+            if (displayedCampsite.isSharedLottery()) {
+                Text("Campsites in this shared lottery: ${displayedCampsite.campsiteIds.size}")
+            }
+
+            if (canEdit) {
+                Button(onClick = { editing = true }) { Text("Edit campsite")}
+                Button(onClick = { lotteryError = null
+                        editingLottery = true
+                    }
+                ) {
+                    Text("Edit Lottery")
                 }
-            ) {
-                Text("Edit Lottery")
+            } else {
+                Text("Only the lottery's host can change its details or periods.")
+            }
+
+            onInviteOwners?.let { invite ->
+                Button(onClick = invite) { Text("Invite owners") }
             }
 
             Button(
