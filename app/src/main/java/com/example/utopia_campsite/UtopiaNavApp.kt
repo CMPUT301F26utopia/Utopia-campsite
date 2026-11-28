@@ -52,6 +52,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.pipeline.Expression.Companion.type
 import com.example.utopia_campsite.user.LotteryWinnerScreen
 import com.example.utopia_campsite.owner.MultipleLotteryScreen
+import com.example.utopia_campsite.user.MultipleLotteryWinnerScreen
 
 /**
  * Defines the navigation routes between the application's screens
@@ -420,6 +421,7 @@ fun UtopiaNavApp() {
                 var campsite by remember(campsiteId) { mutableStateOf<Campsites?>(null) }
                 var loadError by remember(campsiteId) { mutableStateOf<String?>(null) }
                 var isLotteryWinner by remember(campsiteId) { mutableStateOf<Boolean?>(null) }
+                var isCombinedLottery by remember(campsiteId) { mutableStateOf<Boolean?>(null) }
 
                 LaunchedEffect(campsiteId) {
                     if (campsiteId.isNullOrBlank()) {
@@ -447,10 +449,19 @@ fun UtopiaNavApp() {
                         Text(loadError!!)
                     }
 
-                    campsite == null || isLotteryWinner == null -> {
+                    campsite == null || isLotteryWinner == null || isCombinedLottery == null -> {
                         CircularProgressIndicator()
                     }
 
+                    isLotteryWinner == true && isCombinedLottery == true -> {
+                        MultipleLotteryWinnerScreen(
+                            lotteryId = campsiteId!!,
+
+                            onBack = {
+                                navController.popBackStack()
+                            }
+                        )
+                    }
                     isLotteryWinner == true -> {
                         LotteryWinnerScreen(
                             campsite = campsite!!,
@@ -485,6 +496,7 @@ fun UtopiaNavApp() {
                             .document(campsiteId)
                             .get()
                             .addOnSuccessListener { document ->
+                                isCombinedLottery = document.getBoolean("isCombinedLottery") == true
                                 val winners = document.get("lotteryWinnerList") as? List<*>
 
                                 isLotteryWinner = winners
