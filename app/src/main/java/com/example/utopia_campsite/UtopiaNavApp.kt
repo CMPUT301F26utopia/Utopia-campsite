@@ -46,6 +46,7 @@ import com.example.utopia_campsite.messaging.Conversation
 import com.example.utopia_campsite.messaging.ChatRoute
 import com.example.utopia_campsite.user.util.BottomNavigationBar
 import com.example.utopia_campsite.owner.CampsiteScreens
+import com.example.utopia_campsite.owner.CampsiteWaitlistScreen
 import com.example.utopia_campsite.owner.RegisterCampsiteScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -153,6 +154,32 @@ fun UtopiaNavApp() {
 
         } //end composable route for booked slots
 
+        composable("owner/waitlist/{campsiteId}") { entry ->
+            val campsiteId = entry.arguments?.getString("campsiteId")
+
+            var campsite by remember(campsiteId) {
+                mutableStateOf<Campsites?>(null)
+            }
+
+            LaunchedEffect(campsiteId) {
+                if (campsiteId != null) {
+                    CampsiteRepository().getCampsites(
+                        onSuccess = { campsites ->
+                            campsite = campsites.find { it.id == campsiteId }
+                        },
+                        onFailure = {}
+                    )
+                }
+            }
+
+            campsite?.let {
+                CampsiteWaitlistScreen(
+                    campsite = it,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+        }
+
         // Composable routers for Campsite Owner
         composable("owner/campsites") {
 
@@ -189,7 +216,9 @@ fun UtopiaNavApp() {
                     onFilterClick = {
                         navController.navigate("user/filter")
                     },
-                    onWaitListClick = {},
+                    onWaitListClick = { campsite ->
+                        navController.navigate("owner/waitlist/${campsite.id}")
+                    },
 
                     onBookedSpotsClick = { campsite ->
                         navController.navigate("owner/usersBooked/${campsite.id}")
