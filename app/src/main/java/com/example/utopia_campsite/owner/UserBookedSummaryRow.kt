@@ -1,11 +1,12 @@
 /**
  * Shows the summary of one user details in a list
  * full name, dates reserved is shown per user
- * shows a message and delete icon per user
+ * shows a message and delete icon per user if the user is booked in an active campsite
+ * shows only the message icon per user if the user was booked in an inactive campsite
  * Utopia 02.06.01
  * Utopia 02.07.01
+ * Utopia 02.07.02
  * Utopia 02.08.01
- * Outstanding Issues:
  */
 
 package com.example.utopia_campsite.owner
@@ -34,14 +35,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.ConfigurationCompat
 import coil3.compose.AsyncImage
 import com.example.utopia_campsite.user.User
 import com.example.utopia_campsite.user.UserRepository
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun UserBookedSummaryRow(
@@ -61,6 +67,11 @@ fun UserBookedSummaryRow(
     }
 
     val user = loadedUser ?: return
+    val locale = ConfigurationCompat.getLocales(LocalConfiguration.current)[0]
+    val dateFormat = SimpleDateFormat("dd/MM/yyyy", locale)
+    dateFormat.isLenient = false
+    val today = dateFormat.parse(dateFormat.format(Date()))!!
+    val campsiteEndDate = dateFormat.parse(campsite.availableEndDate)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -135,15 +146,18 @@ fun UserBookedSummaryRow(
             )
 
             // Delete Icon (Bottom)
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Delete",
-                modifier = Modifier
-                    .size(20.dp)
-                    .clickable(
-                        onClick = { onDeleteClick() }
-                    )
-            )
+            //shows no delete icon for campsites not in active registration
+            if (today.before(campsiteEndDate)) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    modifier = Modifier
+                        .size(20.dp)
+                        .clickable(
+                            onClick = { onDeleteClick() }
+                        )
+                )
+            }
         } //end column for message/delete icons
     } //end row
 } //end UserBookedSummaryRow
