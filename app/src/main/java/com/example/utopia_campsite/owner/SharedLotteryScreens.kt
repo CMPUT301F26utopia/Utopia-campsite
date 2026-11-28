@@ -35,7 +35,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 
 // ---------------------------------------------------------------------------
@@ -265,6 +267,50 @@ fun InviteOwnersContent(
         }
     }
 } //end InviteOwnersContent
+
+// ---------------------------------------------------------------------------
+// Invitations section on the owner's listings
+// ---------------------------------------------------------------------------
+
+/**
+ * Shows the shared lotteries other owners invited this owner to, on the owner's listings
+ * Always shown, with a message when there are no invites
+ *
+ * @param invites: the shared lotteries the owner was invited to
+ * @param onInviteClick: called with a lottery's ID when the owner taps View
+ */
+@Composable
+fun LotteryInvitesSection(invites: List<Campsites>, onInviteClick: (String) -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        Text(
+            text = "Lottery invitations",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        if (invites.isEmpty()) {
+            Text("No invitations yet.", fontSize = 12.sp)
+        }
+        invites.forEach { invite ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "${invite.name}\nBooking: ${invite.bookingDate.replace("-", " - ")}",
+                    fontSize = 12.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    onClick = { onInviteClick(invite.id) },
+                    modifier = Modifier.testTag("viewInvite_${invite.id}")
+                ) {
+                    Text("View", fontSize = 11.sp)
+                }
+            }
+        }
+    }
+} //end LotteryInvitesSection
 
 // ---------------------------------------------------------------------------
 // Answer an invite

@@ -256,32 +256,8 @@ fun OwnerCampsiteListScreen(
             }
         }
 
-        // Invites from other owners to add a campsite to their shared lottery
-        if (invites.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Lottery invitations",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            invites.forEach { invite ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "${invite.name}\nBooking: ${invite.bookingDate.replace("-", " - ")}",
-                        fontSize = 12.sp,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Button(onClick = { onInviteClick(invite.id) }) {
-                        Text("View", fontSize = 11.sp)
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-        }
+        // Invites from other owners to add a campsite to their shared lottery (US 02.04.02)
+        LotteryInvitesSection(invites = invites, onInviteClick = onInviteClick)
 
         // Active, Past, Cancelled Reservations
 

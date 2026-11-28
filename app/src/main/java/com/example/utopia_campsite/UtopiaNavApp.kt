@@ -58,6 +58,7 @@ import com.example.utopia_campsite.owner.InviteOwnersScreen
 import com.example.utopia_campsite.owner.SharedLotteryRepository
 import com.example.utopia_campsite.owner.SharedLotteryRules
 import com.example.utopia_campsite.owner.isSharedLottery
+import com.example.utopia_campsite.user.MultipleLotteryWinnerScreen
 
 /**
  * Defines the navigation routes between the application's screens
@@ -68,7 +69,7 @@ import com.example.utopia_campsite.owner.isSharedLottery
 @Composable
 fun UtopiaNavApp() {
     var showUserNavigation by remember { mutableStateOf(false) }
-    var showOwnerNavigation by remember { mutableStateOf(false) }
+    var showOwnerNavigation by remember { mutableStateOf(true) }
     var showAdminNavigation by remember { mutableStateOf(false) }
 
     // Tracks the authenticated user's role for admin switching
@@ -206,14 +207,6 @@ fun UtopiaNavApp() {
 
                     onRegisterClick = {
                         navController.navigate("owner/register")
-                    },
-
-                    onHostSharedLotteryClick = {
-                        navController.navigate("owner/shared-lottery/create")
-                    },
-
-                    onInviteClick = { lotteryId ->
-                        navController.navigate("owner/shared-lottery/$lotteryId/accept")
                     }
                 )
                 loadFailed -> Text("Couldn't load campsites")
@@ -474,8 +467,6 @@ fun UtopiaNavApp() {
                 var campsite by remember(campsiteId) { mutableStateOf<Campsites?>(null) }
                 var loadError by remember(campsiteId) { mutableStateOf<String?>(null) }
                 var isLotteryWinner by remember(campsiteId) { mutableStateOf<Boolean?>(null) }
-                // every campsite, so a shared lottery winner can see the campsites in it (US 02.04.02)
-                var allCampsites by remember(campsiteId) { mutableStateOf<List<Campsites>>(emptyList()) }
 
                 LaunchedEffect(campsiteId) {
                     if (campsiteId.isNullOrBlank()) {
@@ -484,7 +475,6 @@ fun UtopiaNavApp() {
                         CampsiteRepository().getCampsites(
                             onSuccess = { campsites ->
                                 val found = campsites.find { it.id == campsiteId }
-                                allCampsites = campsites
 
                                 if (found != null) {
                                     campsite = found
@@ -550,6 +540,7 @@ fun UtopiaNavApp() {
                             .document(campsiteId)
                             .get()
                             .addOnSuccessListener { document ->
+                                isCombinedLottery = document.getBoolean("isCombinedLottery") == true
                                 val winners = document.get("lotteryWinnerList") as? List<*>
 
                                 isLotteryWinner = winners

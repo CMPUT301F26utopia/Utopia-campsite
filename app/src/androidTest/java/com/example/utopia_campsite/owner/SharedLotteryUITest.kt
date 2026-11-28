@@ -1,5 +1,8 @@
 package com.example.utopia_campsite.owner
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -159,6 +162,85 @@ class SharedLotteryUITest {
         composeTestRule.onNodeWithTag("invite_guest").assertIsNotEnabled()
         composeTestRule.onNodeWithText("Invited").assertIsDisplayed()
     } //end testInvitingAnOwnerSavesTheInviteAndDisablesTheButton
+
+    // ----- Invitations section on the owner's listings -----
+
+    @Test
+    fun testInvitationsSectionShowsWithNoInvites() {
+        composeTestRule.setContent { LotteryInvitesSection(invites = emptyList(), onInviteClick = {}) }
+
+        composeTestRule.onNodeWithText("Lottery invitations").assertIsDisplayed()
+        composeTestRule.onNodeWithText("No invitations yet.").assertIsDisplayed()
+    } //end testInvitationsSectionShowsWithNoInvites
+
+    @Test
+    fun testInvitationsSectionListsInvitesAndOpensThem() {
+        var opened: String? = null
+        composeTestRule.setContent { LotteryInvitesSection(invites = listOf(lottery), onInviteClick = { opened = it }) }
+
+        composeTestRule.onNodeWithText("Pine Lake", substring = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("No invitations yet.").assertDoesNotExist()
+        composeTestRule.onNodeWithTag("viewInvite_lottery").performClick()
+
+        assertEquals("lottery", opened)
+    } //end testInvitationsSectionListsInvitesAndOpensThem
+
+    /**
+     * The whole flow: the host invites an owner, the invite shows up on that owner's listings,
+     * and the owner opens it and adds their campsite
+     * The firebase lottery document is stood in for by fakeLottery, which the stubs change
+     */
+    @Test
+    fun testInvitedOwnerReceivesInviteAndAcceptsIt() {
+        var fakeLottery by mutableStateOf(lottery)
+        var screen by mutableStateOf("hostInvites")
+        val invited = mutableListOf<String>()
+        val campsiteIds = fakeLottery.campsiteIds.toMutableList()
+
+        composeTestRule.setContent {
+            // stands in for getInvitesFor("guest"): lotteries whose invites include the guest
+            val guestInvites = listOf(fakeLottery).filter { "guest" in it.invitedOwnerIds }
+            when (screen) {
+                "hostInvites" -> InviteOwnersContent(fakeLottery, owners, null, onBack = {}, onInvite = { id, finished ->
+                    stubInvite(invited, id, finished)
+                    fakeLottery = fakeLottery.copy(invitedOwnerIds = invited.toList())
+                })
+                "guestListings" -> LotteryInvitesSection(guestInvites, onInviteClick = { screen = "guestAccept" })
+                "guestAccept" -> AcceptInviteContent(fakeLottery, listOf(guestSite), "guest", today, null,
+                    onBack = {},
+                    onAccept = { id, finished ->
+                        stubAccept(campsiteIds, id, finished)
+                        fakeLottery = fakeLottery.copy(campsiteIds = campsiteIds.toList(),
+                            invitedOwnerIds = fakeLottery.invitedOwnerIds - "guest",
+                            memberOwnerIds = fakeLottery.memberOwnerIds + "guest")
+                        screen = "guestListings"
+                    },
+                    onDecline = {})
+            }
+        }
+
+        // before the invite, the guest has no invitations
+        composeTestRule.runOnIdle { screen = "guestListings" }
+        composeTestRule.onNodeWithText("No invitations yet.").assertIsDisplayed()
+
+        // the host invites the guest
+        composeTestRule.runOnIdle { screen = "hostInvites" }
+        composeTestRule.onNodeWithTag("invite_guest").performClick()
+
+        // the guest now sees the invite on their listings and opens it
+        composeTestRule.runOnIdle { screen = "guestListings" }
+        composeTestRule.onNodeWithText("Pine Lake", substring = true).assertIsDisplayed()
+        composeTestRule.onNodeWithTag("viewInvite_lottery").performClick()
+
+        // the guest adds their campsite
+        composeTestRule.onNodeWithTag("add_guestSite").performClick()
+
+        composeTestRule.waitForIdle()
+        assertEquals(listOf("hostSite", "guestSite"), fakeLottery.campsiteIds)
+        assertTrue("guest" in fakeLottery.memberOwnerIds)
+        // the invite is gone from the guest's listings once accepted
+        composeTestRule.onNodeWithText("No invitations yet.").assertIsDisplayed()
+    } //end testInvitedOwnerReceivesInviteAndAcceptsIt
 
     // ----- Answering an invite -----
 
